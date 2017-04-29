@@ -1,0 +1,20 @@
+{
+    "IngestSource": {
+        "SourceContainerName": "hololens-demo"
+    },
+    "IngestAsset": {
+        "AssetName": "hololens_demo_720p",
+        "AssetFiles": [
+            {
+                "FileName": "HoloLensDemo.mp4",
+                "IsPrimary": true
+            }
+        ],
+        "AssetCreationOption": "None"
+    },
+    "IngestAssetEncoding": {
+        "Encoding": true,
+        "Encoder": "MES",
+        "EncodingConfiguration": "Adaptive Streaming"
+    }
+}
