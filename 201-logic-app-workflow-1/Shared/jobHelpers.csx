@@ -27,7 +27,7 @@ public static int AddTask(IJob job, IAsset sourceAsset, string value, string pro
         // processor to use for the specific task.
         IMediaProcessor mediaProcessor = GetLatestMediaProcessorByName(processor);
 
-        string repoPath = Environment.GetEnvironmentVariable("WEBROOT_PATH", EnvironmentVariableTarget.Process);
+        string repoPath = Environment.GetEnvironmentVariable("HOME", EnvironmentVariableTarget.Process);
         string presetPath;
 
         if (repoPath == null)
@@ -36,7 +36,7 @@ public static int AddTask(IJob job, IAsset sourceAsset, string value, string pro
         }
         else
         {
-            presetPath = Path.Combine(repoPath, @"..\repository\201-logic-app-workflow-1\Presets\" + presetfilename);
+            presetPath = Path.Combine(repoPath, @"site\repository\201-logic-app-workflow-1\Presets\" + presetfilename);
         }
 
         string Configuration = File.ReadAllText(presetPath).Replace(stringtoreplace, value);
