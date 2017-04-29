@@ -129,8 +129,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         job.Submit();
         log.Info("Job Submitted");
 
-        //outputAsset = job.OutputMediaAssets.FirstOrDefault();
-        outputAsset = outputEncoding;
+        outputAsset = job.OutputMediaAssets.FirstOrDefault();
+        //outputAsset = outputEncoding;
     }
     catch (Exception ex)
     {

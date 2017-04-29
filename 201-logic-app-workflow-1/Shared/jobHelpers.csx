@@ -27,16 +27,16 @@ public static int AddTask(IJob job, IAsset sourceAsset, string value, string pro
         // processor to use for the specific task.
         IMediaProcessor mediaProcessor = GetLatestMediaProcessorByName(processor);
 
-        string homePath = Environment.GetEnvironmentVariable("HOME", EnvironmentVariableTarget.Process);
+        string repoPath = Environment.GetEnvironmentVariable("WEBROOT_PATH", EnvironmentVariableTarget.Process);
         string presetPath;
 
-        if (homePath == String.Empty)
+        if (repoPath == null)
         {
-            presetPath = @"../Presets/" + presetfilename;
+            presetPath = @"Presets/" + presetfilename;
         }
         else
         {
-            presetPath = Path.Combine(homePath, @"site\repository\201-logic-app-workflow-1\Presets\" + presetfilename);
+            presetPath = Path.Combine(repoPath, @"..\repository\201-logic-app-workflow-1\Presets\" + presetfilename);
         }
 
         string Configuration = File.ReadAllText(presetPath).Replace(stringtoreplace, value);
@@ -53,7 +53,7 @@ public static int AddTask(IJob job, IAsset sourceAsset, string value, string pro
         task.InputAssets.Add(sourceAsset);
 
         // Add an output asset to contain the results of the job.
-        task.OutputAssets.AddNew(sourceAsset.Name + " " + processor + " Output", AssetCreationOptions.None);
+        task.OutputAssets.AddNew(sourceAsset.Name + " - Analytics - " + processor + " Output", AssetCreationOptions.None);
 
         return taskindex++;
     }
