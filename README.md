@@ -223,7 +223,7 @@ See the [Read Me for 103-aspera-ingest](/103-aspera-ingest/README.md) for more d
 
 # Media Services Functions for Logic Apps
 ## media-functions-for-logic-app
-Functions : create-empty-asset, sync-asset, live-analytics, submit-job, check-job-status, publish-asset, return-subtitles.
+Functions : create-empty-asset, sync-asset, live-subclip-analytics, submit-job, check-job-status, check-task-status, publish-asset, return-subtitles, return-analytics, set-media-ru, add-textfile-to-asset, delete-entity.
 These functions are designed to be called by a Logic App.
 
 One specific patterns to pay attention to here include the check-job-status function which is used to poll for 
