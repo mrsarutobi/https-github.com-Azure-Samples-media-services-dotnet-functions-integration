@@ -289,7 +289,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
         // MES Subclipping TASK
         // Declare a new encoding job with the Standard encoder
-        job = _context.Jobs.Create("Azure Function - Job for Live Analytics", priority);
+        job = _context.Jobs.Create("Azure Function - Job for Live Analytics - " + programName, priority);
         // Get a media processor reference, and pass to it the name of the 
         // processor to use for the specific task.
         IMediaProcessor processor = GetLatestMediaProcessorByName("Media Encoder Standard");
