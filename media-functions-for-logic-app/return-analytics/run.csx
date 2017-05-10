@@ -147,6 +147,12 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
                 log.Info($"Asset not published");
             }
 
+            // let's copy JPG to a container
+            string prefixjpg = outputAsset.Uri.Segments[1]+"-";
+            var sourceContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, outputAsset.Uri.Segments[1]);
+            var targetContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, "jpgFaces");
+            CopyJPGsAsync( sourceContainer,  targetContainer, prefixjpg,  log);
+
             foreach (IAssetFile file in jpgFiles)
             {
                 string index = file.Name.Substring(file.Name.Length - 10, 6);
@@ -164,6 +170,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
                     jpgFaces.Add(entry);
                 }
             }
+
+           
 
             if (jsonFile != null)
             {
@@ -257,4 +265,34 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             jsonOffset = Newtonsoft.Json.JsonConvert.SerializeObject(objMotionDetectionOffset)
         },
     });
+}
+
+
+static public void CopyJPGsAsync(CloudBlobContainer sourceBlobContainer, CloudBlobContainer destinationBlobContainer, string prefix, TraceWriter log)
+{
+    if (destinationBlobContainer.CreateIfNotExists())
+    {
+        destinationBlobContainer.SetPermissions(new BlobContainerPermissions
+        {
+            PublicAccess = BlobContainerPublicAccessType.Blob
+        });
+    }
+
+    string blobPrefix = null;
+    bool useFlatBlobListing = true;
+    var blobList = sourceBlobContainer.ListBlobs(blobPrefix, useFlatBlobListing, BlobListingDetails.None);
+    foreach (var sourceBlob in blobList)
+    {
+        log.Info("Source blob : " + (sourceBlob as CloudBlob).Uri.ToString());
+        CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(prefix + (sourceBlob as CloudBlob).Name);
+        if (destinationBlob.Exists())
+        {
+            log.Info("Destination blob already exists. Skipping: " + destinationBlob.Uri.ToString());
+        }
+        else
+        {
+            log.Info("Copying blob " + sourceBlob.Uri.ToString() + " to " + destinationBlob.Uri.ToString());
+            CopyBlobAsync(sourceBlob as CloudBlob, destinationBlob);
+        }
+    }
 }
