@@ -160,7 +160,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
                 var sourceContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, outputAsset.Uri.Segments[1]);
                 var targetContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, copyToContainer);
                 CopyJPGsAsync(sourceContainer, targetContainer, prefixjpg, log);
-                targetContainerUri = targetContainer.Uri;
+                targetContainerUri = targetContainer.Uri.ToString();
             }
 
             foreach (IAssetFile file in jpgFiles)
