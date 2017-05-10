@@ -6,9 +6,8 @@ Input:
     "assetFaceRedactionId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Id of the source asset that contains media analytics (face redaction)
     "assetMotionDetectionId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b",  // Id of the source asset that contains media analytics (motion detection)
     "timeOffset" :"00:01:00", // optional, offset to add to subtitles (used for live analytics)
-    "copyToContainer" : "jpgfaces" // Optional, to copy jpg fiels to a specific container in the same storage account
+    "copyToContainer" : "jpgfaces" // Optional, to copy jpg files to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions
     "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
-
  }
 
 Output:
@@ -90,6 +89,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
     string copyToContainer = "";
     string prefixjpg = "";
+    string targetContainerUri = "";
 
     string jsonContent = await req.Content.ReadAsStringAsync();
     dynamic data = JsonConvert.DeserializeObject(jsonContent);
@@ -160,6 +160,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
                 var sourceContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, outputAsset.Uri.Segments[1]);
                 var targetContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, copyToContainer);
                 CopyJPGsAsync(sourceContainer, targetContainer, prefixjpg, log);
+                targetContainerUri = targetContainer.Uri;
             }
 
             foreach (IAssetFile file in jpgFiles)
@@ -176,7 +177,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
                     {
                         if (copyToContainer != "")
                         {
-                            entry.url = targetContainer.Uri + "/" + prefixjpg + file.Name;
+                            entry.url = targetContainerUri + "/" + prefixjpg + file.Name;
                         }
                         else
                         {
@@ -289,7 +290,7 @@ static public void CopyJPGsAsync(CloudBlobContainer sourceBlobContainer, CloudBl
         destinationBlobContainer.SetPermissions(new BlobContainerPermissions
         {
             PublicAccess = BlobContainerPublicAccessType.Container // read-only access to container
-    });
+        });
     }
 
     string blobPrefix = null;
