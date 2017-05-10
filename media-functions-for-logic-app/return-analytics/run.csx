@@ -148,11 +148,11 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             }
 
             // let's copy JPG to a container
-            string prefixjpg = outputAsset.Uri.Segments[1]+"-";
+            string prefixjpg = outputAsset.Uri.Segments[1] + "-";
             log.Info($"prefixjpg {prefixjpg}");
             var sourceContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, outputAsset.Uri.Segments[1]);
             var targetContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, "jpgfaces");
-            CopyJPGsAsync( sourceContainer,  targetContainer, prefixjpg,  log);
+            CopyJPGsAsync(sourceContainer, targetContainer, prefixjpg, log);
 
             foreach (IAssetFile file in jpgFiles)
             {
@@ -172,7 +172,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
                 }
             }
 
-           
+
 
             if (jsonFile != null)
             {
@@ -284,16 +284,19 @@ static public void CopyJPGsAsync(CloudBlobContainer sourceBlobContainer, CloudBl
     var blobList = sourceBlobContainer.ListBlobs(blobPrefix, useFlatBlobListing, BlobListingDetails.None);
     foreach (var sourceBlob in blobList)
     {
-        log.Info("Source blob : " + (sourceBlob as CloudBlob).Uri.ToString());
-        CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(prefix + (sourceBlob as CloudBlob).Name);
-        if (destinationBlob.Exists())
+        if ((sourceBlob as CloudBlob).Name.EndsWith(".jpg"))
         {
-            log.Info("Destination blob already exists. Skipping: " + destinationBlob.Uri.ToString());
-        }
-        else
-        {
-            log.Info("Copying blob " + sourceBlob.Uri.ToString() + " to " + destinationBlob.Uri.ToString());
-            CopyBlobAsync(sourceBlob as CloudBlob, destinationBlob);
+            log.Info("Source blob : " + (sourceBlob as CloudBlob).Uri.ToString());
+            CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(prefix + (sourceBlob as CloudBlob).Name);
+            if (destinationBlob.Exists())
+            {
+                log.Info("Destination blob already exists. Skipping: " + destinationBlob.Uri.ToString());
+            }
+            else
+            {
+                log.Info("Copying blob " + sourceBlob.Uri.ToString() + " to " + destinationBlob.Uri.ToString());
+                CopyBlobAsync(sourceBlob as CloudBlob, destinationBlob);
+            }
         }
     }
 }
