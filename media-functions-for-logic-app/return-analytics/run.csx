@@ -151,7 +151,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             string prefixjpg = outputAsset.Uri.Segments[1]+"-";
             log.Info($"prefixjpg {prefixjpg}");
             var sourceContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, outputAsset.Uri.Segments[1]);
-            var targetContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, "jpgFaces");
+            var targetContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, "jpgfaces");
             CopyJPGsAsync( sourceContainer,  targetContainer, prefixjpg,  log);
 
             foreach (IAssetFile file in jpgFiles)
