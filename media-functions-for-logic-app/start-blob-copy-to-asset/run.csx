@@ -89,12 +89,21 @@ string fileName=(string) data.fileName;
          // Setup blob container
         CloudBlobContainer sourceBlobContainer = GetCloudBlobContainer(_sourceStorageAccountName, _sourceStorageAccountKey, (string)data.sourceContainer);
         CloudBlobContainer destinationBlobContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, newAsset.Uri.Segments[1]);
-        //sourceBlobContainer.CreateIfNotExists();
+        sourceBlobContainer.CreateIfNotExists();
         // Copy Source Blob container into Destination Blob container that is associated with the asset.
         //CopyBlobsAsync(sourceBlobContainer, destinationBlobContainer, log);
          
               CloudBlob sourceBlob = sourceBlobContainer.GetBlockBlobReference(fileName);
          CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(fileName);
+ 
+ if (destinationBlobContainer.CreateIfNotExists())
+    {
+        destinationBlobContainer.SetPermissions(new BlobContainerPermissions
+        {
+            PublicAccess = BlobContainerPublicAccessType.Blob
+        });
+    }
+
          CopyBlobAsync(sourceBlob , destinationBlob);
     }
     catch (Exception ex)
