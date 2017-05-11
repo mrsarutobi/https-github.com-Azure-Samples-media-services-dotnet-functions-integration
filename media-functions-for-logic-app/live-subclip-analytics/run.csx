@@ -267,7 +267,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
                 var delta = (livetime - lastendtimeInTableValue - TimeSpan.FromSeconds(intervalsec)).Duration();
                 log.Info($"Delta: {delta}");
 
-                if (delta < (new TimeSpan(0, 0, 60))) // lest than 60 s
+                if (delta < (new TimeSpan(0, 10, 0))) // less than 10 min
                 {
                     starttime = lastendtimeInTableValue;
                     log.Info($"Value new starttime : {starttime}");
