@@ -86,6 +86,39 @@ Output:
 }
 ```
 
+### start-blob-copy-to-asset
+
+This function copy a file (blob) to a new asset previously created.
+```c#
+Input:
+{
+    "assetId" : "the Id of the asset where the file must be copied",
+    "fileName" : "filename.mp4",
+    "sourceStorageAccountName" : "",
+    "sourceStorageAccountKey": "",
+    "sourceContainer" : ""
+}
+Output:
+{
+ "destinationContainer": "" // container of asset
+}
+```
+
+### monitor-blob-copy-to-asset
+
+This function monitor the copy of files (blobs) to a new asset previously created.
+```c#
+Input:
+{
+      "destinationContainer" : "mycontainer",
+      "delay": 15000 // optional (default is 5000)
+}
+Output:
+{
+      "copyStatus": 2 // status
+}
+```
+
 ### sync-asset
 
 This function create the asset files based on the blobs in the asset container.

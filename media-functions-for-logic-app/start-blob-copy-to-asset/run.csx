@@ -51,24 +51,24 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     log.Info("Request : " + jsonContent);
 
     // Validate input objects
-      if (data.assetId == null)
+    if (data.assetId == null)
         return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass assetId in the input object" });
- 
+
     if (data.fileName == null)
         return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass fileName in the input object" });
     if (data.sourceStorageAccountName == null)
         return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass sourceStorageAccountName in the input object" });
     if (data.sourceStorageAccountKey == null)
         return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass sourceStorageAccountKey in the input object" });
-          if (data.sourceContainer == null)
+    if (data.sourceContainer == null)
         return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass sourceContainer in the input object" });
-   
-    log.Info("Input - fileName : " + data.fileName);
-     log.Info("Input - sourceStorageAccountName : " + data.sourceStorageAccountName);
-    log.Info("Input - sourceStorageAccountKey : " + data.sourceStorageAccountKey);
-       log.Info("Input - sourceContainer : " + data.sourceContainer);
 
-string fileName=(string) data.fileName;
+    log.Info("Input - fileName : " + data.fileName);
+    log.Info("Input - sourceStorageAccountName : " + data.sourceStorageAccountName);
+    log.Info("Input - sourceStorageAccountKey : " + data.sourceStorageAccountKey);
+    log.Info("Input - sourceContainer : " + data.sourceContainer);
+
+    string fileName = (string)data.fileName;
     string _sourceStorageAccountName = data.sourceStorageAccountName;
     string _sourceStorageAccountKey = data.sourceStorageAccountKey;
     string assetId = data.assetId;
@@ -82,29 +82,29 @@ string fileName=(string) data.fileName;
         _context = new CloudMediaContext(new MediaServicesCredentials(_mediaServicesAccountName, _mediaServicesAccountKey));
 
         // Find the Asset
-        newAsset = _context.Assets.Where(a=> a.Id == assetId).FirstOrDefault();
- if (newAsset == null)
-        return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Asset not found" });
+        newAsset = _context.Assets.Where(a => a.Id == assetId).FirstOrDefault();
+        if (newAsset == null)
+            return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Asset not found" });
 
-         // Setup blob container
+        // Setup blob container
         CloudBlobContainer sourceBlobContainer = GetCloudBlobContainer(_sourceStorageAccountName, _sourceStorageAccountKey, (string)data.sourceContainer);
         CloudBlobContainer destinationBlobContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, newAsset.Uri.Segments[1]);
         sourceBlobContainer.CreateIfNotExists();
         // Copy Source Blob container into Destination Blob container that is associated with the asset.
         //CopyBlobsAsync(sourceBlobContainer, destinationBlobContainer, log);
-         
-              CloudBlob sourceBlob = sourceBlobContainer.GetBlockBlobReference(fileName);
-         CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(fileName);
- 
- if (destinationBlobContainer.CreateIfNotExists())
-    {
-        destinationBlobContainer.SetPermissions(new BlobContainerPermissions
-        {
-            PublicAccess = BlobContainerPublicAccessType.Blob
-        });
-    }
 
-         CopyBlobAsync(sourceBlob , destinationBlob);
+        CloudBlob sourceBlob = sourceBlobContainer.GetBlockBlobReference(fileName);
+        CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(fileName);
+
+        if (destinationBlobContainer.CreateIfNotExists())
+        {
+            destinationBlobContainer.SetPermissions(new BlobContainerPermissions
+            {
+                PublicAccess = BlobContainerPublicAccessType.Blob
+            });
+        }
+
+        CopyBlobAsync(sourceBlob, destinationBlob);
     }
     catch (Exception ex)
     {
@@ -112,7 +112,7 @@ string fileName=(string) data.fileName;
         return req.CreateResponse(HttpStatusCode.BadRequest);
     }
 
- 
+
     return req.CreateResponse(HttpStatusCode.OK, new
     {
         destinationContainer = newAsset.Uri.Segments[1]

@@ -1,15 +1,14 @@
-﻿
-/*
+﻿/*
 This function monitor the copy of files (blobs) to a new asset previously created.
 
 Input:
 {
-      "destinationContainer" : "",
-    "delay": 15000 // optional
+      "destinationContainer" : "mycontainer",
+      "delay": 15000 // optional (default is 5000)
 }
 Output:
 {
- "copyStatus": 2 // container of asset
+      "copyStatus": 2 // status
 }
 
 */
