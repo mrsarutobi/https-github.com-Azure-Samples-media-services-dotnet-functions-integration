@@ -1,5 +1,5 @@
 ﻿/*
-This function create the asset files based on the blobs in the asset container.
+This function copy a file (blob) to a new asset previously created.
 
 Input:
 {
