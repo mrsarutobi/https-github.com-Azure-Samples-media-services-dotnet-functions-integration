@@ -18,11 +18,12 @@ Output:
     "runningDuration" : ""
     "extendedInfo" :            // if extendedInfo is true and job is finished or in error
     {
-        mediaUnitNumber = 2,
-        mediaUnitSize = "S2",
-        otherJobsProcessing = 2;
-        otherJobsScheduled = 1;
-        otherJobsQueue = 1;
+        "mediaUnitNumber" = 2,
+        "mediaUnitSize" = "S2",
+        "otherJobsProcessing" = 2,
+        "otherJobsScheduled" = 1,
+        "otherJobsQueue" = 1,
+        "amsAccountName" = "accountname"
     }
  }
 */
@@ -178,6 +179,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         stats.otherJobsProcessing = _context.Jobs.Where(j => j.State == JobState.Processing).Count();
         stats.otherJobsScheduled = _context.Jobs.Where(j => j.State == JobState.Scheduled).Count();
         stats.otherJobsQueue = _context.Jobs.Where(j => j.State == JobState.Queued).Count();
+        stats.amsAccountName = _mediaServicesAccountName;
 
         return req.CreateResponse(HttpStatusCode.OK, new
         {
