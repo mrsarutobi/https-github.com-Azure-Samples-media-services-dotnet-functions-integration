@@ -153,7 +153,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
             if (data.copyToContainer != null)
             {
-                copyToContainer = data.copyToContainer;
+                copyToContainer = data.copyToContainer + DateTime.UtcNow.ToString("yyyyMMdd");
                 // let's copy JPG to a container
                 prefixjpg = outputAsset.Uri.Segments[1] + "-";
                 log.Info($"prefixjpg {prefixjpg}");
