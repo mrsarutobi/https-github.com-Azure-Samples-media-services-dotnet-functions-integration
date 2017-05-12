@@ -129,7 +129,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         }
 
         asset.Update();
-        SetAFileAsPrimary(assetFile);
+        SetAFileAsPrimary(asset);
 
         log.Info("Asset updated");
     }
