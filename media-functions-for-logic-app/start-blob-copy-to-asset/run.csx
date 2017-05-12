@@ -4,7 +4,8 @@ This function copy a file (blob) to a new asset previously created.
 Input:
 {
     "assetId" : "the Id of the asset where the file must be copied",
-    "fileName" : "filename.mp4",
+    "fileName" : "filename.mp4", // use fileName or FileNames (if several files)
+    "fileNames" : [ "filename.mp4" , "filename2.mp4"],
     "sourceStorageAccountName" : "",
     "sourceStorageAccountKey": "",
     "sourceContainer" : ""
@@ -54,8 +55,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     if (data.assetId == null)
         return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass assetId in the input object" });
 
-    if (data.fileName == null)
-        return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass fileName in the input object" });
+    if (data.fileName == null && data.fileNames==null )
+        return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass fileName or fileNames in the input object" });
     if (data.sourceStorageAccountName == null)
         return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass sourceStorageAccountName in the input object" });
     if (data.sourceStorageAccountKey == null)
@@ -63,12 +64,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     if (data.sourceContainer == null)
         return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass sourceContainer in the input object" });
 
-    log.Info("Input - fileName : " + data.fileName);
-    log.Info("Input - sourceStorageAccountName : " + data.sourceStorageAccountName);
+     log.Info("Input - sourceStorageAccountName : " + data.sourceStorageAccountName);
     log.Info("Input - sourceStorageAccountKey : " + data.sourceStorageAccountKey);
     log.Info("Input - sourceContainer : " + data.sourceContainer);
 
-    string fileName = (string)data.fileName;
     string _sourceStorageAccountName = data.sourceStorageAccountName;
     string _sourceStorageAccountKey = data.sourceStorageAccountKey;
     string assetId = data.assetId;
@@ -90,21 +89,42 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         CloudBlobContainer sourceBlobContainer = GetCloudBlobContainer(_sourceStorageAccountName, _sourceStorageAccountKey, (string)data.sourceContainer);
         CloudBlobContainer destinationBlobContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, newAsset.Uri.Segments[1]);
         sourceBlobContainer.CreateIfNotExists();
-        // Copy Source Blob container into Destination Blob container that is associated with the asset.
-        //CopyBlobsAsync(sourceBlobContainer, destinationBlobContainer, log);
 
-        CloudBlob sourceBlob = sourceBlobContainer.GetBlockBlobReference(fileName);
-        CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(fileName);
-
-        if (destinationBlobContainer.CreateIfNotExists())
+        if (data.fileName!=null)
         {
-            destinationBlobContainer.SetPermissions(new BlobContainerPermissions
+            string fileName = (string)data.fileName;
+
+            CloudBlob sourceBlob = sourceBlobContainer.GetBlockBlobReference(fileName);
+            CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(fileName);
+
+            if (destinationBlobContainer.CreateIfNotExists())
             {
-                PublicAccess = BlobContainerPublicAccessType.Blob
-            });
+                destinationBlobContainer.SetPermissions(new BlobContainerPermissions
+                {
+                    PublicAccess = BlobContainerPublicAccessType.Blob
+                });
+            }
+            CopyBlobAsync(sourceBlob, destinationBlob);
         }
 
-        CopyBlobAsync(sourceBlob, destinationBlob);
+         if (data.fileNames!=null)
+        {
+            foreach (var file in data.fileNames)
+            {
+                string fileName = (string)file;
+                CloudBlob sourceBlob = sourceBlobContainer.GetBlockBlobReference(fileName);
+                CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(fileName);
+
+                if (destinationBlobContainer.CreateIfNotExists())
+                {
+                    destinationBlobContainer.SetPermissions(new BlobContainerPermissions
+                    {
+                        PublicAccess = BlobContainerPublicAccessType.Blob
+                    });
+                }
+                CopyBlobAsync(sourceBlob, destinationBlob);
+            }
+        }
     }
     catch (Exception ex)
     {
