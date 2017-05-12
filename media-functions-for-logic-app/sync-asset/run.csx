@@ -121,6 +121,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         {
             var assetFile = asset.AssetFiles.Create(blob.Name);
             assetFile.ContentFileSize = blob.Properties.Length;
+           
             //assetFile.IsPrimary = true;
             assetFile.Update();
             log.Info($"Asset file updated : {assetFile.Name}");
@@ -128,6 +129,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         }
 
         asset.Update();
+        SetAFileAsPrimary(assetFile);
 
         log.Info("Asset updated");
     }
@@ -144,6 +146,62 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     return req.CreateResponse(HttpStatusCode.OK);
 }
 
+
+ static public void SetAFileAsPrimary(IAsset asset)
+        {
+            var files = asset.AssetFiles.ToList();
+            var ismAssetFiles = files.
+                Where(f => f.Name.EndsWith(".ism", StringComparison.OrdinalIgnoreCase)).ToArray();
+
+            var mp4AssetFiles = files.
+            Where(f => f.Name.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)).ToArray();
+
+            if (ismAssetFiles.Count() != 0)
+            {
+                if (ismAssetFiles.Where(af => af.IsPrimary).ToList().Count == 0) // if there is a primary .ISM file
+                {
+                    try
+                    {
+                        ismAssetFiles.First().IsPrimary = true;
+                        ismAssetFiles.First().Update();
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+                }
+            }
+            else if (mp4AssetFiles.Count() != 0)
+            {
+                if (mp4AssetFiles.Where(af => af.IsPrimary).ToList().Count == 0) // if there is a primary .ISM file
+                {
+                    try
+                    {
+                        mp4AssetFiles.First().IsPrimary = true;
+                        mp4AssetFiles.First().Update();
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+                }
+            }
+            else
+            {
+                if (files.Where(af => af.IsPrimary).ToList().Count == 0) // if there is a primary .ISM file
+                {
+                    try
+                    {
+                        files.First().IsPrimary = true;
+                        files.First().Update();
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+                }
+            }
+        }
 
 
 
