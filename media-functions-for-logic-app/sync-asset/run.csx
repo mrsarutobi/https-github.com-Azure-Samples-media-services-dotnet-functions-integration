@@ -116,7 +116,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         var blobs = assetContainer.ListBlobs();
         log.Info($"blobs retrieved");
 
-
+log.Info($"blobs count : {blobs.Count()}");
         foreach (CloudBlockBlob blob in blobs)
         {
             var assetFile = asset.AssetFiles.Create(blob.Name);
