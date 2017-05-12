@@ -7,6 +7,7 @@ Input:
     "assetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", // Mandatory, Id of the source asset
     "mesPreset" : "Adaptive Streaming",         // Optional but required to encode with Media Encoder Standard (MES). If MESPreset contains an extension "H264 Multiple Bitrate 720p with thumbnail.json" then it loads this file from ..\Presets
     "workflowAssetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", // Optional, but required to encode the asset with Premium Workflow Encoder. Id for the workflow asset
+    "workflowConfig"  : ""                      // Optional. Premium Workflow Config for the task
     "indexV1Language" : "English",              // Optional but required to index the asset with Indexer v1
     "indexV2Language" : "EnUs",                 // Optional but required to index the asset with Indexer v2
     "ocrLanguage" : "AutoDetect" or "English",  // Optional but required to do OCR
@@ -265,6 +266,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             IMediaProcessor processorMEPW = GetLatestMediaProcessorByName("Media Encoder Premium Workflow");
 
             string premiumConfiguration = "";
+            if (data.workflowConfig!=null)
+            {
+                premiumConfiguration = (string) data.workflowConfig;
+            }
             // In some cases, a configuration can be loaded and passed it to the task to tuned the workflow
             // premiumConfiguration=File.ReadAllText(@"D:\home\site\wwwroot\Presets\SetRuntime.xml").Replace("VideoFileName", VideoFile.Name).Replace("AudioFileName", AudioFile.Name);
 
