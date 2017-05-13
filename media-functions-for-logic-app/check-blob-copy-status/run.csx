@@ -89,6 +89,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
     return req.CreateResponse(HttpStatusCode.OK, new
     {
-        copyStatus = copyStatus
+        copyStatus = copyStatus,
+        isRunning = (copyStatus == CopyStatus.Pending).ToString(),
+        isSuccessful = (copyStatus == CopyStatus.Success).ToString()
     });
 }
