@@ -118,10 +118,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
         log.Info($"blobs count : {blobs.Count()}");
 
-        var aflist = asset.AssetFiles.Select(af => af.Name).ToList();
+        var aflist = asset.AssetFiles.ToList().Select(af => af.Name);
 
         foreach (CloudBlockBlob blob in blobs)
-        {
+        {.
             if (aflist.Contains(blob.Name))
             {
                 var assetFile = asset.AssetFiles.Where(af => af.Name == blob.Name).FirstOrDefault();
