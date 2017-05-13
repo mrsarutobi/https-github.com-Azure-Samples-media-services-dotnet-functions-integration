@@ -116,16 +116,26 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         var blobs = assetContainer.ListBlobs();
         log.Info($"blobs retrieved");
 
-log.Info($"blobs count : {blobs.Count()}");
+        log.Info($"blobs count : {blobs.Count()}");
+
+        var aflist = asset.AssetFiles.Select(af => af.Name).ToList();
+
         foreach (CloudBlockBlob blob in blobs)
         {
-            var assetFile = asset.AssetFiles.Create(blob.Name);
-            assetFile.ContentFileSize = blob.Properties.Length;
-           
-            //assetFile.IsPrimary = true;
-            assetFile.Update();
-            log.Info($"Asset file updated : {assetFile.Name}");
-
+            if (aflist.Contains(blob.Name))
+            {
+                var assetFile = asset.AssetFiles.Where(af => af.Name == blob.Name).FirstOrDefault();
+                assetFile.ContentFileSize = blob.Properties.Length;
+                assetFile.Update();
+                log.Info($"Asset file updated : {assetFile.Name}");
+            }
+            else
+            {
+                var assetFile = asset.AssetFiles.Create(blob.Name);
+                assetFile.ContentFileSize = blob.Properties.Length;
+                assetFile.Update();
+                log.Info($"Asset file created : {assetFile.Name}");
+            }
         }
 
         asset.Update();
@@ -147,61 +157,61 @@ log.Info($"blobs count : {blobs.Count()}");
 }
 
 
- static public void SetAFileAsPrimary(IAsset asset)
+static public void SetAFileAsPrimary(IAsset asset)
+{
+    var files = asset.AssetFiles.ToList();
+    var ismAssetFiles = files.
+        Where(f => f.Name.EndsWith(".ism", StringComparison.OrdinalIgnoreCase)).ToArray();
+
+    var mp4AssetFiles = files.
+    Where(f => f.Name.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)).ToArray();
+
+    if (ismAssetFiles.Count() != 0)
+    {
+        if (ismAssetFiles.Where(af => af.IsPrimary).ToList().Count == 0) // if there is a primary .ISM file
         {
-            var files = asset.AssetFiles.ToList();
-            var ismAssetFiles = files.
-                Where(f => f.Name.EndsWith(".ism", StringComparison.OrdinalIgnoreCase)).ToArray();
-
-            var mp4AssetFiles = files.
-            Where(f => f.Name.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)).ToArray();
-
-            if (ismAssetFiles.Count() != 0)
+            try
             {
-                if (ismAssetFiles.Where(af => af.IsPrimary).ToList().Count == 0) // if there is a primary .ISM file
-                {
-                    try
-                    {
-                        ismAssetFiles.First().IsPrimary = true;
-                        ismAssetFiles.First().Update();
-                    }
-                    catch
-                    {
-                        throw;
-                    }
-                }
+                ismAssetFiles.First().IsPrimary = true;
+                ismAssetFiles.First().Update();
             }
-            else if (mp4AssetFiles.Count() != 0)
+            catch
             {
-                if (mp4AssetFiles.Where(af => af.IsPrimary).ToList().Count == 0) // if there is a primary .ISM file
-                {
-                    try
-                    {
-                        mp4AssetFiles.First().IsPrimary = true;
-                        mp4AssetFiles.First().Update();
-                    }
-                    catch
-                    {
-                        throw;
-                    }
-                }
-            }
-            else
-            {
-                if (files.Where(af => af.IsPrimary).ToList().Count == 0) // if there is a primary .ISM file
-                {
-                    try
-                    {
-                        files.First().IsPrimary = true;
-                        files.First().Update();
-                    }
-                    catch
-                    {
-                        throw;
-                    }
-                }
+                throw;
             }
         }
+    }
+    else if (mp4AssetFiles.Count() != 0)
+    {
+        if (mp4AssetFiles.Where(af => af.IsPrimary).ToList().Count == 0) // if there is a primary .ISM file
+        {
+            try
+            {
+                mp4AssetFiles.First().IsPrimary = true;
+                mp4AssetFiles.First().Update();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+    }
+    else
+    {
+        if (files.Where(af => af.IsPrimary).ToList().Count == 0) // if there is a primary .ISM file
+        {
+            try
+            {
+                files.First().IsPrimary = true;
+                files.First().Update();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+    }
+}
 
 
 
