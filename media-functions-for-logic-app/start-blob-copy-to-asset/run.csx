@@ -1,10 +1,10 @@
 ﻿/*
-This function copy a file (blob) to a new asset previously created.
+This function copy a file (blob) or several blobs to a new asset previously created.
 
 Input:
 {
     "assetId" : "the Id of the asset where the file must be copied",
-    "fileName" : "filename.mp4", // use fileName or FileNames (if several files)
+    "fileName" : "filename.mp4", // use fileName if one file, or FileNames if several files
     "fileNames" : [ "filename.mp4" , "filename2.mp4"],
     "sourceStorageAccountName" : "",
     "sourceStorageAccountKey": "",
@@ -55,7 +55,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     if (data.assetId == null)
         return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass assetId in the input object" });
 
-    if (data.fileName == null && data.fileNames==null )
+    if (data.fileName == null && data.fileNames == null)
         return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass fileName or fileNames in the input object" });
     if (data.sourceStorageAccountName == null)
         return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass sourceStorageAccountName in the input object" });
@@ -64,7 +64,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     if (data.sourceContainer == null)
         return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass sourceContainer in the input object" });
 
-     log.Info("Input - sourceStorageAccountName : " + data.sourceStorageAccountName);
+    log.Info("Input - sourceStorageAccountName : " + data.sourceStorageAccountName);
     log.Info("Input - sourceStorageAccountKey : " + data.sourceStorageAccountKey);
     log.Info("Input - sourceContainer : " + data.sourceContainer);
 
@@ -90,7 +90,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         CloudBlobContainer destinationBlobContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, newAsset.Uri.Segments[1]);
         sourceBlobContainer.CreateIfNotExists();
 
-        if (data.fileName!=null)
+        if (data.fileName != null)
         {
             string fileName = (string)data.fileName;
 
@@ -99,6 +99,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
             if (destinationBlobContainer.CreateIfNotExists())
             {
+                log.Info("container created");
                 destinationBlobContainer.SetPermissions(new BlobContainerPermissions
                 {
                     PublicAccess = BlobContainerPublicAccessType.Blob
@@ -107,7 +108,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             CopyBlobAsync(sourceBlob, destinationBlob);
         }
 
-         if (data.fileNames!=null)
+        if (data.fileNames != null)
         {
             foreach (var file in data.fileNames)
             {
@@ -117,6 +118,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
                 if (destinationBlobContainer.CreateIfNotExists())
                 {
+                    log.Info("container created");
                     destinationBlobContainer.SetPermissions(new BlobContainerPermissions
                     {
                         PublicAccess = BlobContainerPublicAccessType.Blob
