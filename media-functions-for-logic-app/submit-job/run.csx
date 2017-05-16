@@ -18,6 +18,7 @@ Input:
     "hyperlapseSpeed" : "8",                    // Optional, required to hyperlapse the video
     "priority" : 10,                            // Optional, priority of the job
     "useEncoderOutputForAnalytics" : true       // Optional, use generated asset by MES or Premium Workflow as a source for media analytics
+    "jobName" : ""                              // Optional, job name
 }
 
 Output:
@@ -196,7 +197,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         {
             priority = (int)data.priority;
         }
-        job = _context.Jobs.Create("Azure Functions Job", priority);
+        job = _context.Jobs.Create(data.jobName ?? "Azure Functions Job", priority);
 
         if (data.mesPreset != null)  // MES Task
         {
