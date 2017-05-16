@@ -10,7 +10,6 @@ Input:
 }
 Output:
 {
- "destinationContainer": "" // container of asset
 }
 
 */
@@ -100,9 +99,5 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         return req.CreateResponse(HttpStatusCode.BadRequest);
     }
 
-
-    return req.CreateResponse(HttpStatusCode.OK, new
-    {
-        destinationContainer = ""
-    });
+    return req.CreateResponse(HttpStatusCode.OK);
 }
