@@ -197,7 +197,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         {
             priority = (int)data.priority;
         }
-        job = _context.Jobs.Create(data.jobName ?? "Azure Functions Job", priority);
+        job = _context.Jobs.Create(((string)data.jobName) ?? "Azure Functions Job", priority);
 
         if (data.mesPreset != null)  // MES Task
         {
