@@ -1,11 +1,13 @@
 ﻿/*
-This function monitor the copy of files (blobs) to a new asset previously created.
+This function monitor the copy of files (blobs) to a storage container.
 
 Input:
 {
-      "destinationContainer" : "mycontainer",
+     "targetStorageAccountName" : "",
+    "targetStorageAccountKey": "",
+    "targetContainer" : ""
       "delay": 15000 // optional (default is 5000)
-    
+      "fileName" :"video.mp4" // optional. To monitor only for a specific file name copy
 }
 Output:
 {
@@ -47,23 +49,39 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
     // Validate input objects
     int delay = 5000;
-    if (data.destinationContainer == null)
-        return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass DestinationContainer in the input object" });
+    if (data.targetStorageAccountName == null)
+        return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass targetStorageAccountName in the input object" });
+    if (data.targetStorageAccountKey == null)
+        return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass targetStorageAccountKey in the input object" });
+    if (data.targetContainer == null)
+        return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass targetContainer in the input object" });
     if (data.delay != null)
         delay = data.delay;
-    log.Info("Input - DestinationContainer : " + data.destinationContainer);
+    log.Info("Input - DestinationContainer : " + data.targetContainer);
     //log.Info("delay : " + delay);
 
     log.Info($"Wait " + delay + "(ms)");
     System.Threading.Thread.Sleep(delay);
 
+    string targetStorageAccountName = data.targetStorageAccountName;
+    string targetStorageAccountKey = data.targetStorageAccountKey;
+    string targetContainer = data.targetContainer;
+
+
     CopyStatus copyStatus = CopyStatus.Success;
     try
     {
-        string destinationContainerName = data.destinationContainer;
-        CloudBlobContainer destinationBlobContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, destinationContainerName);
+
+        CloudBlobContainer destinationBlobContainer = GetCloudBlobContainer(targetStorageAccountName, targetStorageAccountKey, targetContainer);
 
         string blobPrefix = null;
+
+        if (data.fileName != null)
+        {
+            blobPrefix = (string)data.fileName;
+            log.Info($"{blobPrefix}");
+        }
+
         bool useFlatBlobListing = true;
         var destBlobList = destinationBlobContainer.ListBlobs(blobPrefix, useFlatBlobListing, BlobListingDetails.Copy);
         foreach (var dest in destBlobList)
