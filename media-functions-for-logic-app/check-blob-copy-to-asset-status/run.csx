@@ -5,6 +5,7 @@ Input:
 {
       "destinationContainer" : "mycontainer",
       "delay": 15000 // optional (default is 5000)
+      "fileName" :"video.mp4" // optional. To monitor only for a specific file name copy
 }
 Output:
 {
@@ -60,7 +61,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         string destinationContainerName = data.destinationContainer;
         CloudBlobContainer destinationBlobContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, destinationContainerName);
 
-        string blobPrefix = null;
+        string blobPrefix = (string)data.fileName;  // null if no fileName was passed
         bool useFlatBlobListing = true;
         var destBlobList = destinationBlobContainer.ListBlobs(blobPrefix, useFlatBlobListing, BlobListingDetails.Copy);
         foreach (var dest in destBlobList)
