@@ -74,7 +74,8 @@ Output:
         "programId" = programid,
         "channelName" : "",
         "programName" : "",
-        "programUrl":""
+        "programUrl":"",
+        "otherJobsQueue" = 3 // number of jobs in the queue
 }
 */
 
@@ -143,6 +144,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     string programUrl = "";
     IJob job = null;
     ITask taskEncoding = null;
+    int NumberJobsQueue = 0;
+
 
     int intervalsec = 60; // Interval for each subclip job (sec). Default is 60
 
@@ -368,6 +371,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             programUrl = publishurlsmooth.ToString();
         }
 
+        NumberJobsQueue = _context.Jobs.Where(j => j.State == JobState.Queued).Count();
+
     }
     catch (Exception ex)
     {
@@ -437,7 +442,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         channelName = channelName,
         programName = programName,
         programId = programid,
-        programUrl = programUrl
+        programUrl = programUrl,
+        otherJobsQueue = NumberJobsQueue
     });
 }
 
