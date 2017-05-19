@@ -52,7 +52,7 @@ public static IEnumerable<Uri> GetValidURIs(IAsset asset)
         ValidURIs = locators.SelectMany(l =>
             se.Select(
                     o =>
-                        template.BindByPosition(new Uri("http://" + o.HostName), l.ContentAccessComponent,
+                        template.BindByPosition(new Uri("https://" + o.HostName), l.ContentAccessComponent,
                             ismFile.Name)))
             .ToArray();
 
@@ -93,7 +93,7 @@ public static IEnumerable<Uri> GetValidPaths(IAsset asset)
     var template = new UriTemplate("{contentAccessComponent}/");
     ValidURIs = locators.SelectMany(l => se.Select(
                 o =>
-                    template.BindByPosition(new Uri("http://" + o.HostName), l.ContentAccessComponent)))
+                    template.BindByPosition(new Uri("https://" + o.HostName), l.ContentAccessComponent)))
         .ToArray();
 
     return ValidURIs;
