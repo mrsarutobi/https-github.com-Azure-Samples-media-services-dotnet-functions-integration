@@ -109,7 +109,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         if (outputLocator2 != null && publishurlsmooth != null)
         {
             smoothUrl = publishurlsmooth.ToString();
-            playerUrl = "http://ampdemo.azureedge.net/?url=" + System.Web.HttpUtility.UrlEncode(smoothUrl);
+            playerUrl = "https://ampdemo.azureedge.net/?url=" + System.Web.HttpUtility.UrlEncode(smoothUrl);
             log.Info($"smooth url : {smoothUrl}");
         }
 
