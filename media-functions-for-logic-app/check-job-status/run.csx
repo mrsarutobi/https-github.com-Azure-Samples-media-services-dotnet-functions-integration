@@ -141,11 +141,11 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
         if (job.State == JobState.Error)
         {
-            foreach (var task in job.Tasks)
+            foreach (var taskenum in job.Tasks)
             {
-                foreach (var details in task.ErrorDetails)
+                foreach (var details in taskenum.ErrorDetails)
                 {
-                    sberror.AppendLine(task.Name + " : " + details.Message);
+                    sberror.AppendLine(taskenum.Name + " : " + details.Message);
                 }
             }
         }
