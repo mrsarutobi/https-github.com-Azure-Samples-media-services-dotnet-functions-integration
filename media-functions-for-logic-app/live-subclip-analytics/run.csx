@@ -332,7 +332,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         log.Info("Job Submitted");
 
         id++;
-        UpdateLastEndTime(table, starttime + duration, programid, id);
+        UpdateLastEndTime(table, starttime + duration, programid, id, program.State);
 
         log.Info($"Output MES index {OutputMES}");
 
@@ -455,11 +455,12 @@ public static EndTimeInTable RetrieveLastEndTime(CloudTable table, string progra
     return tableResult.Result as EndTimeInTable;
 }
 
-public static void UpdateLastEndTime(CloudTable table, TimeSpan endtime, string programId, int id)
+public static void UpdateLastEndTime(CloudTable table, TimeSpan endtime, string programId, int id, ProgramState state)
 {
     var EndTimeInTableEntity = new EndTimeInTable();
     EndTimeInTableEntity.ProgramId = programId;
     EndTimeInTableEntity.Id = id.ToString();
+    EndTimeInTableEntity.ProgramState = state.ToString();
     EndTimeInTableEntity.LastEndTime = endtime.ToString();
     EndTimeInTableEntity.AssignPartitionKey();
     EndTimeInTableEntity.AssignRowKey();
@@ -660,6 +661,7 @@ public class EndTimeInTable : TableEntity
     private string programId;
     private string lastendtime;
     private string id;
+    private string programState;
 
     public void AssignRowKey()
     {
@@ -703,6 +705,18 @@ public class EndTimeInTable : TableEntity
         set
         {
             id = value;
+        }
+    }
+    public string ProgramState
+    {
+        get
+        {
+            return programState;
+        }
+
+        set
+        {
+            programState = value;
         }
     }
 }
