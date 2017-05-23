@@ -156,11 +156,14 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             task = job.Tasks.Where(j => j.Id == taskid).FirstOrDefault();
         }
 
-        if (task.State == JobState.Error)
+        if (job.State == JobState.Error)
         {
-            foreach (var details in task.ErrorDetails)
+            foreach (var task in job.Tasks)
             {
-                sberror.AppendLine(details.Message);
+                foreach (var details in task.ErrorDetails)
+                {
+                    sberror.AppendLine(task.Name + " : " + details.Message);
+                }
             }
         }
 

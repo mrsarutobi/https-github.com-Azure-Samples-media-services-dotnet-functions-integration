@@ -145,7 +145,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             {
                 foreach (var details in task.ErrorDetails)
                 {
-                    sberror.AppendLine(details.Message);
+                    sberror.AppendLine(task.Name + " : " + details.Message);
                 }
             }
         }
