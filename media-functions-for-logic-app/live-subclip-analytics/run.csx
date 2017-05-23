@@ -75,6 +75,8 @@ Output:
         "channelName" : "",
         "programName" : "",
         "programUrl":"",
+        "programState" : "Running",
+        "programStateChanged" : "True", // if state changed since last call
         "otherJobsQueue" = 3 // number of jobs in the queue
 }
 */
@@ -142,6 +144,9 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     string programName = "";
     string channelName = "";
     string programUrl = "";
+    string programState = "";
+    string lastProgramState = "";
+
     IJob job = null;
     ITask taskEncoding = null;
     int NumberJobsQueue = 0;
@@ -208,6 +213,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             });
         }
 
+        programState = program.State.ToString();
         programid = program.Id;
         var asset = GetAssetFromProgram(programid);
 
@@ -259,6 +265,9 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
         if (lastendtimeInTable != null)
         {
+            lastProgramState = lastendtimeInTable.ProgramState;
+            log.Info($"Value ProgramState retrieved : {lastProgramState}");
+
             var lastendtimeInTableValue = TimeSpan.Parse(lastendtimeInTable.LastEndTime);
             log.Info($"Value lastendtimeInTable retrieved : {lastendtimeInTableValue}");
 
@@ -443,6 +452,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         programName = programName,
         programId = programid,
         programUrl = programUrl,
+        programState = programState,
+        programStateChanged = (lastProgramState != programState).ToString(),
         otherJobsQueue = NumberJobsQueue
     });
 }
