@@ -6,7 +6,9 @@ Input:
     "assetFaceRedactionId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Id of the source asset that contains media analytics (face redaction)
     "assetMotionDetectionId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b",  // Id of the source asset that contains media analytics (motion detection)
     "timeOffset" :"00:01:00", // optional, offset to add to subtitles (used for live analytics)
-    "copyToContainer" : "jpgfaces" // Optional, to copy jpg files to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions
+    "copyToContainer" : "jpgfaces" // Optional, to copy jpg files to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
+    "copyToContainerAccountName" : "jhggjgghggkj" // storage account name. optional. if not provided, ams storage account is used
+    "copyToContainerAccountKey" "" // storage account key
     "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
  }
 
@@ -151,6 +153,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
                 log.Info($"Asset not published");
             }
 
+            // Let's copy the JPG faces
             if (data.copyToContainer != null)
             {
                 copyToContainer = data.copyToContainer + DateTime.UtcNow.ToString("yyyyMMdd");
@@ -158,7 +161,19 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
                 prefixjpg = outputAsset.Uri.Segments[1] + "-";
                 log.Info($"prefixjpg {prefixjpg}");
                 var sourceContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, outputAsset.Uri.Segments[1]);
-                var targetContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, copyToContainer);
+
+                CloudBlobContainer targetContainer;
+                if (data.copyToContainerAccountName != null)
+                {
+                    // copy to a specific storage account
+                    targetContainer = GetCloudBlobContainer((string)data.copyToContainerAccountName, (string)data.copyToContainerAccountKey, copyToContainer);
+                }
+                else
+                {
+                    // copy to ams storage account
+                    targetContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, copyToContainer);
+                }
+
                 CopyJPGsAsync(sourceContainer, targetContainer, prefixjpg, log);
                 targetContainerUri = targetContainer.Uri.ToString();
             }
