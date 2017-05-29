@@ -46,11 +46,22 @@ To enable streaming, go to the Azure portal, select the Azure Media Services acc
 
 ![Screen capture](images/start-se-2.png?raw=true)
 
-## Second Logic App : An advanced VOD workflow
+## Second Logic App : using Azure Storage container
+
+This is the same workflow that the first logic app but with two main differences:
+- the source which is monitored is an Azure Storage container
+- the asset creation / blob copy is done through Azure functions to workaround the limitation of 50 MB
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp1-bis-deploy.json" target="_blank">
+    <img src="http://azuredeploy.net/deploybutton.png"/>
+</a>
+
+
+## Third Logic App : An advanced VOD workflow
 
 This template creates a Logic app which
 
-* listens to an onedrive folder,
+* listens to a folder in Onedrive,
 * copy it to an Azure Media Services asset,
 * triggers an encoding job,
 * converts the English audio to text (using Media Indexer v2),
@@ -58,7 +69,7 @@ This template creates a Logic app which
 * copies back the French subtitles to the subtitles asset,
 * publishes the output assets,
 * generates a short playback URL (using bitlink)
-* sends an email with Office365 when the process is complete or if the job failed. In the email, the playback link includes the two subtitles.
+* sends an email with Outlook when the process is complete or if the job failed. In the email, the playback link includes the two subtitles.
 
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp2-advancedvod-deploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
@@ -104,7 +115,7 @@ Output:
 }
 ```
 
-### monitor-blob-copy-to-asset
+### check-blob-copy-to-asset-status
 
 This function monitor the copy of files (blobs) to a new asset previously created.
 ```c#
@@ -116,6 +127,8 @@ Input:
 Output:
 {
       "copyStatus": 2 // status
+      "isRunning" : "True"
+      "isSuccessful" : "False"
 }
 ```
 
@@ -148,6 +161,7 @@ Input:
     "hyperlapseSpeed" : "8",                    // Optional, required to hyperlapse the video
     "priority" : 10,                            // Optional, priority of the job
     "useEncoderOutputForAnalytics" : true       // Optional, use generated asset by MES or Premium Workflow as a source for media analytics (except hyperlapse)
+    "jobName" : ""                              // Optional, job name
 }
 
 Output:
@@ -229,11 +243,12 @@ Output:
     "runningDuration" : ""
     "extendedInfo" :			// if extendedInfo is true and job is finished or in error
     {
-        mediaUnitNumber = 2,
-        mediaUnitSize = "S2",
-        otherJobsProcessing = 2;
-        otherJobsScheduled = 1;
-        otherJobsQueue = 1;
+        "mediaUnitNumber" = 2,
+        "mediaUnitSize" = "S2",
+        "otherJobsProcessing" = 2,
+        "otherJobsScheduled" = 1,
+        "otherJobsQueue" = 1,
+        "amsAccountName" = "accountname"
     }
  }
 ```
@@ -260,11 +275,12 @@ Output:
     "runningDuration" : ""
     "extendedInfo" :			// if extendedInfo is true and job is finished or in error
     {
-        mediaUnitNumber = 2,
-        mediaUnitSize = "S2",
-        otherJobsProcessing = 2;
-        otherJobsScheduled = 1;
-        otherJobsQueue = 1;
+       "mediaUnitNumber" = 2,
+        "mediaUnitSize" = "S2",
+        "otherJobsProcessing" = 2,
+        "otherJobsScheduled" = 1,
+        "otherJobsQueue" = 1,
+        "amsAccountName" = "accountname"
     }
  }
 ```
@@ -447,6 +463,9 @@ Output:
         "programId" = programid,
         "channelName" : "",
         "programName" : "",
-        "programUrl":""
+        "programUrl" : "",
+        "programState" : "Running",
+        "programStateChanged" : "True", // if state changed since last call
+        "otherJobsQueue" = 3 // number of jobs in the queue
 }
 ```
