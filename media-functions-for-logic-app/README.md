@@ -52,17 +52,18 @@ This is the same workflow that the first logic app but with two main differences
 - the source which is monitored is an Azure Storage container
 - the asset creation / blob copy is done through Azure functions to workaround the limitation of 50 MB
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp1-bis-deploy.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp2-simplevod-storage-deploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
+![Screen capture](images/logicapp2-1.png?raw=true)
 
 ## Third Logic App : An advanced VOD workflow
 
 This template creates a Logic app which
 
-* listens to a folder in Onedrive,
-* copy it to an Azure Media Services asset,
+* monitor a container in Azure Storage,
+* copy new file to an Azure Media Services asset,
 * triggers an encoding job,
 * converts the English audio to text (using Media Indexer v2),
 * translates the English subtitles to French (using Bing translator),
@@ -71,12 +72,13 @@ This template creates a Logic app which
 * generates a short playback URL (using bitlink)
 * sends an email with Outlook when the process is complete or if the job failed. In the email, the playback link includes the two subtitles.
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp2-advancedvod-deploy.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp3-advancedvod-deploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
-![Screen capture](images/logicapp2-advancedvod-1.png?raw=true)
-![Screen capture](images/logicapp2-advancedvod-2.png?raw=true)
+![Screen capture](images/logicapp3-advancedvod-1.png?raw=true)
+![Screen capture](images/logicapp3-advancedvod-2.png?raw=true)
+![Screen capture](images/logicapp3-advancedvod-3.png?raw=true)
 
 ## Functions documentation
 This section list the functions available and describes the input and output parameters.

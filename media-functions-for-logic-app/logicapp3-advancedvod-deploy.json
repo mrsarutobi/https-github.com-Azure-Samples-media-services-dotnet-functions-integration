@@ -1,0 +1,513 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "logicAppName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Name of the Logic App."
+      }
+    },
+    "functionsAppResourceGroup": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Name of resource group used by the functions app already deployed."
+      }
+    },
+    "functionsAppName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Name of the functions app already deployed."
+      }
+    },
+    "storageAccountNameForTheIngest": {
+      "type": "string",
+      "metadata": {
+        "description": "Storage account where videos must be copied to trigger the workflow."
+      }
+    },
+    "storageContainerToWatch": {
+      "type": "string",
+      "metadata": {
+        "description": "Container in the ingest storage where videos must be copied to trigger the workflow."
+      },
+      "defaultValue": "ingestvideos"
+    },
+    "outlookSendEmailTo": {
+      "type": "string",
+      "metadata": {
+        "description": "Email where the Outlook messages will be sent."
+      },
+      "defaultValue": "user@hotmail.com"
+    }
+  },
+  "variables": {
+    "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', trim(parameters('storageAccountNameForTheIngest')))]",
+    "logicAppLocation": "[resourceGroup().location]",
+    "outlook_3_Connection_Name": "outlook-2",
+    "outlook_3_Connection_DisplayName": "outlook-2",
+    "bitly_3_Connection_Name": "bitly-2",
+    "bitly_3_Connection_DisplayName": "bitly-2",
+    "azureblob_3_Connection_Name": "azureblob-2",
+    "azureblob_3_Connection_DisplayName": "[parameters('storageAccountNameForTheIngest')]",
+    "microsofttranslator_3_Connection_Name": "translator-2",
+    "microsofttranslator_3_Connection_DisplayName": "translator-2",
+    "trimlogicAppName": "[trim(parameters('logicAppName'))]",
+    "trimfunctionsAppName": "[trim(parameters('functionsAppName'))]",
+    "trimstorageAccountNameForTheIngest": "[trim(parameters('storageAccountNameForTheIngest'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2016-06-01",
+      "name": "[parameters('logicAppName')]",
+      "location": "[variables('logicAppLocation')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/connections', variables('microsofttranslator_3_Connection_Name'))]",
+        "[resourceId('Microsoft.Web/connections', variables('azureblob_3_Connection_Name'))]",
+        "[resourceId('Microsoft.Web/connections', variables('bitly_3_Connection_Name'))]",
+        "[resourceId('Microsoft.Web/connections', variables('outlook_3_Connection_Name'))]"
+      ],
+      "properties": {
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            }
+          },
+          "triggers": {
+            "When_one_or_more_blobs_are_added_or_modified_(metadata_only)": {
+              "recurrence": {
+                "frequency": "Minute",
+                "interval": 3
+              },
+              "splitOn": "@triggerBody()",
+              "metadata": {
+                "L2luZ2VzdA==": "[concat('/',parameters('storageContainerToWatch'))]"
+              },
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['azureblob']['connectionId']"
+                  }
+                },
+                "method": "get",
+                "path": "/datasets/default/triggers/batch/onupdatedfile",
+                "queries": {
+                  "folderId": "L2luZ2VzdA==",
+                  "maxFileCount": 10
+                }
+              }
+            }
+          },
+          "actions": {
+            "Condition": {
+              "actions": {
+                "Create_a_bitlink": {
+                  "runAfter": {
+                    "add-textfile-to-asset": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['bitly']['connectionId']"
+                      }
+                    },
+                    "method": "get",
+                    "path": "/shorten",
+                    "queries": {
+                      "longUrl": "@{body('publish-asset')['playerUrl']}&subtitles=English,en,@{body('return-subtitles')['vttUrl']};French,fr,@{body('publish-subtitles-asset')['pathUrl']}french.vtt"
+                    }
+                  }
+                },
+                "HTTP_Get_Thumbnail": {
+                  "runAfter": {
+                    "return-subtitles": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Http",
+                  "inputs": {
+                    "method": "GET",
+                    "uri": "@{body('publish-asset')['pathUrl']}Thumbnail_000001.png"
+                  }
+                },
+                "Send_an_email_success": {
+                  "runAfter": {
+                    "Create_a_bitlink": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "body": {
+                      "Attachments": [
+                        {
+                          "ContentBytes": "@{base64(body('HTTP_Get_Thumbnail'))}",
+                          "Name": "Thumbnail.png"
+                        }
+                      ],
+                      "Body": "<html><body><strong>There is a new video encoded</strong><p><a href=\"@{body('Create_a_bitlink')['url']}\"><img src=\"cid:Thumbnail.png\"></p><p><a href=\"@{body('Create_a_bitlink')['url']}\">Playback the video</a></p><p><a href=\"@{body('return-subtitles')['vttUrl']}\">Download Subtitles (English)</a></p><p><a href=\"@{body('publish-subtitles-asset')['pathUrl']}french.vtt\">Download Subtitles (French)</a></p></body></html>",
+                      "IsHtml": true,
+                      "Subject": "Video Publish is Complete!",
+                      "To": "[parameters('outlookSendEmailTo')]"
+                    },
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['outlook']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/Mail"
+                  }
+                },
+                "Translate_text": {
+                  "runAfter": {
+                    "HTTP_Get_Thumbnail": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['microsofttranslator']['connectionId']"
+                      }
+                    },
+                    "method": "get",
+                    "path": "/Translate",
+                    "queries": {
+                      "languageTo": "fr",
+                      "query": "@{body('return-subtitles')['vttDocument']}"
+                    }
+                  }
+                },
+                "add-textfile-to-asset": {
+                  "runAfter": {
+                    "Translate_text": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Function",
+                  "inputs": {
+                    "body": {
+                      "assetId": "@{body('submit-job')['indexV2']['assetId']}",
+                      "convertTtml": false,
+                      "document": "@{body('Translate_text')}",
+                      "fileName": "french.vtt"
+                    },
+                    "function": {
+                      "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', variables('trimfunctionsAppName'),'/functions/add-textfile-to-asset')]"
+                    }
+                  }
+                },
+                "publish-asset": {
+                  "runAfter": {},
+                  "type": "Function",
+                  "inputs": {
+                    "body": {
+                      "assetId": "@{body('submit-job')['mes']['assetId']}"
+                    },
+                    "function": {
+                      "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', variables('trimfunctionsAppName'),'/functions/publish-asset')]"
+                    }
+                  }
+                },
+                "publish-subtitles-asset": {
+                  "runAfter": {
+                    "publish-asset": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Function",
+                  "inputs": {
+                    "body": {
+                      "assetId": "@{body('submit-job')['indexV2']['assetId']}"
+                    },
+                    "function": {
+                      "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', variables('trimfunctionsAppName'),'/functions/publish-asset')]"
+                    }
+                  }
+                },
+                "return-subtitles": {
+                  "runAfter": {
+                    "publish-subtitles-asset": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Function",
+                  "inputs": {
+                    "body": {
+                      "assetId": "@{body('submit-job')['indexV2']['assetId']}"
+                    },
+                    "function": {
+                      "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', variables('trimfunctionsAppName'),'/functions/return-subtitles')]"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Until": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Send_an_error_email": {
+                    "runAfter": {},
+                    "type": "ApiConnection",
+                    "inputs": {
+                      "body": {
+                        "Body": "There is a job error when processing file @{triggerOutputs()['headers']['x-ms-file-name']}. Error is : @{body('check-job-status')['errorText']}",
+                        "Subject": "Job error",
+                        "To": "[parameters('outlookSendEmailTo')]"
+                      },
+                      "host": {
+                        "connection": {
+                          "name": "@parameters('$connections')['outlook']['connectionId']"
+                        }
+                      },
+                      "method": "post",
+                      "path": "/Mail"
+                    }
+                  },
+                  "Terminate": {
+                    "runAfter": {
+                      "Send_an_error_email": [
+                        "Succeeded"
+                      ]
+                    },
+                    "type": "Terminate",
+                    "inputs": {
+                      "runError": {},
+                      "runStatus": "Failed"
+                    }
+                  }
+                }
+              },
+              "expression": "@equals(body('check-job-status')['isSuccessful'], 'True')",
+              "type": "If"
+            },
+            "Until": {
+              "actions": {
+                "check-job-status": {
+                  "runAfter": {},
+                  "type": "Function",
+                  "inputs": {
+                    "body": {
+                      "jobId": "@{body('submit-job')['jobId']}"
+                    },
+                    "function": {
+                      "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', variables('trimfunctionsAppName'),'/functions/check-job-status')]"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "submit-job": [
+                  "Succeeded"
+                ]
+              },
+              "expression": "@equals(body('check-job-status')['isRunning'], 'False')",
+              "limit": {
+                "count": 600,
+                "timeout": "PT2H"
+              },
+              "type": "Until"
+            },
+            "Until_copy_finishes": {
+              "actions": {
+                "check-blob-copy-to-asset-status": {
+                  "runAfter": {},
+                  "type": "Function",
+                  "inputs": {
+                    "body": {
+                      "destinationContainer": "@{body('create-empty-asset')['containerPath']}"
+                    },
+                    "function": {
+                      "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', variables('trimfunctionsAppName'),'/functions/check-blob-copy-to-asset-status')]"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "start-blob-copy-to-asset": [
+                  "Succeeded"
+                ]
+              },
+              "expression": "@equals(body('check-blob-copy-to-asset-status')['isRunning'], 'False')",
+              "limit": {
+                "count": 600,
+                "timeout": "PT2H"
+              },
+              "type": "Until"
+            },
+            "create-empty-asset": {
+              "runAfter": {},
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "assetName": "@triggerBody()?['DisplayName']"
+                },
+                "function": {
+                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', variables('trimfunctionsAppName'),'/functions/create-empty-asset')]"
+                }
+              }
+            },
+            "start-blob-copy-to-asset": {
+              "runAfter": {
+                "create-empty-asset": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "assetId": "@{body('create-empty-asset')['assetId']}",
+                  "fileName": "@{triggerBody()?['DisplayName']}",
+                  "sourceContainer": "@{split(triggerBody()?['Path'],'/')[1]}",
+                  "sourceStorageAccountKey": "[listKeys(variables('storageAccountid'),'2015-05-01-preview').key1]",
+                  "sourceStorageAccountName": "[variables('trimstorageAccountNameForTheIngest')]"
+                },
+                "function": {
+                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', variables('trimfunctionsAppName'),'/functions/start-blob-copy-to-asset')]"
+                }
+              }
+            },
+            "submit-job": {
+              "runAfter": {
+                "sync-asset": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "assetId": "@{body('create-empty-asset')['assetId']}",
+                  "indexV2Language": "EnUs",
+                  "mesPreset": "H264 Multiple Bitrate 720p with thumbnail.json",
+                  "useEncoderOutputForAnalytics": true
+                },
+                "function": {
+                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', variables('trimfunctionsAppName'),'/functions/submit-job')]"
+                }
+              }
+            },
+            "sync-asset": {
+              "runAfter": {
+                "Until_copy_finishes": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "assetId": "@{body('create-empty-asset')['assetId']}"
+                },
+                "function": {
+                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', variables('trimfunctionsAppName'),'/functions/sync-asset')]"
+                }
+              }
+            }
+          },
+          "outputs": {}
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "azureblob": {
+                "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/', variables('logicAppLocation'), '/managedApis/azureblob')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', variables('azureblob_3_Connection_Name'))]",
+                "connectionName": "[variables('azureblob_3_Connection_Name')]"
+              },
+              "bitly": {
+                "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/', variables('logicAppLocation'), '/managedApis/bitly')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', variables('bitly_3_Connection_Name'))]",
+                "connectionName": "[variables('bitly_3_Connection_Name')]"
+              },
+              "outlook": {
+                "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/', variables('logicAppLocation'), '/managedApis/outlook')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', variables('outlook_3_Connection_Name'))]",
+                "connectionName": "[variables('outlook_3_Connection_Name')]"
+              },
+              "microsofttranslator": {
+                "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/', variables('logicAppLocation'), '/managedApis/microsofttranslator')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', variables('microsofttranslator_3_Connection_Name'))]",
+                "connectionName": "[variables('microsofttranslator_3_Connection_Name')]"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Web/connections",
+      "apiVersion": "2016-06-01",
+      "location": "[variables('logicAppLocation')]",
+      "name": "[variables('outlook_3_Connection_Name')]",
+      "properties": {
+        "api": {
+          "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/', variables('logicAppLocation'), '/managedApis/outlook')]"
+        },
+        "displayName": "[variables('outlook_3_Connection_DisplayName')]",
+        "parameterValues": {}
+      }
+    },
+    {
+      "type": "Microsoft.Web/connections",
+      "apiVersion": "2016-06-01",
+      "location": "[variables('logicAppLocation')]",
+      "name": "[variables('microsofttranslator_3_Connection_Name')]",
+      "properties": {
+        "api": {
+          "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/', variables('logicAppLocation'), '/managedApis/microsofttranslator')]"
+        },
+        "displayName": "[variables('microsofttranslator_3_Connection_DisplayName')]",
+        "parameterValues": {}
+      }
+    },
+    {
+      "type": "Microsoft.Web/connections",
+      "apiVersion": "2016-06-01",
+      "location": "[variables('logicAppLocation')]",
+      "name": "[variables('bitly_3_Connection_Name')]",
+      "properties": {
+        "api": {
+          "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/', variables('logicAppLocation'), '/managedApis/bitly')]"
+        },
+        "displayName": "[variables('bitly_3_Connection_DisplayName')]",
+        "parameterValues": {}
+      }
+    },
+    {
+      "type": "Microsoft.Web/connections",
+      "apiVersion": "2016-06-01",
+      "location": "[variables('logicAppLocation')]",
+      "name": "[variables('azureblob_3_Connection_Name')]",
+      "properties": {
+        "api": {
+          "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/', variables('logicAppLocation'), '/managedApis/azureblob')]"
+        },
+        "displayName": "[variables('azureblob_3_Connection_DisplayName')]",
+        "parameterValues": {
+          "accountName": "[variables('trimstorageAccountNameForTheIngest')]",
+          "accessKey": "[listKeys(variables('storageAccountid'),'2015-05-01-preview').key1]"
+        }
+      }
+    }
+  ],
+  "outputs": {}
+}
