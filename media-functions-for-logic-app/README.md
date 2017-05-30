@@ -46,11 +46,11 @@ To enable streaming, go to the Azure portal, select the Azure Media Services acc
 
 ![Screen capture](images/start-se-2.png?raw=true)
 
-## Second Logic App : using Azure Storage container
+## Second Logic App : using Azure Storage trigger
 
-This is the same workflow that the first logic app but with two main differences:
-- the source which is monitored is an Azure Storage container
-- the asset creation / blob copy is done through Azure functions to workaround the limitation of 50 MB
+This is the same workflow that the first logic app with two main differences:
+- the source is monitored using blob trigger (new file coming to an Azure Storage container)
+- the asset creation / blob copy is done through Azure functions to workaround the limitation of 50 MB. These functions have been tested with 1.8 GB files.
 
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp2-simplevod-storage-deploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
@@ -62,8 +62,8 @@ This is the same workflow that the first logic app but with two main differences
 
 This template creates a Logic app which
 
-* monitor a container in Azure Storage,
-* copy new file to an Azure Media Services asset,
+* monitors a container in Azure Storage (blob trigger),
+* copies new file to an Azure Media Services asset,
 * triggers an encoding job,
 * converts the English audio to text (using Media Indexer v2),
 * translates the English subtitles to French (using Bing translator),
@@ -277,7 +277,7 @@ Output:
     "runningDuration" : ""
     "extendedInfo" :			// if extendedInfo is true and job is finished or in error
     {
-       "mediaUnitNumber" = 2,
+        "mediaUnitNumber" = 2,
         "mediaUnitSize" = "S2",
         "otherJobsProcessing" = 2,
         "otherJobsScheduled" = 1,
