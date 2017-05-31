@@ -327,6 +327,50 @@ Output:
  }
 ```
 
+### return-analytics
+
+his function returns media analytics from an asset.
+```c#
+Input:
+{
+    "assetFaceRedactionId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Id of the source asset that contains media analytics (face redaction)
+    "assetMotionDetectionId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b",  // Id of the source asset that contains media analytics (motion detection)
+    "assetOcrId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b",  // Id of the source asset that contains media analytics (OCR)
+    "timeOffset" :"00:01:00", // optional, offset to add to subtitles (used for live analytics)
+    "copyToContainer" : "jpgfaces" // Optional, to copy jpg files to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
+    "copyToContainerAccountName" : "jhggjgghggkj" // storage account name. optional. if not provided, ams storage account is used
+    "copyToContainerAccountKey" "" // storage account key
+    "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
+ }
+
+Output:
+{
+    "faceRedaction" :
+        {
+        "json" : "",      // the json of the face redaction
+        "jsonOffset" : "",      // the json of the face redaction with offset
+        "jpgFaces":[
+                {
+                    "id" :24,
+                    "fileId": "nb:cid:UUID:a93464ae-cbd5-4e63-9459-a3e2cf869f0e",
+                    "fileName": "ArchiveTopBitrate_video_800000_thumb000024.jpg",
+                    "url" : "http://xpouyatdemo.streaming.mediaservices.windows.net/903f9261-d745-48aa-8efd-ebcd6e6128d6/ArchiveTopBitrate_video_800000_thumb000024.jpg"
+                }
+                ]
+        "pathUrl" : "",     // the path to the asset if asset is published
+        },
+    "motionDetection":
+        {
+        "json" : "",      // the json of the face redaction
+        "jsonOffset" : ""      // the json of the face redaction with offset
+        }
+    "Ocr":
+        {
+        "json" : "",      // the json of the Ocr
+        "jsonOffset" : ""      // the json of Ocr with offset
+        }
+ }
+```
 
 ### add-textfile-to-asset
 
