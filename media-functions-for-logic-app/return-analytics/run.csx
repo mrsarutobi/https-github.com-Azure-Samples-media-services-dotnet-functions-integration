@@ -95,6 +95,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     dynamic objMotionDetection = new JObject();
     dynamic objMotionDetectionOffset = new JObject();
 
+    string jsonOcr = "";
+    dynamic objOcr = new JObject();
+    dynamic objOcrOffset = new JObject();
+
     string copyToContainer = "";
     string prefixjpg = "";
     string targetContainerUri = "";
