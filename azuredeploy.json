@@ -49,7 +49,7 @@
     "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
     "mediaServiceName": "[concat('media',uniqueString(resourceGroup().id))]",
     "storageAccountName": "[concat('storage',uniqueString(resourceGroup().id))]",
-    "hostingPlanName": "[concat(variables('functionsAppName'),concat('plan', uniqueString(resourceGroup().id)))]"
+    "hostingPlanName": "[concat(variables('functionsAppName'), 'plan')]"
   },
   "resources": [
     {
