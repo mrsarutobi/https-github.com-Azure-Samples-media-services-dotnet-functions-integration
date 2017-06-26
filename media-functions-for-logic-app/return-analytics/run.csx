@@ -108,7 +108,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
     log.Info(jsonContent);
 
-    if (data.assetFaceRedactionId == null && data.assetMotionDetectionId == null && assetOcrId == null)
+    if (data.assetFaceRedactionId == null && data.assetMotionDetectionId == null && data.assetOcrId == null)
     {
         // for test
         // data.assetId = "nb:cid:UUID:d9496372-32f5-430d-a4c6-d21ec3e01525";
