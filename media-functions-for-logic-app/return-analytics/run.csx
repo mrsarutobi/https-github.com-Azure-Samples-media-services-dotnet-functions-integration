@@ -108,14 +108,14 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
     log.Info(jsonContent);
 
-    if (data.assetFaceRedactionId == null && data.assetMotionDetectionId == null)
+    if (data.assetFaceRedactionId == null && data.assetMotionDetectionId == null && assetOcrId == null)
     {
         // for test
         // data.assetId = "nb:cid:UUID:d9496372-32f5-430d-a4c6-d21ec3e01525";
 
         return req.CreateResponse(HttpStatusCode.BadRequest, new
         {
-            error = "Please pass asset ID in the input object (assetFaceRedactionId and/or assetMotionDetectionId)"
+            error = "Please pass asset ID in the input object (assetFaceRedactionId and/or assetMotionDetectionId and/or assetOcrId)"
         });
     }
 
