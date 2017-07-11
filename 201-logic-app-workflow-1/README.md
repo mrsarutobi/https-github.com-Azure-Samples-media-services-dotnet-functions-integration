@@ -20,9 +20,10 @@ to ingesting content directly from blob storage, encoding, and writing content b
   <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fazuredeploy.json" target="_blank"><img src="http://azuredeploy.net/deploybutton.png"/></a>  
 
   * This deployment script will create an Azure Media Services account and an Azure Storage account 
-  * Please consider Consumption Plan or App Service Plan if you will deploy manually without the deployment script above
+  * Please consider Consumption Plan or App Service Plan if you will deploy manually
     * Consumption Plan – Timeout of function will be 5 mins
     * App Service Plan (Dedicated Plan) – There is no timeout (if AlwaysOn is enabled)
+  * If a deployment target resource group already contains an App Service Plan (Dedicated Plan), Azure Functions app will be contained in that App Service Plan (Dedicated Plan)
 3. Check App Settings of Azure Functions @ Azure Portal
   * Plaese makes sure if the following environment Key/Value pairs in the "App Settings" of your Azure Functions are correctly configured
 
@@ -40,103 +41,22 @@ to ingesting content directly from blob storage, encoding, and writing content b
 
   <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshigeyf%2Fmedia-services-dotnet-functions-integration%2Fmaster%2F201-logic-app-workflow-1%2Fazuredeploy-logic-app-workflow.json" target="_blank"><img src="http://azuredeploy.net/deploybutton.png"/></a>  
 
-  * This deployment script will create a Logic App which is using the deployed Azure Functions above
+  * This deployment script will create a Logic App which is using the Azure Functions deployed above
   * Please refer the next section if you will deploy manually
 6. Update both API Connection's credentials for Outlook and OneDrve accounts
 
 
-## Setup media workflow with Azure Logic Apps manually
-This media workflow sample functions are implemented as a set of Azure Functions.
-These functions are sequentially arranged and called in the Azure Logic Apps as a workflow.
-Many pre-defined APIs for Logic Apps which are already provided from Microsoft and 3rd party partners can be combined for your workflow.
-
-Here is an example of media workflow with Azure Logic Apps.
-
-#### Step 1) A sample logic is triggered by OneDrive file
-Use "OneDrive - When a file is created" action.
-* Specify a watch folder to where IngestAssetConfig JSON file is uploaded
-* Specify a frequecy to watch the specified watch folder 
-* Note that when multiple JSON files will be uploaded then multiple workflows will be triggered 
-
-![Screen capture](images/WorkflowSample-Step1.png?raw=true)
-
-#### Step 2) Import Asset (Create empty asset and copy blobs)
-Use Azure Function - **WF-1-CreateAsset-ImportAssetFromIngestAssetConfig**
-* Specify "OneDrive – File content" as "FileContent" input
-* Specify "OneDrive – File name" as "FileName" input
-
-![Screen capture](images/WorkflowSample-Step2.png?raw=true)
-
-#### Step 3) Wait for Copy Blobs
-Use "Until" loop with **WF-1-CreateAsset-MonitorCopyBlob**
-* Wait until when **WF-1-CreateAsset-MonitorCopyBlob** - "CopyStatus" *is equal to* "2"
-* Specify "WF-1-CreateAsset-ImportAssetFromIngestAssetConfig – DestinationContainer" as "DestinationContainer" input
-
-![Screen capture](images/WorkflowSample-Step3.png?raw=true)
-
-#### Step 4) Finalize Creating Asset
-Use Azure Function **WF-1-CreateAsset-UpdateFinal**
-* Specify "WF-1-CreateAsset-ImportAssetFromIngestAssetConfig – AssetId" as "AssetId" input
-* Specify "OneDrive – File content" as "IngestAssetConfigJson" input
-
-![Screen capture](images/WorkflowSample-Step4.png?raw=true)
-
-#### Step 5) Check if Media Processing is required
-Use "Condition"
-* Use "WF-1-CreateAsset-UpdateFinal – MediaProcessRequired" as "Condition" parameter
-* IF "MediaProcessRequired" *is greater than* "0", goto Step 6
-* IF NO, goto Step 7
-
-![Screen capture](images/WorkflowSample-Step5.png?raw=true)  
-![Screen capture](images/WorkflowSample-Step6-C1YES.png?raw=true)  
-![Screen capture](images/WorkflowSample-Step6-C2NO.png?raw=true)  
-
-#### Step 6-1) [Condition=YES] Encode Asset
-Use **WF-2-ProcessAsset-SubmitEncodingJob**
-* Specify "WF-1-CreateAsset-UpdateFinal – AssetId" as "AssetId" input
-* Specify "OneDrive – File content" as "IngestAssetConfigJson" input
-
-#### Step 6-2) [Condition=YES] Wait for Encoding Job
-Use "Until" loop with **WF-2-ProcessAsset-MonitorJob**
-* Wait until when **WF-2-ProcessAsset-SubmitEncodingJob** - "JobState" *is greater than* "2"
-* Specify "WF-2-ProcessAsset-SubmitEncodingJob – JobId" as "JobId"
-
-![Screen capture](images/WorkflowSample-Step6-C1YES-P1.png?raw=true)
-
-#### Step 6-3) [Condition=YES] Check if Encoding Job is successfully done 
-Use "Condition"
-* Use "WF-2-ProcessAsset-MonitorJob – JobState" as "Condition" parameter
-* IF "JobState" *is equal to* "3", goto Step 6-4
-
-![Screen capture](images/WorkflowSample-Step6-C1YES-P2.png?raw=true)
-
-#### Step 6-4) [Condition=YES] Send an email
-Use **WF-5-PublishAsset**
-* Specify "WF-2-ProcessAsset-SubmitEncodingJob – OutputAssetId" as "OutputAssetId" input
-* Specify "OneDrive – File content" as "IngestAssetConfigJson" input
-
-#### Step 6-5) [Condition=YES] Send an email
-Use "Outlook.com - Send an email" to send an email
-
-#### Step 7-1) [Condition=NO] Publish Asset
-Use **WF-5-PublishAsset**
-* Specify "WF-1-CreateAsset-ImportAssetFromIngestAssetConfig – AssetId" as "AssetId" input
-* Specify "OneDrive – File content" as "IngestAssetConfigJson" input
-
-![Screen capture](images/WorkflowSample-Step6-C2NO_Details.png?raw=true)
-
-#### Step 7-2) [Condition=NO] Send an email
-Use "Outlook.com - Send an email" to send an email
-
-
 ## Run workflow
-1. Upload a source asset to a source container of your Azure Blob Storage account (specified with **SourceStorageAccountName**)
-2. Create IngestAssetConfig JSON file
+1. Upload a source asset to a source container of your Azure Blob Storage account (specified with **SourceStorageAccountName** parameter in the deployment parameters)
+2. Create IngestAssetConfig JSON file or use a sample file.
 3. Run workflow
-  * Upload IngestAssetConfig JSON file to /AMSImports folder of OneDrive
-  * Workflow will be automatically triggered in configured minutes (default - 3 minutes)
+  * Upload IngestAssetConfig JSON file to /AMSImports folder of your OneDrive account
+  * Workflow will be automatically triggered in cevery onfigured duration (default - 3 minutes)
+
 
 ## Sample **IngestAssetConfig** JSON
+Some sample **IngestAssetConfig** JSON files are contained in *sample-configs* folder.
+
 * Example #1 - Single bitrate media file with encoding to a multi-bitrate asset
 ```
 {
@@ -228,6 +148,94 @@ Use "Outlook.com - Send an email" to send an email
     }
 }
 ```
+
+
+## Setup media workflow with Azure Logic Apps manually (optional)
+This media workflow sample functions are implemented as a set of Azure Functions.
+These functions are sequentially arranged and called in the Azure Logic Apps as a workflow.
+Many pre-defined APIs for Logic Apps which are already provided from Microsoft and 3rd party partners can be combined for your workflow.
+
+Here is an example of media workflow with Azure Logic Apps.
+
+#### Step 1) A sample logic is triggered by OneDrive file
+Use "OneDrive - When a file is created" action.
+* Specify a watch folder to where IngestAssetConfig JSON file is uploaded
+* Specify a frequecy to watch the specified watch folder 
+* Note that when multiple JSON files will be uploaded then multiple workflows will be triggered 
+
+![Screen capture](images/WorkflowSample-Step1.png?raw=true)
+
+#### Step 2) Import Asset (Create empty asset and copy blobs)
+Use Azure Function - **WF-1-CreateAsset-ImportAssetFromIngestAssetConfig**
+* Specify "OneDrive – File content" as "FileContent" input
+* Specify "OneDrive – File name" as "FileName" input
+* Specify Azure Blob Storage Account Name for your source assets as "SourceStorageAccountName" input
+* Specify Azure Blob Storage Account Key as "SourceStorageAccountKey" input
+
+![Screen capture](images/WorkflowSample-Step2.png?raw=true)
+
+#### Step 3) Wait for Copy Blobs
+Use "Until" loop with **WF-1-CreateAsset-MonitorCopyBlob**
+* Wait until when **WF-1-CreateAsset-MonitorCopyBlob** - "CopyStatus" *is equal to* "2"
+* Specify "WF-1-CreateAsset-ImportAssetFromIngestAssetConfig – DestinationContainer" as "DestinationContainer" input
+
+![Screen capture](images/WorkflowSample-Step3.png?raw=true)
+
+#### Step 4) Finalize Creating Asset
+Use Azure Function **WF-1-CreateAsset-UpdateFinal**
+* Specify "WF-1-CreateAsset-ImportAssetFromIngestAssetConfig – AssetId" as "AssetId" input
+* Specify "OneDrive – File content" as "IngestAssetConfigJson" input
+
+![Screen capture](images/WorkflowSample-Step4.png?raw=true)
+
+#### Step 5) Check if Media Processing is required
+Use "Condition"
+* Use "WF-1-CreateAsset-UpdateFinal – MediaProcessRequired" as "Condition" parameter
+* IF "MediaProcessRequired" *is greater than* "0", goto Step 6
+* IF NO, goto Step 7
+
+![Screen capture](images/WorkflowSample-Step5.png?raw=true)  
+![Screen capture](images/WorkflowSample-Step6-C1YES.png?raw=true)  
+![Screen capture](images/WorkflowSample-Step6-C2NO.png?raw=true)  
+
+#### Step 6-1) [Condition=YES] Encode Asset
+Use **WF-2-ProcessAsset-SubmitEncodingJob**
+* Specify "WF-1-CreateAsset-UpdateFinal – AssetId" as "AssetId" input
+* Specify "OneDrive – File content" as "IngestAssetConfigJson" input
+
+#### Step 6-2) [Condition=YES] Wait for Encoding Job
+Use "Until" loop with **WF-2-ProcessAsset-MonitorJob**
+* Wait until when **WF-2-ProcessAsset-SubmitEncodingJob** - "JobState" *is greater than* "2"
+* Specify "WF-2-ProcessAsset-SubmitEncodingJob – JobId" as "JobId"
+
+![Screen capture](images/WorkflowSample-Step6-C1YES-P1.png?raw=true)
+
+#### Step 6-3) [Condition=YES] Check if Encoding Job is successfully done 
+Use "Condition"
+* Use "WF-2-ProcessAsset-MonitorJob – JobState" as "Condition" parameter
+* IF "JobState" *is equal to* "3", goto Step 6-4
+
+![Screen capture](images/WorkflowSample-Step6-C1YES-P2.png?raw=true)
+
+#### Step 6-4) [Condition=YES] Send an email
+Use **WF-5-PublishAsset**
+* Specify "WF-2-ProcessAsset-SubmitEncodingJob – OutputAssetId" as "OutputAssetId" input
+* Specify "OneDrive – File content" as "IngestAssetConfigJson" input
+
+#### Step 6-5) [Condition=YES] Send an email
+Use "Outlook.com - Send an email" to send an email
+
+#### Step 7-1) [Condition=NO] Publish Asset
+Use **WF-5-PublishAsset**
+* Specify "WF-1-CreateAsset-ImportAssetFromIngestAssetConfig – AssetId" as "AssetId" input
+* Specify "OneDrive – File content" as "IngestAssetConfigJson" input
+
+![Screen capture](images/WorkflowSample-Step6-C2NO_Details.png?raw=true)
+
+#### Step 7-2) [Condition=NO] Send an email
+Use "Outlook.com - Send an email" to send an email
+
+
 
 
 # Documentation - Media Workflow WF-x sample
@@ -322,8 +330,8 @@ IngestAssetConfig (v1) containes:
 * Input – JSON format data
   * *FileName* : **IngestAssetConfig** filename for target asset
   * *FileContent* : **IngestAssetConfig** JSON for target asset
-  * *SourceStorageAccountName* : Azure Storage Account Name for source assets
-  * *SourceStorageAccountKey* : Azure Storage Account Key for source assets
+  * *SourceStorageAccountName* : Azure Blob Storage Account Name for source assets
+  * *SourceStorageAccountKey* : Azure Blob Storage Account Key for source assets
 * Output – JSON format data
   * *AssetId* : Created AMS Asset Id (e.g. nb:cid:UUID:2f7e6884-2637-42f8-a336-97dc04942e69)
   * *SourceContainer* : Azure Blob Storage container name of target asset
