@@ -198,16 +198,13 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
                     entry.id = index_i;
                     entry.fileId = file.Id;
                     entry.fileName = file.Name;
-                    if (!string.IsNullOrEmpty(pathUrl))
+                    if (copyToContainer != "")
                     {
-                        if (copyToContainer != "")
-                        {
-                            entry.url = targetContainerUri + "/" + prefixjpg + file.Name;
-                        }
-                        else
-                        {
-                            entry.url = pathUrl + file.Name;
-                        }
+                        entry.url = targetContainerUri + "/" + prefixjpg + file.Name;
+                    }
+                    else if (!string.IsNullOrEmpty(pathUrl))
+                    {
+                        entry.url = pathUrl + file.Name;
                     }
                     jpgFaces.Add(entry);
                 }
