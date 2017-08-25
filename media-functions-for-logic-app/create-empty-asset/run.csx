@@ -50,6 +50,9 @@ static string _storageAccountKey = Environment.GetEnvironmentVariable("MediaServ
 static readonly string _AADTenantDomain = Environment.GetEnvironmentVariable("AADTenantDomain");
 static readonly string _RESTAPIEndpoint = Environment.GetEnvironmentVariable("MediaServiceRESTAPIEndpoint");
 
+static readonly string _mediaservicesClientId = Environment.GetEnvironmentVariable("AMSClientId");
+static readonly string _mediaservicesClientSecret = Environment.GetEnvironmentVariable("AMSClientSecret");
+
 
 // Field for service context.
 private static CloudMediaContext _context = null;
@@ -108,8 +111,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
     try
     {
+        AzureAdTokenCredentials tokenCredentials = new AzureAdTokenCredentials(_AADTenantDomain,
+                            new AzureAdClientSymmetricKey(_mediaservicesClientId, _mediaservicesClientSecret),
+                            AzureEnvironments.AzureCloudEnvironment);
 
-        AzureAdTokenCredentials tokenCredentials = new AzureAdTokenCredentials(_AADTenantDomain, AzureEnvironments.AzureCloudEnvironment);
         AzureAdTokenProvider tokenProvider = new AzureAdTokenProvider(tokenCredentials);
 
         _context = new CloudMediaContext(new Uri(_RESTAPIEndpoint), tokenProvider);
