@@ -37,14 +37,19 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.Azure.WebJobs;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 
 // Read values from the App.config file.
-private static readonly string _mediaServicesAccountName = Environment.GetEnvironmentVariable("AMSAccount");
-private static readonly string _mediaServicesAccountKey = Environment.GetEnvironmentVariable("AMSKey");
+// private static readonly string _mediaServicesAccountName = Environment.GetEnvironmentVariable("AMSAccount");
+// private static readonly string _mediaServicesAccountKey = Environment.GetEnvironmentVariable("AMSKey");
 
 static string _storageAccountName = Environment.GetEnvironmentVariable("MediaServicesStorageAccountName");
 static string _storageAccountKey = Environment.GetEnvironmentVariable("MediaServicesStorageAccountKey");
+
+static readonly string _AADTenantDomain = Environment.GetEnvironmentVariable("AADTenantDomain");
+static readonly string _RESTAPIEndpoint = Environment.GetEnvironmentVariable("MediaServiceRESTAPIEndpoint");
+
 
 // Field for service context.
 private static CloudMediaContext _context = null;
@@ -77,6 +82,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
     IAsset newAsset = null;
 
+    /*
     try
     {
         // Create and cache the Media Services credentials in a static class variable.
@@ -98,6 +104,27 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             Error = ex.ToString()
         });
     }
+    */
+
+    try
+    {
+
+        AzureAdTokenCredentials tokenCredentials = new AzureAdTokenCredentials(_AADTenantDomain, AzureEnvironments.AzureCloudEnvironment);
+        AzureAdTokenProvider tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+
+        _context = new CloudMediaContext(new Uri(_RESTAPIEndpoint), tokenProvider);
+
+        newAsset = _context.Assets.Create(assetName, AssetCreationOptions.None);
+
+        log.Info("got here.");
+    }
+    catch (Exception ex)
+    {
+        log.Error("ERROR: failed.");
+        log.Info($"StackTrace : {ex.StackTrace}");
+        throw ex;
+    }
+
 
     log.Info("asset Id: " + newAsset.Id);
     log.Info("container Path: " + newAsset.Uri.Segments[1]);
