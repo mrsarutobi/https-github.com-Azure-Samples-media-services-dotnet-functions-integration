@@ -41,14 +41,14 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 
 // Read values from the App.config file.
-private static readonly string _mediaServicesAccountName = Environment.GetEnvironmentVariable("AMSAccount");
-private static readonly string _mediaServicesAccountKey = Environment.GetEnvironmentVariable("AMSKey");
+// private static readonly string _mediaServicesAccountName = Environment.GetEnvironmentVariable("AMSAccount");
+// private static readonly string _mediaServicesAccountKey = Environment.GetEnvironmentVariable("AMSKey");
 
 static string _storageAccountName = Environment.GetEnvironmentVariable("MediaServicesStorageAccountName");
 static string _storageAccountKey = Environment.GetEnvironmentVariable("MediaServicesStorageAccountKey");
 
-static readonly string _AADTenantDomain = Environment.GetEnvironmentVariable("AADTenantDomain");
-static readonly string _RESTAPIEndpoint = Environment.GetEnvironmentVariable("MediaServiceRESTAPIEndpoint");
+static readonly string _AADTenantDomain = Environment.GetEnvironmentVariable("AMSAADTenantDomain");
+static readonly string _RESTAPIEndpoint = Environment.GetEnvironmentVariable("AMSRESTAPIEndpoint");
 
 static readonly string _mediaservicesClientId = Environment.GetEnvironmentVariable("AMSClientId");
 static readonly string _mediaservicesClientSecret = Environment.GetEnvironmentVariable("AMSClientSecret");
@@ -85,30 +85,6 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
     IAsset newAsset = null;
 
-    /*
-    try
-    {
-        // Create and cache the Media Services credentials in a static class variable.
-        _cachedCredentials = new MediaServicesCredentials(
-                        _mediaServicesAccountName,
-                        _mediaServicesAccountKey);
-
-        // Used the chached credentials to create CloudMediaContext.
-        _context = new CloudMediaContext(_cachedCredentials);
-
-        newAsset = _context.Assets.Create(assetName, AssetCreationOptions.None);
-
-    }
-    catch (Exception ex)
-    {
-        log.Info($"Exception {ex}");
-        return req.CreateResponse(HttpStatusCode.InternalServerError, new
-        {
-            Error = ex.ToString()
-        });
-    }
-    */
-
     try
     {
         AzureAdTokenCredentials tokenCredentials = new AzureAdTokenCredentials(_AADTenantDomain,
@@ -119,15 +95,20 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
         _context = new CloudMediaContext(new Uri(_RESTAPIEndpoint), tokenProvider);
 
+        log.Info("Context object created.");
+
         newAsset = _context.Assets.Create(assetName, AssetCreationOptions.None);
 
-        log.Info("got here.");
+        log.Info("new asset created.");
+
     }
     catch (Exception ex)
     {
-        log.Error("ERROR: failed.");
-        log.Info($"StackTrace : {ex.StackTrace}");
-        throw ex;
+        log.Info($"Exception {ex}");
+        return req.CreateResponse(HttpStatusCode.InternalServerError, new
+        {
+            Error = ex.ToString()
+        });
     }
 
 
@@ -138,7 +119,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     {
         containerPath = newAsset.Uri.Segments[1],
         assetId = newAsset.Id
-});
+    });
 }
 
 
