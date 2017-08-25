@@ -81,7 +81,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
     string assetName = data.assetName;
 
-    log.Info($"Using Azure Media Services Client Id : {AMSClientId}");
+    log.Info($"Using Azure Media Services Client Id : {_mediaservicesClientId}");
 
     IAsset newAsset = null;
 
