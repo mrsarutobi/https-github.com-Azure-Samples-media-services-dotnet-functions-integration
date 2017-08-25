@@ -41,8 +41,8 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 
 // Read values from the App.config file.
-// private static readonly string _mediaServicesAccountName = Environment.GetEnvironmentVariable("AMSAccount");
-// private static readonly string _mediaServicesAccountKey = Environment.GetEnvironmentVariable("AMSKey");
+private static readonly string _mediaServicesAccountName = Environment.GetEnvironmentVariable("AMSAccount");
+private static readonly string _mediaServicesAccountKey = Environment.GetEnvironmentVariable("AMSKey");
 
 static string _storageAccountName = Environment.GetEnvironmentVariable("MediaServicesStorageAccountName");
 static string _storageAccountKey = Environment.GetEnvironmentVariable("MediaServicesStorageAccountKey");
