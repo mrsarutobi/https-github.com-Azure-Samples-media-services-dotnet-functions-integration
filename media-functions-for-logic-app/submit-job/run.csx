@@ -151,7 +151,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     // data.WorkflowAssetId = "nb:cid:UUID:44fe8196-616c-4490-bf80-24d1e08754c5";
     // if data.WorkflowAssetId is passed, then it means a Premium Encoding task is asked
 
-    log.Info($"Using Azure Media Services Client Id : {_mediaservicesClientId}");
+    log.Info($"Using Azure Media Service Rest API Endpoint : {_RESTAPIEndpoint}");
 
     IJob job = null;
     ITask taskEncoding = null;

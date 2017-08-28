@@ -122,7 +122,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         });
     }
 
-    log.Info($"Using Azure Media Services Client Id : {_mediaservicesClientId}");
+    log.Info($"Using Azure Media Service Rest API Endpoint : {_RESTAPIEndpoint}");
 
     try
     {

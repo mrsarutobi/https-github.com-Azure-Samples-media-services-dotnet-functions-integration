@@ -83,7 +83,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     try
     {
         // Load AMS account context
-        log.Info($"Using Azure Media Services Client Id : {_mediaservicesClientId}");
+        log.Info($"Using Azure Media Service Rest API Endpoint : {_RESTAPIEndpoint}");
 
         AzureAdTokenCredentials tokenCredentials = new AzureAdTokenCredentials(_AADTenantDomain,
                                   new AzureAdClientSymmetricKey(_mediaservicesClientId, _mediaservicesClientSecret),

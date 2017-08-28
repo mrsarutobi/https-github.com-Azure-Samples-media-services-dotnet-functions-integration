@@ -23,7 +23,7 @@ Output:
         "otherJobsProcessing" = 2,
         "otherJobsScheduled" = 1,
         "otherJobsQueue" = 1,
-        "amsAccountName" = "accountname"
+        "amsRESTAPIEndpoint" = "http:/...."
     }
  }
 */
@@ -87,7 +87,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         });
     }
 
-    log.Info($"Using Azure Media Services Client Id : {_mediaservicesClientId}");
+    log.Info($"Using Azure Media Service Rest API Endpoint : {_RESTAPIEndpoint}");
 
     IJob job = null;
     string startTime = "";
@@ -181,7 +181,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         stats.otherJobsProcessing = _context.Jobs.Where(j => j.State == JobState.Processing).Count();
         stats.otherJobsScheduled = _context.Jobs.Where(j => j.State == JobState.Scheduled).Count();
         stats.otherJobsQueue = _context.Jobs.Where(j => j.State == JobState.Queued).Count();
-        stats.amsAccountName = _mediaServicesAccountName;
+        stats.amsRESTAPIEndpoint = _RESTAPIEndpoint;
 
         return req.CreateResponse(HttpStatusCode.OK, new
         {
