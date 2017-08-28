@@ -41,9 +41,6 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 
 // Read values from the App.config file.
-// private static readonly string _mediaServicesAccountName = Environment.GetEnvironmentVariable("AMSAccount");
-// private static readonly string _mediaServicesAccountKey = Environment.GetEnvironmentVariable("AMSKey");
-
 static string _storageAccountName = Environment.GetEnvironmentVariable("MediaServicesStorageAccountName");
 static string _storageAccountKey = Environment.GetEnvironmentVariable("MediaServicesStorageAccountKey");
 
@@ -53,10 +50,8 @@ static readonly string _RESTAPIEndpoint = Environment.GetEnvironmentVariable("AM
 static readonly string _mediaservicesClientId = Environment.GetEnvironmentVariable("AMSClientId");
 static readonly string _mediaservicesClientSecret = Environment.GetEnvironmentVariable("AMSClientSecret");
 
-
 // Field for service context.
 private static CloudMediaContext _context = null;
-private static MediaServicesCredentials _cachedCredentials = null;
 private static CloudStorageAccount _destinationStorageAccount = null;
 
 public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
