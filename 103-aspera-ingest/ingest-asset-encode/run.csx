@@ -1,8 +1,10 @@
 /*
 This function monitors a storage account container location folder named "input" for new MP4 files.
 These files may be uploaded by the Aspera On Demand service available through the Azure Marketplace.
-The azuredeploy.json template is configured to create all of the resources, including the Aspera On Demand service
-which is seperately licensed.  
+Please create a Media Services Account and a Service Principal to access it;
+Then the azuredeploy.json template is configured to create the resources, including the Aspera On Demand service
+which is seperately licensed. 
+Please create the container "input" in the new storage account.
 
 Once a file is uploaded through the Aspera Client or Aspera Drive, this Function will trigger the ingest and creation of
 a new Media Services Asset. 

@@ -4,7 +4,7 @@
 </a>
 
 ## Transfer files to and from Azure BLOB up to 100x faster than TCP or FTP
-This template adds the Aspera On Demand service from the Azure Marketplace (seperately licensed) and connects it directly to the storage account for the Media Services Account. You will need a promo code from Aspera to deploy this template. You need to create a Media Services Account and Service Principal before running this template.
+This template create a storage account, adds the Aspera On Demand service from the Azure Marketplace (seperately licensed) and connects it directly to the storage account for the Media Services Account. You will need a promo code from Aspera to deploy this template. You need to create a Media Services Account and Service Principal before running this template.
 
 After deployment, ingesting of files through the high-speed Aspera ingest client will drop the files into the deployed storage account in the 'input' container. The Azure Function will be triggered on new files arriving from Aspera in the 'input' container and trigger the ingest of a new Media Services Asset. Finally, the function will submit a standard encoding job for 'Adaptive Streaming' and create another new Media Services Asset.
 
