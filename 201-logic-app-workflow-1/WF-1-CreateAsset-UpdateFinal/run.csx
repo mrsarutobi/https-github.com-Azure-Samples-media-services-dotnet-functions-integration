@@ -13,18 +13,21 @@ using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Auth;
-
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 // Read values from the App.config file.
-private static readonly string _mediaServicesAccountName = Environment.GetEnvironmentVariable("AMSAccount");
-private static readonly string _mediaServicesAccountKey = Environment.GetEnvironmentVariable("AMSKey");
-private static readonly string _storageAccountName = Environment.GetEnvironmentVariable("MediaServicesStorageAccountName");
-private static readonly string _storageAccountKey = Environment.GetEnvironmentVariable("MediaServicesStorageAccountKey");
+static string _storageAccountName = Environment.GetEnvironmentVariable("MediaServicesStorageAccountName");
+static string _storageAccountKey = Environment.GetEnvironmentVariable("MediaServicesStorageAccountKey");
+
+static readonly string _AADTenantDomain = Environment.GetEnvironmentVariable("AMSAADTenantDomain");
+static readonly string _RESTAPIEndpoint = Environment.GetEnvironmentVariable("AMSRESTAPIEndpoint");
+
+static readonly string _mediaservicesClientId = Environment.GetEnvironmentVariable("AMSClientId");
+static readonly string _mediaservicesClientSecret = Environment.GetEnvironmentVariable("AMSClientSecret");
 
 // Field for service context.
 private static CloudMediaContext _context = null;
 private static CloudStorageAccount _destinationStorageAccount = null;
-
 
 public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 {
@@ -54,8 +57,15 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     try
     {
         // Load AMS account context
-        log.Info("Using Azure Media Services account : " + _mediaServicesAccountName);
-        _context = new CloudMediaContext(new MediaServicesCredentials(_mediaServicesAccountName, _mediaServicesAccountKey));
+        log.Info($"Using Azure Media Service Rest API Endpoint : {_RESTAPIEndpoint}");
+
+        AzureAdTokenCredentials tokenCredentials = new AzureAdTokenCredentials(_AADTenantDomain,
+                                  new AzureAdClientSymmetricKey(_mediaservicesClientId, _mediaservicesClientSecret),
+                                  AzureEnvironments.AzureCloudEnvironment);
+
+        AzureAdTokenProvider tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+
+        _context = new CloudMediaContext(new Uri(_RESTAPIEndpoint), tokenProvider);
 
         // Get the Asset
         var asset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();

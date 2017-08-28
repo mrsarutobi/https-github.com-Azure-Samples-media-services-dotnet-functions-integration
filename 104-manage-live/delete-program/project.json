@@ -2,7 +2,10 @@
   "frameworks": {
     "net46":{
       "dependencies": {
-        "windowsazure.mediaservices": "3.8.0.5"
+        "windowsazure.mediaservices": "4.0.0.4",
+        "windowsazure.mediaservices.extensions": "4.0.0.4",
+        "Microsoft.IdentityModel.Clients.ActiveDirectory": "3.13.1",
+        "Microsoft.IdentityModel.Protocol.Extensions": "1.0.2.206221351"
       }
     }
    }

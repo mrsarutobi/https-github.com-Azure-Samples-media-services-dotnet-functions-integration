@@ -41,23 +41,24 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Newtonsoft.Json;
-
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 // Read values from the App.config file.
-private static readonly string _mediaServicesAccountName = Environment.GetEnvironmentVariable("AMSAccount");
-private static readonly string _mediaServicesAccountKey = Environment.GetEnvironmentVariable("AMSKey");
-
 static string _storageAccountName = Environment.GetEnvironmentVariable("MediaServicesStorageAccountName");
 static string _storageAccountKey = Environment.GetEnvironmentVariable("MediaServicesStorageAccountKey");
+
+static readonly string _AADTenantDomain = Environment.GetEnvironmentVariable("AMSAADTenantDomain");
+static readonly string _RESTAPIEndpoint = Environment.GetEnvironmentVariable("AMSRESTAPIEndpoint");
+
+static readonly string _mediaservicesClientId = Environment.GetEnvironmentVariable("AMSClientId");
+static readonly string _mediaservicesClientSecret = Environment.GetEnvironmentVariable("AMSClientSecret");
+
+// Field for service context.
+private static CloudMediaContext _context = null;
 private static CloudStorageAccount _destinationStorageAccount = null;
 
 // Set the output container name here.
 private static string _outputContainerName = "output";
-
-// Field for service context.
-private static CloudMediaContext _context = null;
-private static MediaServicesCredentials _cachedCredentials = null;
-
 
 public static void Run(CloudBlockBlob inputBlob, TraceWriter log, string fileName)
 {
@@ -70,17 +71,17 @@ public static void Run(CloudBlockBlob inputBlob, TraceWriter log, string fileNam
 
 
     log.Info($"C# Blob trigger  function processed: {fileName}.json");
-    log.Info($"Using Azure Media Services account : {_mediaServicesAccountName}");
+    log.Info($"Using Azure Media Service Rest API Endpoint : {_RESTAPIEndpoint}");
 
     try
     {
-        // Create and cache the Media Services credentials in a static class variable.
-        _cachedCredentials = new MediaServicesCredentials(
-                        _mediaServicesAccountName,
-                        _mediaServicesAccountKey);
+        AzureAdTokenCredentials tokenCredentials = new AzureAdTokenCredentials(_AADTenantDomain,
+                          new AzureAdClientSymmetricKey(_mediaservicesClientId, _mediaservicesClientSecret),
+                          AzureEnvironments.AzureCloudEnvironment);
 
-        // Used the chached credentials to create CloudMediaContext.
-        _context = new CloudMediaContext(_cachedCredentials);
+        AzureAdTokenProvider tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+
+        _context = new CloudMediaContext(new Uri(_RESTAPIEndpoint), tokenProvider);
 
         // Step 1:  Copy the Blob into a new Input Asset for the Job
         // ***NOTE: Ideally we would have a method to ingest a Blob directly here somehow. 
@@ -128,16 +129,19 @@ public static void Run(CloudBlockBlob inputBlob, TraceWriter log, string fileNam
         string homePath = Environment.GetEnvironmentVariable("HOME", EnvironmentVariableTarget.Process);
         log.Info("Home= " + homePath);
         string presetPath;
-        
-        if (homePath == String.Empty){
-            presetPath = @"../presets/MesWithOverlay.json"; 
-        }else{
-            presetPath =  Path.Combine(homePath, @"site\repository\100-basic-encoding\presets\MesWithOverlay.json");
+
+        if (homePath == String.Empty)
+        {
+            presetPath = @"../presets/MesWithOverlay.json";
+        }
+        else
+        {
+            presetPath = Path.Combine(homePath, @"site\repository\100-basic-encoding\presets\MesWithOverlay.json");
         }
         log.Info($"Preset path : {presetPath}");
         string preset = File.ReadAllText(presetPath);
 
-   
+
         // Create a task with the encoding details, using a string preset.
         // In this case a local preset is loaded. It includes an overlay with Logo.png which should be present in the asset
         ITask task = job.Tasks.AddNew("My encoding task",
@@ -156,13 +160,13 @@ public static void Run(CloudBlockBlob inputBlob, TraceWriter log, string fileNam
         job.Submit();
         log.Info("Job Submitted");
 
-       // Step 3: Monitor the Job
+        // Step 3: Monitor the Job
         // ** NOTE:  We could just monitor in this function, or create another function that monitors the Queue
         //           or WebHook based notifications. See the Notification_Webhook_Function project.
         //           For any job that takes longer than 5 minutes, Functions will die, so it is better to monitor
         //           long running encode jobs in a seperate function, or use WebHook Notifications 
         //           from Media Services
-        
+
         while (true)
         {
             job.Refresh();

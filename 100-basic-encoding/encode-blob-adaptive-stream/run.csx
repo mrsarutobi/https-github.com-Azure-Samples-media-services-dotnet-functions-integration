@@ -31,22 +31,24 @@ using System.IO;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Auth;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 // Read values from the App.config file.
-private static readonly string _mediaServicesAccountName = Environment.GetEnvironmentVariable("AMSAccount");
-private static readonly string _mediaServicesAccountKey = Environment.GetEnvironmentVariable("AMSKey");
-
 static string _storageAccountName = Environment.GetEnvironmentVariable("MediaServicesStorageAccountName");
 static string _storageAccountKey = Environment.GetEnvironmentVariable("MediaServicesStorageAccountKey");
+
+static readonly string _AADTenantDomain = Environment.GetEnvironmentVariable("AMSAADTenantDomain");
+static readonly string _RESTAPIEndpoint = Environment.GetEnvironmentVariable("AMSRESTAPIEndpoint");
+
+static readonly string _mediaservicesClientId = Environment.GetEnvironmentVariable("AMSClientId");
+static readonly string _mediaservicesClientSecret = Environment.GetEnvironmentVariable("AMSClientSecret");
+
+// Field for service context.
+private static CloudMediaContext _context = null;
 private static CloudStorageAccount _destinationStorageAccount = null;
 
 // Set the output container name here.
 private static string _outputContainerName = "output";
-
-
-// Field for service context.
-private static CloudMediaContext _context = null;
-private static MediaServicesCredentials _cachedCredentials = null;
 
 public static void Run(CloudBlockBlob inputBlob, string fileName, string fileExtension, CloudBlockBlob outputBlob, TraceWriter log)
 {
@@ -58,46 +60,47 @@ public static void Run(CloudBlockBlob inputBlob, string fileName, string fileExt
     // given blob. If the fifth try fails, the SDK adds a message to a queue named webjobs-blobtrigger-poison.
 
     log.Info($"C# Blob trigger function processed: {fileName}.{fileExtension}");
-    log.Info($"Using Azure Media Services account : {_mediaServicesAccountName}");
+    log.Info($"Using Azure Media Service Rest API Endpoint : {_RESTAPIEndpoint}");
 
 
     try
     {
-        // Create and cache the Media Services credentials in a static class variable.
-        _cachedCredentials = new MediaServicesCredentials(
-                        _mediaServicesAccountName,
-                        _mediaServicesAccountKey);
+        AzureAdTokenCredentials tokenCredentials = new AzureAdTokenCredentials(_AADTenantDomain,
+                           new AzureAdClientSymmetricKey(_mediaservicesClientId, _mediaservicesClientSecret),
+                           AzureEnvironments.AzureCloudEnvironment);
 
-        // Used the chached credentials to create CloudMediaContext.
-        _context = new CloudMediaContext(_cachedCredentials);
+        AzureAdTokenProvider tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+
+        _context = new CloudMediaContext(new Uri(_RESTAPIEndpoint), tokenProvider);
+
 
         // Step 1:  Copy the Blob into a new Input Asset for the Job
         // ***NOTE: Ideally we would have a method to ingest a Blob directly here somehow. 
         // using code from this sample - https://azure.microsoft.com/en-us/documentation/articles/media-services-copying-existing-blob/
-        
+
         StorageCredentials mediaServicesStorageCredentials =
             new StorageCredentials(_storageAccountName, _storageAccountKey);
 
         IAsset newAsset = CreateAssetFromBlob(inputBlob, fileName, log).GetAwaiter().GetResult();
         log.Info("Deleting the source asset from the input container");
         inputBlob.DeleteIfExists();
-        
+
         // Step 2: Create an Encoding Job
 
         // Declare a new encoding job with the Standard encoder
         IJob job = _context.Jobs.Create("Function - Encode-blob-adaptive-stream");
-        
+
         // Get a media processor reference, and pass to it the name of the 
         // processor to use for the specific task.
         IMediaProcessor processor = GetLatestMediaProcessorByName("Media Encoder Standard");
-        
+
 
         // Create a task with the encoding details, using the Adaptive Streaming System Preset.
         ITask task = job.Tasks.AddNew("Encode with Adaptive Streaming",
             processor,
             "Adaptive Streaming",
-            TaskOptions.None); 
-        
+            TaskOptions.None);
+
         // Set the Task Priority
         task.Priority = 100;
 
@@ -108,11 +111,11 @@ public static void Run(CloudBlockBlob inputBlob, string fileName, string fileExt
         // This output is specified as AssetCreationOptions.None, which 
         // means the output asset is not encrypted. 
         task.OutputAssets.AddNew(fileName, AssetCreationOptions.None);
-        
+
         job.Submit();
         log.Info("Job Submitted");
 
-       // Step 3: Monitor the Job
+        // Step 3: Monitor the Job
         // ** NOTE:  We could just monitor in this function, or create another function that monitors the Queue
         //           or WebHook based notifications. See the Notification_Webhook_Function project.
         //           For any job that takes longer than 5 minutes, Functions will die, so it is better to monitor

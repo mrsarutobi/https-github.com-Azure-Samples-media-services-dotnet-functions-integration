@@ -11,11 +11,14 @@ using System.Web;
 using Newtonsoft.Json;
 using Microsoft.WindowsAzure.MediaServices.Client;
 using Microsoft.WindowsAzure.Storage;
-
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 // Read values from the App.config file.
-private static readonly string _mediaServicesAccountName = Environment.GetEnvironmentVariable("AMSAccount");
-private static readonly string _mediaServicesAccountKey = Environment.GetEnvironmentVariable("AMSKey");
+static readonly string _AADTenantDomain = Environment.GetEnvironmentVariable("AMSAADTenantDomain");
+static readonly string _RESTAPIEndpoint = Environment.GetEnvironmentVariable("AMSRESTAPIEndpoint");
+
+static readonly string _mediaservicesClientId = Environment.GetEnvironmentVariable("AMSClientId");
+static readonly string _mediaservicesClientSecret = Environment.GetEnvironmentVariable("AMSClientSecret");
 
 // Field for service context.
 private static CloudMediaContext _context = null;
@@ -44,13 +47,19 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass a valid IngestAssetConfig as FileContent" });
     log.Info("Input - Valid IngestAssetConfig was loaded.");
 
-
     string streamingUrl = "";
     try
     {
         // Load AMS account context
-        log.Info("Using Azure Media Services account : " + _mediaServicesAccountName);
-        _context = new CloudMediaContext(new MediaServicesCredentials(_mediaServicesAccountName, _mediaServicesAccountKey));
+        log.Info($"Using Azure Media Service Rest API Endpoint : {_RESTAPIEndpoint}");
+
+        AzureAdTokenCredentials tokenCredentials = new AzureAdTokenCredentials(_AADTenantDomain,
+                                  new AzureAdClientSymmetricKey(_mediaservicesClientId, _mediaservicesClientSecret),
+                                  AzureEnvironments.AzureCloudEnvironment);
+
+        AzureAdTokenProvider tokenProvider = new AzureAdTokenProvider(tokenCredentials);
+
+        _context = new CloudMediaContext(new Uri(_RESTAPIEndpoint), tokenProvider);
 
         // Get the Asset
         var asset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
