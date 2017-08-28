@@ -89,7 +89,7 @@
   "variables": {
     "functionsAppName": "[concat(toLower(parameters('functionsAppName')),uniqueString(resourceGroup().id))]",
     "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-     "storageAccountName": "[concat('storage',uniqueString(resourceGroup().id))]",
+    "storageAccountName": "[concat('storage',uniqueString(resourceGroup().id))]",
     "hostingPlanName": "[concat(variables('functionsAppName'), 'plan')]"
   },
   "resources": [
@@ -185,7 +185,7 @@
             "AMSClientSecret": "[parameters('mediaServicesAccountServicePrincipalClientSecret')]",
             "MediaServicesStorageAccountName": "[parameters('mediaServicesStorageAccountName')]",
             "MediaServicesStorageAccountKey": "[parameters('mediaServicesStorageAccountKey')]",
-            "StorageConnection": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('mediaServicesStorageAccountName'), ';AccountKey=', parameters('mediaServicesStorageAccountKey'))]",
+            "StorageConnection": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]",
             "SigningKey": "wOlDEUJ4/VN1No8HxVxpsRvej0DZrO5DXvImGLjFhfctPGFiMkUA0Cj8HSfJW7lePX9XsfHAMhw30p0yYqG+1A==",
             "WebHookEndpoint": "[concat(resourceId('Microsoft.Web/sites', variables('functionsAppName')),'/api/Notification_Webhook_Function?code=', parameters('functionKey'))]"
           }
