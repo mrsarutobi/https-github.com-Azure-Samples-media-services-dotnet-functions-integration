@@ -1,6 +1,6 @@
 # Logic Apps which use Azure Functions and Azure Media Services
 
-## Prerequisite for all Logic Apps deployment
+## Prerequisites for all Logic Apps deployments
 
 ### 1. Create an Azure Media Services account
 
@@ -8,7 +8,7 @@ Create a Media Services account in your subscription if don't have it already.
 
 ### 2. Create a Service Principal
 
-Create a Service Principal. To do so, go to the API tab in the account ([follow this article](https://docs.microsoft.com/en-us/azure/media-services/media-services-portal-get-started-with-aad#service-principal-authentication))
+Create a Service Principal and save the password. It will be needed in step #4. To do so, go to the API tab in the account ([follow this article](https://docs.microsoft.com/en-us/azure/media-services/media-services-portal-get-started-with-aad#service-principal-authentication))
 
 ### 3. Make sure the AMS streaming endpoint is started
 
@@ -108,7 +108,13 @@ This template creates a Logic app which processes a live program (from a live ch
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
+Then fix the errors.
+
+You need to customize the channel name, program name and language of the audio. To do so, change the parameters in the live-subclip-analytics function call.
+![Screen capture](images/logicapp4-live-1.png?raw=true)
+
 Notes
+
 * you need to create a Cosmos database prior to the deployment of the logic app. Partition key should be named "processor"
 * you should allocate sufficient reserved units in the Media Services account otherwise the job queue will grow over time. Start with 4 S2 reserved units and monitor the queue. 
 
