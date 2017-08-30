@@ -111,6 +111,7 @@ This template creates a Logic app which processes a live program (from a live ch
 Then fix the errors.
 
 You need to customize the channel name, program name and language of the audio. To do so, change the parameters in the live-subclip-analytics function call.
+
 ![Screen capture](images/logicapp4-live-1.png?raw=true)
 
 Notes
