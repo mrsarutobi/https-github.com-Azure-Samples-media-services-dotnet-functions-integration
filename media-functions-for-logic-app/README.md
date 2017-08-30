@@ -4,10 +4,13 @@
 
 ### 1. Create an Azure Media Services account
 
-If you don't have a Media Services account in your subscription, create one.
-Create a Service Principal (go to the API tab in the account).
+Create a Media Services account in your subscription if don't have it already.
 
-### 2. Start the AMS streaming endpoint
+### 2. Create a Service Principal
+
+Create a Service Principal. To do so, go to the API tab in the account ([follow this article](https://docs.microsoft.com/en-us/azure/media-services/media-services-portal-get-started-with-aad#service-principal-authentication))
+
+### 3. Make sure the AMS streaming endpoint is started
 
 To enable streaming, go to the Azure portal, select the Azure Media Services account which has been created, and start the default streaming endpoint.
 
@@ -15,7 +18,7 @@ To enable streaming, go to the Azure portal, select the Azure Media Services acc
 
 ![Screen capture](images/start-se-2.png?raw=true)
 
-### 3. Deploy the Azure functions
+### 4. Deploy the Azure functions
 If not already done : fork the repo, deploy Azure Functions and select the **"media-functions-for-logic-app"** Project (IMPORTANT!)
 
 Follow the guidelines in the [git tutorial](1-CONTRIBUTION-GUIDE/git-tutorial.md) for details on how to fork the project and use Git properly with this project.
@@ -28,7 +31,7 @@ Note : if you never provided your GitHub account in the Azure portal before, the
 
 
 
-## First Logic App : Simple VOD workflow
+## First Logic App : A Simple VOD workflow
 
 ### Presentation
 
@@ -58,7 +61,7 @@ Please specify the name of the storage account used by Media Services.
 When deployed, go to the Logic App Designer and fix the connections (Onedrive, Outlook.com...). Make sure to (re)select the OneDrive folder that you want to use for the ingest.
 
 
-## Second Logic App : using Azure Storage trigger
+## Second Logic App : using the Azure Storage trigger
 
 This is the same workflow that the first logic app with two main differences:
 - the source is monitored using blob trigger (new file coming to an Azure Storage container)
