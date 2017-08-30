@@ -1,5 +1,33 @@
 # Logic Apps which use Azure Functions and Azure Media Services
 
+## Prerequisite for all Logic Apps deployment
+
+### 1. Create an Azure Media Services account
+
+If you don't have a Media Services account in your subscription, create one.
+Create a Service Principal (go to the API tab in the account).
+
+### 2. Start the AMS streaming endpoint
+
+To enable streaming, go to the Azure portal, select the Azure Media Services account which has been created, and start the default streaming endpoint.
+
+![Screen capture](images/start-se-1.png?raw=true)
+
+![Screen capture](images/start-se-2.png?raw=true)
+
+### 3. Deploy the Azure functions
+If not already done : fork the repo, deploy Azure Functions and select the **"media-functions-for-logic-app"** Project (IMPORTANT!)
+
+Follow the guidelines in the [git tutorial](1-CONTRIBUTION-GUIDE/git-tutorial.md) for details on how to fork the project and use Git properly with this project.
+
+Note : if you never provided your GitHub account in the Azure portal before, the continous integration probably will probably fail and you won't see the functions. In that case, you need to setup it manually. Go to your azure functions deployment / Functions app settings / Configure continous integration. Select GitHub as a source and configure it to use your fork.
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fazuredeploy.json" target="_blank">
+    <img src="http://azuredeploy.net/deploybutton.png"/>
+</a>
+
+
+
 ## First Logic App : Simple VOD workflow
 
 ### Presentation
@@ -11,18 +39,9 @@ This template creates a Logic app that listens to an onedrive folder and will co
 
 [See the detailed view of the logic app.](logicapp1-simplevod-screen.md)
 
-### 1. Prerequisite
-If not already done : fork the repo, deploy Azure Functions and select the **"media-functions-for-logic-app"** Project (IMPORTANT!)
 
-Follow the guidelines in the [git tutorial](1-CONTRIBUTION-GUIDE/git-tutorial.md) for details on how to fork the project and use Git properly with this project.
 
-Note : if you never provided your GitHub account in the Azure portal before, the continous integration probably will probably fail and you won't see the functions. In that case, you need to setup it manually. Go to your azure functions deployment / Functions app settings / Configure continous integration. Select GitHub as a source and configure it to use your fork.
-
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fazuredeploy.json" target="_blank">
-    <img src="http://azuredeploy.net/deploybutton.png"/>
-</a>
-
-### 2. Deploy the logic app
+### 1. Deploy the logic app
 
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp1-simplevod-deploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
@@ -34,17 +53,10 @@ It is recommended to use the same resource group for the functions and the logic
 The functions and Logic App must be deployed in the same region.
 Please specify the name of the storage account used by Media Services.
 
-### 3. Fix the connections
+### 2. Fix the connections and errors
 
 When deployed, go to the Logic App Designer and fix the connections (Onedrive, Outlook.com...). Make sure to (re)select the OneDrive folder that you want to use for the ingest.
 
-### 4. Start the AMS streaming endpoint
-
-To enable streaming, go to the Azure portal, select the Azure Media Services account which as been created, and start the default streaming endpoint.
-
-![Screen capture](images/start-se-1.png?raw=true)
-
-![Screen capture](images/start-se-2.png?raw=true)
 
 ## Second Logic App : using Azure Storage trigger
 
@@ -80,8 +92,26 @@ This template creates a Logic app which
 ![Screen capture](images/logicapp3-advancedvod-2.png?raw=true)
 ![Screen capture](images/logicapp3-advancedvod-3.png?raw=true)
 
+## Fourth Logic App : Live analytics processing
+
+This template creates a Logic app which processes a live program (from a live channel in Azure Media Services) for media analytics. What it does :
+
+* subclips the last minute
+* sends this subclip asset to Azure Media Indexer, Motion Detection and Face Redaction processors (3 tasks in one job)
+* gets the text, faces and motion detection information and sends this data to a Cosmos database,
+* optionnaly copy the faces to a dedicated Azure storage container.
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp4-liveanalytics-deploy.json" target="_blank">
+    <img src="http://azuredeploy.net/deploybutton.png"/>
+</a>
+
+Notes
+* you need to create a Cosmos database prior to the deployment of the logic app. Partition key should be named "processor"
+* you should allocate sufficient reserved units in the Media Services account otherwise the job queue will grow over time. Start with 4 S2 reserved units and monitor the queue. 
+
+
 ## Functions documentation
-This section list the functions available and describes the input and output parameters.
+This section lists the functions available and describes the input and output parameters.
 
 ### create-empty-asset
 
