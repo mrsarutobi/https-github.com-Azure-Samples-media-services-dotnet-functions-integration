@@ -230,7 +230,7 @@ These functions are designed to be called by a Logic App.
 One specific patterns to pay attention to here include the check-job-status function which is used to poll for 
 job status from a Logic App workflow.
 
-Three logic apps samples are available as ARM templates in [media-functions-for-logic-app](/media-functions-for-logic-app): One basic VOD worflow (that does encoding), one bacic VOD workflow with blob trigger, and one more advanced (that does encoding, indexing, subtitles translation). They can be easily deployed through a "Deploy to Azure" button in this section.
+Four logic apps samples are available as ARM templates in [media-functions-for-logic-app](/media-functions-for-logic-app): One basic VOD worflow (that does encoding), one bacic VOD workflow with blob trigger, one more advanced (that does encoding, indexing, subtitles translation), and one that processes a live stream for analytics. They can be easily deployed through a "Deploy to Azure" button in this section.
 
 In order to practice the deployment of Azure functions for Media Services and the deployment of a Logic App advanced workflow, a detailed hands-on guide was written. You can find the document [here](/media-functions-for-logic-app/Lab).
 
