@@ -6,7 +6,9 @@ Input:
     "assetId" : "the Id of the source asset",
     "targetStorageAccountName" : "",
     "targetStorageAccountKey": "",
-    "targetContainer" : ""
+    "targetContainer" : "",
+    "startsWith" : "video", //optional, copy only files that start with name video
+    "endsWidth" : ".mp4", //optional, copy only files that end with .mp4
 }
 Output:
 {
@@ -68,6 +70,9 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     string targetStorageAccountName = data.targetStorageAccountName;
     string targetStorageAccountKey = data.targetStorageAccountKey;
     string targetContainer = data.targetContainer;
+    string startsWith = data.startsWith;
+    string endsWith = data.endsWith;
+
 
     log.Info("Input - targetStorageAccountName : " + targetStorageAccountName);
     log.Info("Input - targetStorageAccountKey : " + targetStorageAccountKey);
@@ -99,11 +104,14 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         CloudBlobContainer destinationBlobContainer = GetCloudBlobContainer(targetStorageAccountName, targetStorageAccountKey, targetContainer);
         destinationBlobContainer.CreateIfNotExists();
 
-        foreach (var file in asset.AssetFiles)
+        var files = asset.AssetFiles.ToList().Where(f => ((string.IsNullOrEmpty(endsWith) || f.Name.EndsWith(endsWith)) && (string.IsNullOrEmpty(startsWith) || f.Name.StartsWith(startsWith))));
+        
+        foreach (var file in files)
         {
             CloudBlob sourceBlob = sourceBlobContainer.GetBlockBlobReference(file.Name);
             CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(file.Name);
             CopyBlobAsync(sourceBlob, destinationBlob);
+            log.Info($"Start copy of file : {file.Name}");
         }
     }
     catch (Exception ex)
