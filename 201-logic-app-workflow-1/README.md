@@ -1,4 +1,4 @@
----
+﻿---
 services: media-services,functions
 platforms: dotnet
 author: shigeyf
