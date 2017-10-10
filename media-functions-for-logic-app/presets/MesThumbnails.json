@@ -1,0 +1,24 @@
+{
+  "Version": 1.0,
+  "Codecs": [
+    {
+      "Start": "{Best}",
+      "Type": "PngImage",
+      "PngLayers": [
+        {
+          "Type": "PngLayer",
+          "Width": 960,
+          "Height": 540
+        }
+      ]
+    }
+  ],
+  "Outputs": [
+    {
+      "FileName": "{Basename}_{Index}{Extension}",
+      "Format": {
+        "Type": "PngFormat"
+      }
+    }
+  ]
+}

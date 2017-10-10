@@ -15,6 +15,7 @@ Input:
     "motionDetectionLevel" : "medium",          // Optional
     "summarizationDuration" : "0.0",            // Optional. 0.0 for automatic
     "hyperlapseSpeed" : "8"                     // Optional
+    "mesThumbnailsStart" : "{Best}",            // Optional. Add a task to generate thumbnails
     "priority" : 10                             // Optional. Priority of the job
 }
 
@@ -67,6 +68,11 @@ Output:
             taskId : ""
         },
         "hyperlapse" :
+        {
+            assetId : "",
+            taskId : ""
+        },
+         "mesThumbnails" :
         {
             assetId : "",
             taskId : ""
@@ -141,6 +147,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     int OutputMotion = -1;
     int OutputSummarization = -1;
     int OutputHyperlapse = -1;
+    int OutputMesThumbnails = -1;
+
     int id = 0;
     string programid = "";
     string programName = "";
@@ -337,6 +345,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         OutputMotion = AddTask(job, subclipasset, (string)data.motionDetectionLevel, "Azure Media Motion Detector", "MotionDetection.json", "medium", ref taskindex, priority - 1);
         OutputSummarization = AddTask(job, subclipasset, (string)data.summarizationDuration, "Azure Media Video Thumbnails", "Summarization.json", "0.0", ref taskindex);
         OutputHyperlapse = AddTask(job, subclipasset, (string)data.hyperlapseSpeed, "Azure Media Hyperlapse", "Hyperlapse.json", "8", ref taskindex);
+        OutputMesThumbnails = AddTask(job, subclipasset, (string)data.mesThumbnailsStart, "Media Encoder Standard", "MesThumbnails.json", "{Best}", ref taskindex);
 
         job.Submit();
         log.Info("Job Submitted");
@@ -448,6 +457,11 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         {
             assetId = ReturnId(job, OutputHyperlapse),
             taskId = ReturnTaskId(job, OutputHyperlapse)
+        },
+        mesThumbnails = new
+        {
+            assetId = ReturnId(job, OutputMesThumbnails),
+            taskId = ReturnTaskId(job, OutputMesThumbnails)
         },
         channelName = channelName,
         programName = programName,
