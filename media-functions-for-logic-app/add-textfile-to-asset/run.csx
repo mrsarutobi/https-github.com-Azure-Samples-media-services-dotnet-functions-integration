@@ -1,5 +1,5 @@
 /*
-This function adds a text file to an existing asset.
+This function adds a text file to an existing asset. Oct 17 version.
 As a option, the text can be converted from ttml to vtt (useful when the ttml has been translated with MS Translator and the user wants a VTT file for Azure Media Player
 
 Input:
