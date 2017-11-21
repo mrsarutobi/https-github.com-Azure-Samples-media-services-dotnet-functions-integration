@@ -4,7 +4,12 @@
     {
       "type": "httpTrigger",
       "direction": "in",
-      "name": "req"
+      "name": "req",
+      "methods": [
+        "post",
+        "head",
+        "trace"
+      ]
     },
     {
       "type": "http",
