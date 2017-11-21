@@ -4,7 +4,6 @@
     {
       "type": "httpTrigger",
       "direction": "in",
-      "webHookType": "genericJson",
       "name": "req"
     },
     {
