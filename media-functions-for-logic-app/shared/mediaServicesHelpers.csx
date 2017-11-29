@@ -18,9 +18,9 @@ private static IMediaProcessor GetLatestMediaProcessorByName(string mediaProcess
     return processor;
 }
 
-public static Uri GetValidOnDemandURI(IAsset asset)
+public static Uri GetValidOnDemandURI(IAsset asset, string preferredSE = null)
 {
-    var aivalidurls = GetValidURIs(asset);
+    var aivalidurls = GetValidURIs(asset, preferredSE);
     if (aivalidurls != null)
     {
         return aivalidurls.FirstOrDefault();
