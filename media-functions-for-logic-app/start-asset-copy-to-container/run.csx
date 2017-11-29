@@ -8,7 +8,7 @@ Input:
     "targetStorageAccountKey": "",
     "targetContainer" : "",
     "startsWith" : "video", //optional, copy only files that start with name video
-    "endsWidth" : ".mp4", //optional, copy only files that end with .mp4
+    "endsWith" : ".mp4", //optional, copy only files that end with .mp4
 }
 Output:
 {
