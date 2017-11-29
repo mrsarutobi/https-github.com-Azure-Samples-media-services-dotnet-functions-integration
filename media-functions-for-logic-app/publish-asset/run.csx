@@ -4,6 +4,7 @@ This function publishes an asset.
 Input:
 {
     "assetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", // Mandatory, Id of the source asset
+    "preferredSE" : "default" // Optional, name of Streaming Endpoint if a specific Streaming Endpoint should be used for the URL outputs
 }
 
 Output:
@@ -74,6 +75,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     string playerUrl = "";
     string smoothUrl = "";
     string pathUrl = "";
+    string preferredSE = data.preferredSE;
 
     log.Info($"Using Azure Media Service Rest API Endpoint : {_RESTAPIEndpoint}");
 
@@ -101,12 +103,12 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             });
         }
 
-        // publish with a streaming locator (10 years)
-        IAccessPolicy readPolicy2 = _context.AccessPolicies.Create("readPolicy", TimeSpan.FromDays(365*10), AccessPermissions.Read);
+        // publish with a streaming locator (100 years)
+        IAccessPolicy readPolicy2 = _context.AccessPolicies.Create("readPolicy", TimeSpan.FromDays(365*100), AccessPermissions.Read);
         ILocator outputLocator2 = _context.Locators.CreateLocator(LocatorType.OnDemandOrigin, outputAsset, readPolicy2);
 
-        var publishurlsmooth = GetValidOnDemandURI(outputAsset);
-        var publishurlpath = GetValidOnDemandPath(outputAsset);
+        var publishurlsmooth = GetValidOnDemandURI(outputAsset, preferredSE);
+        var publishurlpath = GetValidOnDemandPath(outputAsset, preferredSE);
 
         if (outputLocator2 != null && publishurlsmooth != null)
         {
