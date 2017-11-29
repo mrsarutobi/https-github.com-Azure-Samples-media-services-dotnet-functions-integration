@@ -61,6 +61,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
     log.Info(jsonContent);
 
+    string startsWith = data.startsWith;
+    string endsWith = data.endsWith;
+    IAsset asset = null;
+
     if (data.assetId == null)
     {
         // for test
@@ -85,7 +89,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
         // Get the asset
         string assetid = data.assetId;
-        var asset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
+        asset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
 
         if (asset == null)
         {
