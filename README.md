@@ -249,7 +249,8 @@ This sample project is licensed under [the MIT License](LICENSE.txt)
 - [X] Document the Logic Apps functions
 
 ## History
-- 8/28/2017 - Updated all code to use new AAD Service Principal authentication
+- 08/28/2017 - Updated all code to use new AAD Service Principal authentication
+- 11/29/2017 - Updated functions for logic app (from webhook to standard, SDK updates)
 
 ---
 _This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments._
