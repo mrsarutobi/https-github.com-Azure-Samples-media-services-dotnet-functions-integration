@@ -4,6 +4,8 @@
 using System;
 using System.ServiceModel;
 using Microsoft.WindowsAzure.MediaServices.Client;
+using System.IO;
+using System.Text;
 
 private static IMediaProcessor GetLatestMediaProcessorByName(string mediaProcessorName)
 {
@@ -16,9 +18,9 @@ private static IMediaProcessor GetLatestMediaProcessorByName(string mediaProcess
     return processor;
 }
 
-public static Uri GetValidOnDemandURI(IAsset asset)
+public static Uri GetValidOnDemandURI(IAsset asset, string preferredSE = null)
 {
-    var aivalidurls = GetValidURIs(asset);
+    var aivalidurls = GetValidURIs(asset, preferredSE);
     if (aivalidurls != null)
     {
         return aivalidurls.FirstOrDefault();
@@ -29,7 +31,7 @@ public static Uri GetValidOnDemandURI(IAsset asset)
     }
 }
 
-public static IEnumerable<Uri> GetValidURIs(IAsset asset)
+public static IEnumerable<Uri> GetValidURIs(IAsset asset, string preferredSE = null)
 {
     IEnumerable<Uri> ValidURIs;
     var ismFile = asset.AssetFiles.AsEnumerable().Where(f => f.Name.EndsWith(".ism")).OrderByDescending(f => f.IsPrimary).FirstOrDefault();
@@ -38,9 +40,16 @@ public static IEnumerable<Uri> GetValidURIs(IAsset asset)
     {
         var locators = asset.Locators.Where(l => l.Type == LocatorType.OnDemandOrigin && l.ExpirationDateTime > DateTime.UtcNow).OrderByDescending(l => l.ExpirationDateTime);
 
-        var se = _context.StreamingEndpoints.AsEnumerable().Where(o => (o.State == StreamingEndpointState.Running) && (CanDoDynPackaging(o))).OrderByDescending(o => o.CdnEnabled);
+        var se = _context.StreamingEndpoints.AsEnumerable().Where(o =>
 
-        if (se.Count() == 0) // No running which can do dynpackaging SE. Let's use the default one to get URL
+            ( string.IsNullOrEmpty(preferredSE) || (o.Name == preferredSE) )
+            &&
+            (!string.IsNullOrEmpty(preferredSE) || ( (o.State == StreamingEndpointState.Running) && (CanDoDynPackaging(o)   ))
+                                                                    ))
+        .OrderByDescending(o => o.CdnEnabled);
+       
+
+        if (se.Count() == 0) // No running which can do dynpackaging SE and if not preferredSE. Let's use the default one to get URL
         {
             se = _context.StreamingEndpoints.AsEnumerable().Where(o => o.Name == "default").OrderByDescending(o => o.CdnEnabled);
         }
@@ -50,7 +59,7 @@ public static IEnumerable<Uri> GetValidURIs(IAsset asset)
         ValidURIs = locators.SelectMany(l =>
             se.Select(
                     o =>
-                        template.BindByPosition(new Uri("http://" + o.HostName), l.ContentAccessComponent,
+                        template.BindByPosition(new Uri("https://" + o.HostName), l.ContentAccessComponent,
                             ismFile.Name)))
             .ToArray();
 
@@ -62,9 +71,9 @@ public static IEnumerable<Uri> GetValidURIs(IAsset asset)
     }
 }
 
-public static Uri GetValidOnDemandPath(IAsset asset)
+public static Uri GetValidOnDemandPath(IAsset asset, string preferredSE = null)
 {
-    var aivalidurls = GetValidPaths(asset);
+    var aivalidurls = GetValidPaths(asset, preferredSE);
     if (aivalidurls != null)
     {
         return aivalidurls.FirstOrDefault();
@@ -75,15 +84,23 @@ public static Uri GetValidOnDemandPath(IAsset asset)
     }
 }
 
-public static IEnumerable<Uri> GetValidPaths(IAsset asset)
+public static IEnumerable<Uri> GetValidPaths(IAsset asset, string preferredSE = null)
 {
     IEnumerable<Uri> ValidURIs;
 
     var locators = asset.Locators.Where(l => l.Type == LocatorType.OnDemandOrigin && l.ExpirationDateTime > DateTime.UtcNow).OrderByDescending(l => l.ExpirationDateTime);
 
-    var se = _context.StreamingEndpoints.AsEnumerable().Where(o => (o.State == StreamingEndpointState.Running) && (CanDoDynPackaging(o))).OrderByDescending(o => o.CdnEnabled);
+    //var se = _context.StreamingEndpoints.AsEnumerable().Where(o => (o.State == StreamingEndpointState.Running) && (CanDoDynPackaging(o))).OrderByDescending(o => o.CdnEnabled);
 
-    if (se.Count() == 0) // No running which can do dynpackaging SE. Let's use the default one to get URL
+    var se = _context.StreamingEndpoints.AsEnumerable().Where(o =>
+
+           (string.IsNullOrEmpty(preferredSE) || (o.Name == preferredSE))
+           &&
+           (!string.IsNullOrEmpty(preferredSE) || ((o.State == StreamingEndpointState.Running) && (CanDoDynPackaging(o)))
+                                                                   ))
+       .OrderByDescending(o => o.CdnEnabled);
+
+    if (se.Count() == 0) // No running which can do dynpackaging SE and if not preferredSE. Let's use the default one to get URL
     {
         se = _context.StreamingEndpoints.AsEnumerable().Where(o => o.Name == "default").OrderByDescending(o => o.CdnEnabled);
     }
@@ -91,7 +108,7 @@ public static IEnumerable<Uri> GetValidPaths(IAsset asset)
     var template = new UriTemplate("{contentAccessComponent}/");
     ValidURIs = locators.SelectMany(l => se.Select(
                 o =>
-                    template.BindByPosition(new Uri("http://" + o.HostName), l.ContentAccessComponent)))
+                    template.BindByPosition(new Uri("https://" + o.HostName), l.ContentAccessComponent)))
         .ToArray();
 
     return ValidURIs;
@@ -126,4 +143,34 @@ public enum StreamEndpointType
     Classic = 0,
     Standard,
     Premium
+}
+
+public static string ReturnContent(IAssetFile assetFile)
+{
+    string datastring = null;
+
+    try
+    {
+        string tempPath = System.IO.Path.GetTempPath();
+        string filePath = Path.Combine(tempPath, assetFile.Name);
+
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+        }
+        assetFile.Download(filePath);
+
+        StreamReader streamReader = new StreamReader(filePath);
+        Encoding fileEncoding = streamReader.CurrentEncoding;
+        datastring = streamReader.ReadToEnd();
+        streamReader.Close();
+
+        File.Delete(filePath);
+    }
+    catch
+    {
+
+    }
+
+    return datastring;
 }
