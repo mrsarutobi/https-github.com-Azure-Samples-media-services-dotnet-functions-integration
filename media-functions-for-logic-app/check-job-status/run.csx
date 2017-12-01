@@ -15,7 +15,8 @@ Output:
     "errorText" : ""            // error(s) text if job state is error
     "startTime" :""
     "endTime" : "",
-    "runningDuration" : ""
+    "runningDuration" : "",
+    "progress" : 20.3           // overall progress, between 0 and 100
     "extendedInfo" :            // if extendedInfo is true and job is finished or in error
     {
         "mediaUnitNumber" = 2,
@@ -192,7 +193,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             runningDuration = runningDuration,
             extendedInfo = stats.ToString(),
             isRunning = isRunning.ToString(),
-            isSuccessful = isSuccessful.ToString()
+            isSuccessful = isSuccessful.ToString(),
+            progress = job.GetOverallProgress()
         });
     }
     else
@@ -205,7 +207,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             endTime = endTime,
             runningDuration = runningDuration,
             isRunning = isRunning.ToString(),
-            isSuccessful = isSuccessful.ToString()
+            isSuccessful = isSuccessful.ToString(),
+            progress = job.GetOverallProgress()
         });
     }
 }
