@@ -2,6 +2,8 @@
 
 <iframe src="//aka.ms/ampembed?url=https%3A%2F%2Fxpouyatdemo.streaming.mediaservices.windows.net%2F1e504b53-e1b3-45c3-89ea-9bc01975c3c6%2Fconnect2017-v3.ism%2Fmanifest" name="azuremediaplayer" scrolling="no" frameborder="no" align="center" height="280px" width="500px" allowfullscreen></iframe>
 
+> [!VIDEO https://aka.ms/ampembed?url=https%3A%2F%2Fxpouyatdemo.streaming.mediaservices.windows.net%2F1e504b53-e1b3-45c3-89ea-9bc01975c3c6%2Fconnect2017-v3.ism%2Fmanifest]
+
 
 ## Prerequisites for all Logic Apps deployments
 
