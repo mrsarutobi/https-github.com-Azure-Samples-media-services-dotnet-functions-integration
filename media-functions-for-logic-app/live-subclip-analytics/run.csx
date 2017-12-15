@@ -564,7 +564,7 @@ static public ManifestTimingData GetManifestTimingData(IAsset asset, TraceWriter
                 timescalefrommanifest = videotrack.FirstOrDefault().Attribute("TimeScale").Value;
             }
             ulong timescale = ulong.Parse(timescalefrommanifest);
-            response.TimeScale = (timescale == TimeSpan.TicksPerSecond) ? null : (ulong?)timescale; // if 10000000 then null (default)
+            response.TimeScale = (ulong?)timescale;
 
             // Timestamp offset
             if (videotrack.FirstOrDefault().Element("c").Attribute("t") != null)
