@@ -11,8 +11,8 @@ Input:
 Output:
 {
     "taskState" : 2,            // The state of the task (int)
-    "isRunning" : "False",      // True if job is running
-    "isSuccessful" : "True",    // True is job is a success. Only valid if IsRunning = False
+    "isRunning" : "False",      // True if task is running
+    "isSuccessful" : "True",    // True is task is a success. Value is only valid if isRunning = "False"
     "errorText" : ""            // error(s) text if task state is error
     "startTime" :""
     "endTime" : "",
@@ -159,14 +159,11 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             task = job.Tasks.Where(j => j.Id == taskid).FirstOrDefault();
         }
 
-        if (job.State == JobState.Error || job.State == JobState.Canceled)
+        if (task.State == JobState.Error || task.State == JobState.Canceled)
         {
-            foreach (var taskenum in job.Tasks)
+            foreach (var details in task.ErrorDetails)
             {
-                foreach (var details in taskenum.ErrorDetails)
-                {
-                    sberror.AppendLine(taskenum.Name + " : " + details.Message);
-                }
+                sberror.AppendLine(task.Name + " : " + details.Message);
             }
         }
 
@@ -186,8 +183,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         });
     }
 
-    isRunning = !(job.State == JobState.Finished || job.State == JobState.Canceled || job.State == JobState.Error);
-    isSuccessful = (job.State == JobState.Finished);
+    isRunning = !(task.State == JobState.Finished || task.State == JobState.Canceled || task.State == JobState.Error);
+    isSuccessful = (task.State == JobState.Finished);
 
     if (extendedInfo && (task.State == JobState.Finished || task.State == JobState.Canceled || task.State == JobState.Error))
     {
@@ -221,8 +218,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             startTime = startTime,
             endTime = endTime,
             runningDuration = runningDuration,
-            isRunning = isRunning,
-            isSuccessful = isSuccessful,
+            isRunning = isRunning.ToString(),
+            isSuccessful = isSuccessful.ToString(),
             progress = task.Progress
         });
     }
@@ -242,9 +239,5 @@ public static string ReturnMediaReservedUnitName(ReservedUnitType unitType)
 
         case ReservedUnitType.Premium:
             return "S3";
-
     }
 }
-
-
-
