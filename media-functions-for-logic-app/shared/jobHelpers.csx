@@ -74,3 +74,8 @@ public static string ReturnTaskId(IJob job, int index)
 {
     return index > -1 ? job.Tasks[index].Id : null;
 }
+
+public static string OutputStorageFromParam(Dynamic objParam)
+{
+    return (objParam != null) ? (string)objParam.outputStorage : null;
+}

@@ -7,60 +7,71 @@ Input:
     "assetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", // Mandatory, Id of the source asset
     "mes" :                 // Optional but required to encode with Media Encoder Standard (MES)
     {
-        "preset" : "Content Adaptive Multiple Bitrate MP4" // Optional but required to encode with Media Encoder Standard (MES). If MESPreset contains an extension "H264 Multiple Bitrate 720p with thumbnail.json" then it loads this file from ..\Presets
-        "outputStorage" : "jghgfc45" // Optional. Storage account name where to put the output asset
+        "preset" : "Content Adaptive Multiple Bitrate MP4", // Optional but required to encode with Media Encoder Standard (MES). If MESPreset contains an extension "H264 Multiple Bitrate 720p with thumbnail.json" then it loads this file from ..\Presets
+        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
     }
      "mesThumbnails" :      // Optional but required to generate thumbnails with Media Encoder Standard (MES)
     {
-        "start" : "{Best}"  // Optional. Start time/mode. Default is "{Best}"
+        "start" : "{Best}",  // Optional. Start time/mode. Default is "{Best}"
+        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
     }
     "mepw" :                // Optional but required to encode with Premium Workflow Encoder
     {
         "workflowAssetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", // Required. Id for the workflow asset
-        "workflowConfig"  : ""                                                  // Optional. Premium Workflow Config for the task
+        "workflowConfig"  : "",                                                  // Optional. Premium Workflow Config for the task
+        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
     "indexV1" :             // Optional but required to index audio with Media Indexer v1
     {
         "enabled" : True,    // True to add a Media Indexer v1 encoding task
-        "language" : "English" // Optional. Default is "English"
+        "language" : "English", // Optional. Default is "English"
+        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
     "indexV2" :             // Optional but required to index audio with Media Indexer v2
     {
         "enabled" : True,    // True to add a Media Indexer v2 encoding task
-        "language" : "EnUs" // Optional. Default is EnUs
+        "language" : "EnUs", // Optional. Default is EnUs
+        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
     "ocr" :             // Optional but required to do OCR
     {
         "enabled" : True, // True to add a OCR task
-        "language" : "AutoDetect" or "English" // Optional (Autodetect is the default)
+        "language" : "AutoDetect", // Optional (Autodetect is the default)
+        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
     "faceDetection" :             // Optional but required to do Face Detection
     {
         "enabled": True, // True to add a Face Detection task
-        "mode" : "PerFaceEmotion" // Optional (PerFaceEmotion is the default)
+        "mode" : "PerFaceEmotion", // Optional (PerFaceEmotion is the default)
+        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
     "faceRedaction" :             // Optional but required to do Face Redaction
     {
-        "enabled" : True, // True to add a Face Redaction task
-        "mode" : "analyze" // Optional (analyze is the default)
+        "enabled" : True,                   // True to add a Face Redaction task
+        "mode" : "analyze"                  // Optional (analyze is the default)
+        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
      "motionDetection" :             // Optional but required to do Motion Detection
     {
-        "enabled" : True, // True to add a Motion Detection task
-        "level" : "medium" // Optional (medium is the default)
+        "enabled" : True,                   // True to add a Motion Detection task
+        "level" : "medium",                 // Optional (medium is the default)
+        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
-     "summarization" :             // Optional but required to do Motion Detection
+     "summarization" :                      // Optional but required to do Motion Detection
     {
-        "enabled" : True, // True to add a summarization task
-        "duration" : "0.0" // Optional (0.0 is the default)
+        "enabled" : True,                   // True to add a summarization task
+        "duration" : "0.0",                 // Optional (0.0 is the default)
+        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
      "hyperlapse" :             // Optional but required to do Motion Detection
     {
-        "enabled" : True, // True to add a hyperlapse task
-        "speed" : "8" // Optional (8 is the default)
+        "enabled" : True,                   // True to add a hyperlapse task
+        "speed" : "8", // Optional (8 is the default)
+        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
      "videoAnnotator" :             // Optional but required to do Video Annotator
     {
+        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
 
     // General job properties
@@ -402,20 +413,20 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         IAsset an_asset = useEncoderOutputForAnalytics ? outputEncoding : asset;
 
         // Media Analytics
-        OutputIndex1 = AddTask(job, an_asset, (data.indexV1 == null) ? (string)data.indexV1Language : ((string)data.indexV1.language ?? "English") , "Azure Media Indexer", "IndexerV1.xml", "English", ref taskindex, specifiedStorageAccountName: (data.indexV1 != null) ? (string)data.indexV1.outputStorage : null);
-        OutputIndex2 = AddTask(job, an_asset, (data.indexV2 == null) ? (string)data.indexV2Language : ((string)data.indexV2.language ?? "EnUs"), "Azure Media Indexer 2 Preview", "IndexerV2.json", "EnUs", ref taskindex, specifiedStorageAccountName: (data.indexV2 != null) ? (string)data.indexV2.outputStorage : null);
-        OutputOCR = AddTask(job, an_asset, (data.ocr == null) ? (string)data.ocrLanguage : ((string)data.ocr.language ?? "AutoDetect"), "Azure Media OCR", "OCR.json", "AutoDetect", ref taskindex, specifiedStorageAccountName: (data.ocr != null) ? (string)data.ocr.outputStorage : null);
-        OutputFaceDetection = AddTask(job, an_asset, (data.faceDetection == null) ? (string)data.faceDetectionMode : ((string)data.faceDetection.mode ?? "PerFaceEmotion"), "Azure Media Face Detector", "FaceDetection.json", "PerFaceEmotion", ref taskindex, specifiedStorageAccountName: (data.faceDetection != null) ? (string)data.faceDetection.outputStorage : null);
-        OutputFaceRedaction = AddTask(job, an_asset, (data.faceRedaction == null) ? (string)data.faceRedactionMode : ((string)data.faceRedaction.mode ?? "comined"), "Azure Media Redactor", "FaceRedaction.json", "combined", ref taskindex, specifiedStorageAccountName: (data.faceRedaction != null) ? (string)data.faceRedactionmes.outputStorage : null);
-        OutputMotion = AddTask(job, an_asset, (data.motionDetection == null) ? (string)data.motionDetectionLevel : ((string)data.motionDetection.level ?? "medium"), "Azure Media Motion Detector", "MotionDetection.json", "medium", ref taskindex, specifiedStorageAccountName: (data.motionDetection != null) ? (string)data.motionDetection.outputStorage : null);
-        OutputSummarization = AddTask(job, an_asset, (data.summarization == null) ? (string)data.summarizationDuration : ((string)data.summarization.duration ?? "0.0"), "Azure Media Video Thumbnails", "Summarization.json", "0.0", ref taskindex, specifiedStorageAccountName: (data.summarization != null) ? (string)data.summarization.outputStorage : null);
-        OutputVideoAnnotation = AddTask(job, an_asset,(data.videoAnnotator != null) ? "1.0" : null, "Azure Media Video Annotator", "VideoAnnotator.json", "1.0", ref taskindex, specifiedStorageAccountName: (data.videoAnnotator != null) ? (string)data.videoAnnotator.outputStorage : null);
+        OutputIndex1 = AddTask(job, an_asset, (data.indexV1 == null) ? (string)data.indexV1Language : ((string)data.indexV1.language ?? "English") , "Azure Media Indexer", "IndexerV1.xml", "English", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.indexV1));
+        OutputIndex2 = AddTask(job, an_asset, (data.indexV2 == null) ? (string)data.indexV2Language : ((string)data.indexV2.language ?? "EnUs"), "Azure Media Indexer 2 Preview", "IndexerV2.json", "EnUs", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.indexV2));
+        OutputOCR = AddTask(job, an_asset, (data.ocr == null) ? (string)data.ocrLanguage : ((string)data.ocr.language ?? "AutoDetect"), "Azure Media OCR", "OCR.json", "AutoDetect", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.ocr));
+        OutputFaceDetection = AddTask(job, an_asset, (data.faceDetection == null) ? (string)data.faceDetectionMode : ((string)data.faceDetection.mode ?? "PerFaceEmotion"), "Azure Media Face Detector", "FaceDetection.json", "PerFaceEmotion", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.faceDetection));
+        OutputFaceRedaction = AddTask(job, an_asset, (data.faceRedaction == null) ? (string)data.faceRedactionMode : ((string)data.faceRedaction.mode ?? "comined"), "Azure Media Redactor", "FaceRedaction.json", "combined", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.faceRedaction));
+        OutputMotion = AddTask(job, an_asset, (data.motionDetection == null) ? (string)data.motionDetectionLevel : ((string)data.motionDetection.level ?? "medium"), "Azure Media Motion Detector", "MotionDetection.json", "medium", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.motionDetection));
+        OutputSummarization = AddTask(job, an_asset, (data.summarization == null) ? (string)data.summarizationDuration : ((string)data.summarization.duration ?? "0.0"), "Azure Media Video Thumbnails", "Summarization.json", "0.0", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.summarization));
+        OutputVideoAnnotation = AddTask(job, an_asset,(data.videoAnnotator != null) ? "1.0" : null, "Azure Media Video Annotator", "VideoAnnotator.json", "1.0", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.videoAnnotator));
 
         // MES Thumbnails
-        OutputMesThumbnails = AddTask(job, asset, (data.mesThumbnails != null) ? ((string)data.mesThumbnails.Start ?? "{Best}") : null, "Media Encoder Standard", "MesThumbnails.json", "{Best}", ref taskindex, specifiedStorageAccountName: (data.mesThumbnails != null) ? (string)data.mesThumbnails.outputStorage : null);
+        OutputMesThumbnails = AddTask(job, asset, (data.mesThumbnails != null) ? ((string)data.mesThumbnails.Start ?? "{Best}") : null, "Media Encoder Standard", "MesThumbnails.json", "{Best}", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.mesThumbnails));
  
         // Hyperlapse
-        OutputHyperlapse = AddTask(job, asset, (data.hyperlapse == null) ? (string)data.hyperlapseSpeed : ((string)data.hyperlapse.speed ?? "8"), "Azure Media Hyperlapse", "Hyperlapse.json", "8", ref taskindex, specifiedStorageAccountName: (data.mes != null) ? (string)data.mes.outputStorage : null);
+        OutputHyperlapse = AddTask(job, asset, (data.hyperlapse == null) ? (string)data.hyperlapseSpeed : ((string)data.hyperlapse.speed ?? "8"), "Azure Media Hyperlapse", "Hyperlapse.json", "8", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.hyperlapse));
 
         job.Submit();
         log.Info("Job Submitted");
