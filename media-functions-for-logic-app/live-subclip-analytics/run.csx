@@ -8,6 +8,10 @@ Input:
     "programName" : "program1",     // Mandatory
     "intervalSec" : 60              // Optional. Default is 60 seconds. The duration of subclip (and interval between two calls)
 
+    "mesSubclip" :      // Optional as subclip will always be done but it is required to specify an output storage
+    {
+        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
+    },
     "mesThumbnails" :      // Optional but required to generate thumbnails with Media Encoder Standard (MES)
     {
         "start" : "{Best}",  // Optional. Start time/mode. Default is "{Best}"
@@ -401,7 +405,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         // Add an output asset to contain the results of the job. 
         // This output is specified as AssetCreationOptions.None, which 
         // means the output asset is not encrypted. 
-        var subclipasset = taskEncoding.OutputAssets.AddNew(asset.Name + " subclipped " + triggerStart, AssetCreationOptions.None);
+        var subclipasset = taskEncoding.OutputAssets.AddNew(asset.Name + " subclipped " + triggerStart, OutputStorageFromParam(data.mesSubclip), AssetCreationOptions.None);
 
         log.Info($"Adding media analytics tasks");
 
