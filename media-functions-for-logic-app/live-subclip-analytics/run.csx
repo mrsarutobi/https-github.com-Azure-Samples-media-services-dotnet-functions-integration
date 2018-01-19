@@ -216,6 +216,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     int OutputSummarization = -1;
     int OutputHyperlapse = -1;
     int OutputMesThumbnails = -1;
+    int OutputVideoAnnotation = -1;
 
     int id = 0;
     string programid = "";
@@ -432,8 +433,6 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
  
         // Hyperlapse
         OutputHyperlapse = AddTask(job, subclipasset, (data.hyperlapse == null) ? (string)data.hyperlapseSpeed : ((string)data.hyperlapse.speed ?? "8"), "Azure Media Hyperlapse", "Hyperlapse.json", "8", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.hyperlapse));
-
-
 
         job.Submit();
         log.Info("Job Submitted");
