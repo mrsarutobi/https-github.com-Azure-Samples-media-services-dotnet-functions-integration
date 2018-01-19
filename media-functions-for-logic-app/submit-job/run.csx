@@ -1,4 +1,3 @@
-
 /*
 This function submits a job wth encoding and/or analytics.
 
@@ -77,11 +76,9 @@ Input:
     // General job properties
     "priority" : 10,                            // Optional, priority of the job
     "useEncoderOutputForAnalytics" : true,      // Optional, use generated asset by MES or Premium Workflow as a source for media analytics
-    "mesThumbnailsStart" : "{Best}",            // Optional. Add a task to generate thumbnails
-    "videoAnnotatorVersion" : "1.0",            // Optional, required for VideoAnnotator
     "jobName" : ""                              // Optional, job name  
 
-    // For compatibility only. Do not use
+    // For compatibility only with old workflows. Do not use anymore!
     "mesPreset" : "Adaptive Streaming",         // Optional but required to encode with Media Encoder Standard (MES). If MESPreset contains an extension "H264 Multiple Bitrate 720p with thumbnail.json" then it loads this file from ..\Presets
     "workflowAssetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", // Optional, but required to encode the asset with Premium Workflow Encoder. Id for the workflow asset
     "workflowConfig"  : ""                      // Optional. Premium Workflow Config for the task
@@ -275,7 +272,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             });
         }
 
-        if (data.useEncoderOutputForAnalytics != null && (data.mesPreset != null || data.mesPreset != null))  // User wants to use encoder output for media analytics
+        if (data.useEncoderOutputForAnalytics != null && ((bool)data.useEncoderOutputForAnalytics) && (data.mesPreset != null || data.mes != null))  // User wants to use encoder output for media analytics
         {
             useEncoderOutputForAnalytics = (bool)data.useEncoderOutputForAnalytics;
         }
