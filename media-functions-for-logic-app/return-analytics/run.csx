@@ -6,6 +6,8 @@ Input:
     "assetFaceRedactionId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Id of the source asset that contains media analytics (face redaction)
     "assetMotionDetectionId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b",  // Id of the source asset that contains media analytics (motion detection)
     "assetOcrId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b",  // Id of the source asset that contains media analytics (OCR)
+    "assetVideoAnnotationId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b",  // Id of the source asset that contains media analytics (video annotation)
+    "assetMesThumbnailsId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b",  // Id of the source asset that contains the mes thumbnails
     "timeOffset" :"00:01:00", // optional, offset to add to subtitles (used for live analytics)
     "copyToContainer" : "jpgfaces" // Optional, to copy jpg files to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
     "copyToContainerThumbnail" : "thumbnails" // Optional, to copy png files to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
@@ -45,7 +47,7 @@ Output:
         "json" : "",      // the json of the face redaction
         "jsonOffset" : ""      // the json of the face redaction with offset
         },
-    "Ocr":
+    "ocr":
         {
         "json" : "",      // the json of the Ocr
         "jsonOffset" : ""      // the json of Ocr with offset
@@ -210,7 +212,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
                     targetContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, copyToContainer);
                 }
 
-                CopyJPGsAsync(sourceContainer, targetContainer, prefixjpg, log);
+                CopyFilesAsync(sourceContainer, targetContainer, prefixjpg, "jpg", log);
                 targetContainerUri = targetContainer.Uri.ToString();
             }
 
@@ -310,7 +312,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
                     targetContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, copyToContainer);
                 }
 
-                CopyPNGsAsync(sourceContainer, targetContainer, prefixpng, log);
+                CopyFilesAsync(sourceContainer, targetContainer, prefixpng, "png", log);
                 targetContainerUri = targetContainer.Uri.ToString();
             }
 
@@ -501,7 +503,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             json = Newtonsoft.Json.JsonConvert.SerializeObject(objMotionDetection),
             jsonOffset = Newtonsoft.Json.JsonConvert.SerializeObject(objMotionDetectionOffset)
         },
-        Ocr = new
+        ocr = new
         {
             json = Newtonsoft.Json.JsonConvert.SerializeObject(objOcr),
             jsonOffset = Newtonsoft.Json.JsonConvert.SerializeObject(objOcrOffset)
@@ -514,8 +516,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     });
 }
 
-
-static public void CopyJPGsAsync(CloudBlobContainer sourceBlobContainer, CloudBlobContainer destinationBlobContainer, string prefix, TraceWriter log)
+static public void CopyFilesAsync(CloudBlobContainer sourceBlobContainer, CloudBlobContainer destinationBlobContainer, string prefix, string extension, TraceWriter log)
 {
     if (destinationBlobContainer.CreateIfNotExists())
     {
@@ -530,39 +531,7 @@ static public void CopyJPGsAsync(CloudBlobContainer sourceBlobContainer, CloudBl
     var blobList = sourceBlobContainer.ListBlobs(blobPrefix, useFlatBlobListing, BlobListingDetails.None);
     foreach (var sourceBlob in blobList)
     {
-        if ((sourceBlob as CloudBlob).Name.EndsWith(".jpg"))
-        {
-            log.Info("Source blob : " + (sourceBlob as CloudBlob).Uri.ToString());
-            CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(prefix + (sourceBlob as CloudBlob).Name);
-            if (destinationBlob.Exists())
-            {
-                log.Info("Destination blob already exists. Skipping: " + destinationBlob.Uri.ToString());
-            }
-            else
-            {
-                log.Info("Copying blob " + sourceBlob.Uri.ToString() + " to " + destinationBlob.Uri.ToString());
-                CopyBlobAsync(sourceBlob as CloudBlob, destinationBlob);
-            }
-        }
-    }
-}
-
-static public void CopyPNGsAsync(CloudBlobContainer sourceBlobContainer, CloudBlobContainer destinationBlobContainer, string prefix, TraceWriter log)
-{
-    if (destinationBlobContainer.CreateIfNotExists())
-    {
-        destinationBlobContainer.SetPermissions(new BlobContainerPermissions
-        {
-            PublicAccess = BlobContainerPublicAccessType.Container // read-only access to container
-        });
-    }
-
-    string blobPrefix = null;
-    bool useFlatBlobListing = true;
-    var blobList = sourceBlobContainer.ListBlobs(blobPrefix, useFlatBlobListing, BlobListingDetails.None);
-    foreach (var sourceBlob in blobList)
-    {
-        if ((sourceBlob as CloudBlob).Name.EndsWith(".png"))
+        if ((sourceBlob as CloudBlob).Name.EndsWith("." + extension))
         {
             log.Info("Source blob : " + (sourceBlob as CloudBlob).Uri.ToString());
             CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(prefix + (sourceBlob as CloudBlob).Name);
