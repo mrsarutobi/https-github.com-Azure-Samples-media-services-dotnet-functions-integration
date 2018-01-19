@@ -5,6 +5,72 @@ This function submits a job wth encoding and/or analytics.
 Input:
 {
     "assetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", // Mandatory, Id of the source asset
+    "mes" :                 // Optional but required to encode with Media Encoder Standard (MES)
+    {
+        "preset" : "Content Adaptive Multiple Bitrate MP4" // Optional but required to encode with Media Encoder Standard (MES). If MESPreset contains an extension "H264 Multiple Bitrate 720p with thumbnail.json" then it loads this file from ..\Presets
+        "outputStorage" : "jghgfc45" // Optional. Storage account name where to put the output asset
+    }
+     "mesThumbnails" :      // Optional but required to generate thumbnails with Media Encoder Standard (MES)
+    {
+        "start" : "{Best}"  // Optional. Start time/mode. Default is "{Best}"
+    }
+    "mepw" :                // Optional but required to encode with Premium Workflow Encoder
+    {
+        "workflowAssetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", // Required. Id for the workflow asset
+        "workflowConfig"  : ""                                                  // Optional. Premium Workflow Config for the task
+    },
+    "indexV1" :             // Optional but required to index audio with Media Indexer v1
+    {
+        "enabled" : True,    // True to add a Media Indexer v1 encoding task
+        "language" : "English" // Optional. Default is "English"
+    },
+    "indexV2" :             // Optional but required to index audio with Media Indexer v2
+    {
+        "enabled" : True,    // True to add a Media Indexer v2 encoding task
+        "language" : "EnUs" // Optional. Default is EnUs
+    },
+    "ocr" :             // Optional but required to do OCR
+    {
+        "enabled" : True, // True to add a OCR task
+        "language" : "AutoDetect" or "English" // Optional (Autodetect is the default)
+    },
+    "faceDetection" :             // Optional but required to do Face Detection
+    {
+        "enabled": True, // True to add a Face Detection task
+        "mode" : "PerFaceEmotion" // Optional (PerFaceEmotion is the default)
+    },
+    "faceRedaction" :             // Optional but required to do Face Redaction
+    {
+        "enabled" : True, // True to add a Face Redaction task
+        "mode" : "analyze" // Optional (analyze is the default)
+    },
+     "motionDetection" :             // Optional but required to do Motion Detection
+    {
+        "enabled" : True, // True to add a Motion Detection task
+        "level" : "medium" // Optional (medium is the default)
+    },
+     "summarization" :             // Optional but required to do Motion Detection
+    {
+        "enabled" : True, // True to add a summarization task
+        "duration" : "0.0" // Optional (0.0 is the default)
+    },
+     "hyperlapse" :             // Optional but required to do Motion Detection
+    {
+        "enabled" : True, // True to add a hyperlapse task
+        "speed" : "8" // Optional (8 is the default)
+    },
+     "videoAnnotator" :             // Optional but required to do Video Annotator
+    {
+    },
+
+    // General job properties
+    "priority" : 10,                            // Optional, priority of the job
+    "useEncoderOutputForAnalytics" : true,      // Optional, use generated asset by MES or Premium Workflow as a source for media analytics
+    "mesThumbnailsStart" : "{Best}",            // Optional. Add a task to generate thumbnails
+    "videoAnnotatorVersion" : "1.0",            // Optional, required for VideoAnnotator
+    "jobName" : ""                              // Optional, job name  
+
+    // For compatibility only. Do not use
     "mesPreset" : "Adaptive Streaming",         // Optional but required to encode with Media Encoder Standard (MES). If MESPreset contains an extension "H264 Multiple Bitrate 720p with thumbnail.json" then it loads this file from ..\Presets
     "workflowAssetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", // Optional, but required to encode the asset with Premium Workflow Encoder. Id for the workflow asset
     "workflowConfig"  : ""                      // Optional. Premium Workflow Config for the task
@@ -15,10 +81,7 @@ Input:
     "faceRedactionMode" : "analyze",            // Optional, but required for face redaction
     "motionDetectionLevel" : "medium",          // Optional, required for motion detection
     "summarizationDuration" : "0.0",            // Optional. Required to create video summarization. "0.0" for automatic
-    "hyperlapseSpeed" : "8",                    // Optional, required to hyperlapse the video
-    "priority" : 10,                            // Optional, priority of the job
-    "useEncoderOutputForAnalytics" : true       // Optional, use generated asset by MES or Premium Workflow as a source for media analytics
-    "jobName" : ""                              // Optional, job name
+    "hyperlapseSpeed" : "8"                     // Optional, required to hyperlapse the video
 }
 
 Output:
@@ -76,6 +139,16 @@ Output:
         {
             assetId : "",
             taskId : ""
+        },
+    "mesThumbnails" :// Output asset generated by MES
+        {
+            assetId : "",
+            taskId : ""
+        },
+    "videoAnnotation" :// Output asset generated by Video Annotator
+        {
+            assetId : "",
+            taskId : ""
         }
  }
 */
@@ -128,6 +201,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     IAsset outputEncoding = null;
 
     log.Info($"Webhook was triggered!");
+    string triggerStart = DateTime.UtcNow.ToString("o");
 
     string jsonContent = await req.Content.ReadAsStringAsync();
     dynamic data = JsonConvert.DeserializeObject(jsonContent);
@@ -147,10 +221,6 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         });
     }
 
-    // for test
-    // data.WorkflowAssetId = "nb:cid:UUID:44fe8196-616c-4490-bf80-24d1e08754c5";
-    // if data.WorkflowAssetId is passed, then it means a Premium Encoding task is asked
-
     log.Info($"Using Azure Media Service Rest API Endpoint : {_RESTAPIEndpoint}");
 
     IJob job = null;
@@ -166,6 +236,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     int OutputSummarization = -1;
     int OutputHyperlapse = -1;
     int OutputFaceRedaction = -1;
+    int OutputMesThumbnails = -1;
+    int OutputVideoAnnotation = -1;
     int NumberJobsQueue = 0;
 
     try
@@ -206,13 +278,26 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         }
         job = _context.Jobs.Create(((string)data.jobName) ?? "Azure Functions Job", priority);
 
-        if (data.mesPreset != null)  // MES Task
+        if (data.mes != null || data.mesPreset != null)  // MES Task
         {
             // Get a media processor reference, and pass to it the name of the 
             // processor to use for the specific task.
             IMediaProcessor processorMES = GetLatestMediaProcessorByName("Media Encoder Standard");
 
-            string preset = data.mesPreset;
+            string preset = null;
+            if (data.mes != null)
+            {
+                    preset = (string)data.mes.preset;
+            }
+            else
+            {
+                preset = (string)data.mesPreset; // Compatibility mode
+            }
+            if (preset == null)
+            {
+                preset = "Content Adaptive Multiple Bitrate MP4";  // the default preset
+            }
+
 
             if (preset.ToUpper().EndsWith(".JSON"))
             {
@@ -253,11 +338,20 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             outputEncoding = taskEncoding.OutputAssets.AddNew(asset.Name + " MES encoded", AssetCreationOptions.None);
         }
 
-        if (data.workflowAssetId != null)// Premium Encoder Task
+        if (data.mepw != null || data.workflowAssetId != null) // Premium Encoder Task
         {
 
             //find the workflow asset
-            string workflowassetid = (string)data.workflowAssetId;
+            string workflowassetid = null;
+            if (data.mepw != null)
+            {
+                workflowassetid = (string)data.mepw.workflowAssetId;
+            }
+            else
+            {
+                workflowassetid = (string)data.workflowAssetId; // compatibility mode
+            }
+            
             IAsset workflowAsset = _context.Assets.Where(a => a.Id == workflowassetid).FirstOrDefault();
 
             if (workflowAsset == null)
@@ -274,10 +368,15 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             IMediaProcessor processorMEPW = GetLatestMediaProcessorByName("Media Encoder Premium Workflow");
 
             string premiumConfiguration = "";
-            if (data.workflowConfig != null)
+            if (data.mepw != null && data.mepw.workflowConfig != null)
             {
-                premiumConfiguration = (string)data.workflowConfig;
+                premiumConfiguration = (string)data.mepw.workflowConfig;
             }
+            else if (data.workflowConfig != null)
+            {
+                 premiumConfiguration = (string)data.workflowConfig; // compatibility mode
+            }
+
             // In some cases, a configuration can be loaded and passed it to the task to tuned the workflow
             // premiumConfiguration=File.ReadAllText(@"D:\home\site\wwwroot\Presets\SetRuntime.xml").Replace("VideoFileName", VideoFile.Name).Replace("AudioFileName", AudioFile.Name);
 
@@ -303,16 +402,20 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         IAsset an_asset = useEncoderOutputForAnalytics ? outputEncoding : asset;
 
         // Media Analytics
-        OutputIndex1 = AddTask(job, an_asset, (string)data.indexV1Language, "Azure Media Indexer", "IndexerV1.xml", "English", ref taskindex);
-        OutputIndex2 = AddTask(job, an_asset, (string)data.indexV2Language, "Azure Media Indexer 2 Preview", "IndexerV2.json", "EnUs", ref taskindex);
-        OutputOCR = AddTask(job, an_asset, (string)data.ocrLanguage, "Azure Media OCR", "OCR.json", "AutoDetect", ref taskindex);
-        OutputFaceDetection = AddTask(job, an_asset, (string)data.faceDetectionMode, "Azure Media Face Detector", "FaceDetection.json", "PerFaceEmotion", ref taskindex);
-        OutputFaceRedaction = AddTask(job, an_asset, (string)data.faceRedactionMode, "Azure Media Redactor", "FaceRedaction.json", "combined", ref taskindex);
-        OutputMotion = AddTask(job, an_asset, (string)data.motionDetectionLevel, "Azure Media Motion Detector", "MotionDetection.json", "medium", ref taskindex);
-        OutputSummarization = AddTask(job, an_asset, (string)data.summarizationDuration, "Azure Media Video Thumbnails", "Summarization.json", "0.0", ref taskindex);
+        OutputIndex1 = AddTask(job, an_asset, (data.indexV1 == null) ? (string)data.indexV1Language : ((string)data.indexV1.language ?? "English") , "Azure Media Indexer", "IndexerV1.xml", "English", ref taskindex, specifiedStorageAccountName: (data.indexV1 != null) ? (string)data.indexV1.outputStorage : null);
+        OutputIndex2 = AddTask(job, an_asset, (data.indexV2 == null) ? (string)data.indexV2Language : ((string)data.indexV2.language ?? "EnUs"), "Azure Media Indexer 2 Preview", "IndexerV2.json", "EnUs", ref taskindex, specifiedStorageAccountName: (data.indexV2 != null) ? (string)data.indexV2.outputStorage : null);
+        OutputOCR = AddTask(job, an_asset, (data.ocr == null) ? (string)data.ocrLanguage : ((string)data.ocr.language ?? "AutoDetect"), "Azure Media OCR", "OCR.json", "AutoDetect", ref taskindex, specifiedStorageAccountName: (data.ocr != null) ? (string)data.ocr.outputStorage : null);
+        OutputFaceDetection = AddTask(job, an_asset, (data.faceDetection == null) ? (string)data.faceDetectionMode : ((string)data.faceDetection.mode ?? "PerFaceEmotion"), "Azure Media Face Detector", "FaceDetection.json", "PerFaceEmotion", ref taskindex, specifiedStorageAccountName: (data.faceDetection != null) ? (string)data.faceDetection.outputStorage : null);
+        OutputFaceRedaction = AddTask(job, an_asset, (data.faceRedaction == null) ? (string)data.faceRedactionMode : ((string)data.faceRedaction.mode ?? "comined"), "Azure Media Redactor", "FaceRedaction.json", "combined", ref taskindex, specifiedStorageAccountName: (data.faceRedaction != null) ? (string)data.faceRedactionmes.outputStorage : null);
+        OutputMotion = AddTask(job, an_asset, (data.motionDetection == null) ? (string)data.motionDetectionLevel : ((string)data.motionDetection.level ?? "medium"), "Azure Media Motion Detector", "MotionDetection.json", "medium", ref taskindex, specifiedStorageAccountName: (data.motionDetection != null) ? (string)data.motionDetection.outputStorage : null);
+        OutputSummarization = AddTask(job, an_asset, (data.summarization == null) ? (string)data.summarizationDuration : ((string)data.summarization.duration ?? "0.0"), "Azure Media Video Thumbnails", "Summarization.json", "0.0", ref taskindex, specifiedStorageAccountName: (data.summarization != null) ? (string)data.summarization.outputStorage : null);
+        OutputVideoAnnotation = AddTask(job, an_asset,(data.videoAnnotator != null) ? "1.0" : null, "Azure Media Video Annotator", "VideoAnnotator.json", "1.0", ref taskindex, specifiedStorageAccountName: (data.videoAnnotator != null) ? (string)data.videoAnnotator.outputStorage : null);
 
+        // MES Thumbnails
+        OutputMesThumbnails = AddTask(job, asset, (data.mesThumbnails != null) ? ((string)data.mesThumbnails.Start ?? "{Best}") : null, "Media Encoder Standard", "MesThumbnails.json", "{Best}", ref taskindex, specifiedStorageAccountName: (data.mesThumbnails != null) ? (string)data.mesThumbnails.outputStorage : null);
+ 
         // Hyperlapse
-        OutputHyperlapse = AddTask(job, asset, (string)data.hyperlapseSpeed, "Azure Media Hyperlapse", "Hyperlapse.json", "8", ref taskindex);
+        OutputHyperlapse = AddTask(job, asset, (data.hyperlapse == null) ? (string)data.hyperlapseSpeed : ((string)data.hyperlapse.speed ?? "8"), "Azure Media Hyperlapse", "Hyperlapse.json", "8", ref taskindex, specifiedStorageAccountName: (data.mes != null) ? (string)data.mes.outputStorage : null);
 
         job.Submit();
         log.Info("Job Submitted");
@@ -339,7 +442,9 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     log.Info("OutputAssetFaceRedactionId: " + ReturnId(job, OutputFaceRedaction));
     log.Info("OutputAssetMotionDetectionId: " + ReturnId(job, OutputMotion));
     log.Info("OutputAssetSummarizationId: " + ReturnId(job, OutputSummarization));
+    log.Info("OutputMesThumbnailsId: " + ReturnId(job, OutputMesThumbnails));
     log.Info("OutputAssetHyperlapseId: " + ReturnId(job, OutputHyperlapse));
+    log.Info("OutputAssetVideoAnnotationId: " + ReturnId(job, OutputVideoAnnotation));
 
     return req.CreateResponse(HttpStatusCode.OK, new
     {
@@ -396,6 +501,16 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         {
             assetId = ReturnId(job, OutputHyperlapse),
             taskId = ReturnTaskId(job, OutputHyperlapse)
+        },
+        mesThumbnails = new
+        {
+            assetId = ReturnId(job, OutputMesThumbnails),
+            taskId = ReturnTaskId(job, OutputMesThumbnails)
+        },
+        videoAnnotation = new
+        {
+            assetId = ReturnId(job, OutputVideoAnnotation),
+            taskId = ReturnTaskId(job, OutputVideoAnnotation)
         }
     });
 }

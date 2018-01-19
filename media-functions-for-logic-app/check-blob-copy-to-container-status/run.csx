@@ -3,11 +3,11 @@ This function monitor the copy of files (blobs) to a storage container.
 
 Input:
 {
-     "targetStorageAccountName" : "",
+    "targetStorageAccountName" : "",
     "targetStorageAccountKey": "",
     "targetContainer" : ""
-      "delay": 15000 // optional (default is 5000)
-      "fileName" :"video.mp4" // optional. To monitor only for a specific file name copy
+    "delay": 15000 // optional (default is 5000)
+    "fileNamePrefix" :"video.mp4" // optional. To monitor only for a specific file name copy. Can be the full name or a prefix
 }
 Output:
 {
@@ -76,9 +76,9 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
         string blobPrefix = null;
 
-        if (data.fileName != null)
+        if (data.fileNamePrefix != null)
         {
-            blobPrefix = (string)data.fileName;
+            blobPrefix = (string)data.fileNamePrefix;
             log.Info($"{blobPrefix}");
         }
 

@@ -8,6 +8,7 @@ Input:
     "assetOcrId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b",  // Id of the source asset that contains media analytics (OCR)
     "timeOffset" :"00:01:00", // optional, offset to add to subtitles (used for live analytics)
     "copyToContainer" : "jpgfaces" // Optional, to copy jpg files to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
+    "copyToContainerThumbnail" : "thumbnails" // Optional, to copy png files to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
     "copyToContainerAccountName" : "jhggjgghggkj" // storage account name. optional. if not provided, ams storage account is used
     "copyToContainerAccountKey" "" // storage account key
     "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
@@ -29,15 +30,30 @@ Output:
                 ]
         "pathUrl" : "",     // the path to the asset if asset is published
         },
+        "pngThumbnails":[
+                {
+                    "id" :24,
+                    "fileId": "nb:cid:UUID:a93464ae-cbd5-4e63-9459-a3e2cf869f0e",
+                    "fileName": "ArchiveTopBitrate_video_800000_thumb000024.jpg",
+                    "url" : "http://xpouyatdemo.streaming.mediaservices.windows.net/903f9261-d745-48aa-8dfe-ebcd6e6128d6/ArchiveTopBitrate_video_800000_thumb000024.jpg"
+                }
+                ]
+        "pathUrl" : "",     // the path to the asset if asset is published
+        },
     "motionDetection":
         {
         "json" : "",      // the json of the face redaction
         "jsonOffset" : ""      // the json of the face redaction with offset
-        }
+        },
     "Ocr":
         {
         "json" : "",      // the json of the Ocr
         "jsonOffset" : ""      // the json of Ocr with offset
+        },
+    "videoAnnotation":
+        {
+        "json" : "",      // the json of the Video Annotator
+        "jsonOffset" : ""      // the json of Video Annotator with offset
         }
  }
 */
@@ -94,6 +110,9 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     dynamic objFaceDetection = new JObject();
     dynamic objFaceDetectionOffset = new JObject();
 
+    dynamic pngThumbnails = new JArray() as dynamic;
+    string prefixpng = "";    
+
     string jsonMotionDetection = "";
     dynamic objMotionDetection = new JObject();
     dynamic objMotionDetectionOffset = new JObject();
@@ -101,6 +120,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     string jsonOcr = "";
     dynamic objOcr = new JObject();
     dynamic objOcrOffset = new JObject();
+
+    string jsonAnnotation = "";
+    dynamic objAnnotation = new JObject();
+    dynamic objAnnotationOffset = new JObject();
 
     string copyToContainer = "";
     string prefixjpg = "";
@@ -111,14 +134,14 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
     log.Info(jsonContent);
 
-    if (data.assetFaceRedactionId == null && data.assetMotionDetectionId == null && data.assetOcrId == null)
+    if (data.assetFaceRedactionId == null && data.assetMotionDetectionId == null && data.assetOcrId == null && data.assetVideoAnnotationId == null)
     {
         // for test
         // data.assetId = "nb:cid:UUID:d9496372-32f5-430d-a4c6-d21ec3e01525";
 
         return req.CreateResponse(HttpStatusCode.BadRequest, new
         {
-            error = "Please pass asset ID in the input object (assetFaceRedactionId and/or assetMotionDetectionId and/or assetOcrId)"
+            error = "Please pass asset ID in the input object (assetFaceRedactionId and/or assetMotionDetectionId and/or assetOcrId and/or assetVideoAnnotationId)"
         });
     }
 
@@ -236,6 +259,89 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             }
         }
 
+        //
+        // MES Thumbnails
+        //
+        if (data.assetMesThumbnailsId != null)
+        {
+            // Get the asset
+            string assetid = data.assetMesThumbnailsId;
+            var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
+
+            if (outputAsset == null)
+            {
+                log.Info($"Asset not found {assetid}");
+                return req.CreateResponse(HttpStatusCode.BadRequest, new
+                {
+                    error = "Asset not found"
+                });
+            }
+
+            var pngFiles = outputAsset.AssetFiles.Where(a => a.Name.ToUpper().EndsWith(".PNG"));
+
+            Uri publishurl = GetValidOnDemandPath(outputAsset);
+            if (publishurl != null)
+            {
+                pathUrl = publishurl.ToString();
+            }
+            else
+            {
+                log.Info($"Asset not published");
+            }
+
+            // Let's copy the PNG Thumbnails
+            if (data.copyToContainerThumbnail != null)
+            {
+                copyToContainer = data.copyToContainerThumbnail + DateTime.UtcNow.ToString("yyyyMMdd");
+                // let's copy PNG to a container
+                prefixpng = outputAsset.Uri.Segments[1] + "-";
+                log.Info($"prefixpng {prefixpng}");
+                var sourceContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, outputAsset.Uri.Segments[1]);
+
+                CloudBlobContainer targetContainer;
+                if (data.copyToContainerAccountName != null)
+                {
+                    // copy to a specific storage account
+                    targetContainer = GetCloudBlobContainer((string)data.copyToContainerAccountName, (string)data.copyToContainerAccountKey, copyToContainer);
+                }
+                else
+                {
+                    // copy to ams storage account
+                    targetContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, copyToContainer);
+                }
+
+                CopyPNGsAsync(sourceContainer, targetContainer, prefixpng, log);
+                targetContainerUri = targetContainer.Uri.ToString();
+            }
+
+            foreach (IAssetFile file in pngFiles)
+            {
+                string index = file.Name.Substring(file.Name.Length - 10, 6);
+                int index_i = 0;
+                if (int.TryParse(index, out index_i))
+                {
+                    dynamic entry = new JObject();
+                    entry.id = index_i;
+                    entry.fileId = file.Id;
+                    entry.fileName = file.Name;
+                    if (copyToContainer != "")
+                    {
+                        entry.url = targetContainerUri + "/" + prefixpng + file.Name;
+                    }
+                    else if (!string.IsNullOrEmpty(pathUrl))
+                    {
+                        entry.url = pathUrl + file.Name;
+                    }
+                    pngThumbnails.Add(entry);
+                }
+            }
+
+            if (data.deleteAsset != null && ((bool)data.deleteAsset))
+            // If asset deletion was asked
+            {
+                outputAsset.Delete();
+            }
+        }
 
         //
         // MOTION DETECTION
@@ -243,23 +349,23 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         if (data.assetMotionDetectionId != null)
         {
             // Get the asset
-            string assetid2 = data.assetMotionDetectionId;
-            var outputAsset2 = _context.Assets.Where(a => a.Id == assetid2).FirstOrDefault();
+            string assetid = data.assetMotionDetectionId;
+            var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
 
-            if (outputAsset2 == null)
+            if (outputAsset == null)
             {
-                log.Info($"Asset not found {assetid2}");
+                log.Info($"Asset not found {assetid}");
                 return req.CreateResponse(HttpStatusCode.BadRequest, new
                 {
                     error = "Asset not found"
                 });
             }
 
-            var jsonFile2 = outputAsset2.AssetFiles.Where(a => a.Name.ToUpper().EndsWith(".JSON")).FirstOrDefault();
+            var jsonFile = outputAsset.AssetFiles.Where(a => a.Name.ToUpper().EndsWith(".JSON")).FirstOrDefault();
 
-            if (jsonFile2 != null)
+            if (jsonFile != null)
             {
-                jsonMotionDetection = ReturnContent(jsonFile2);
+                jsonMotionDetection = ReturnContent(jsonFile);
                 objMotionDetection = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonMotionDetection);
                 objMotionDetectionOffset = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonMotionDetection);
 
@@ -276,7 +382,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             if (jsonMotionDetection != "" && data.deleteAsset != null && ((bool)data.deleteAsset))
             // If asset deletion was asked
             {
-                outputAsset2.Delete();
+                outputAsset.Delete();
             }
         }
 
@@ -287,32 +393,32 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         if (data.assetOcrId != null)
         {
             // Get the asset
-            string assetid3 = data.assetOcrId;
-            var outputAsset3 = _context.Assets.Where(a => a.Id == assetid3).FirstOrDefault();
+            string assetid = data.assetOcrId;
+            var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
 
-            if (outputAsset3 == null)
+            if (outputAsset == null)
             {
-                log.Info($"Asset not found {assetid3}");
+                log.Info($"Asset not found {assetid}");
                 return req.CreateResponse(HttpStatusCode.BadRequest, new
                 {
                     error = "Asset not found"
                 });
             }
 
-            var jsonFile3 = outputAsset3.AssetFiles.Where(a => a.Name.ToUpper().EndsWith(".JSON")).FirstOrDefault();
+            var jsonFile = outputAsset.AssetFiles.Where(a => a.Name.ToUpper().EndsWith(".JSON")).FirstOrDefault();
 
-            if (jsonFile3 != null)
+            if (jsonFile != null)
             {
-                jsonOcr = ReturnContent(jsonFile3);
+                jsonOcr = ReturnContent(jsonFile);
                 objOcr = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonOcr);
                 objOcrOffset = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonOcr);
 
                 if (data.timeOffset != null) // let's update the json with new timecode
                 {
-                    var tsoffset3 = TimeSpan.Parse((string)data.timeOffset);
+                    var tsoffset = TimeSpan.Parse((string)data.timeOffset);
                     foreach (var frag in objOcrOffset.fragments)
                     {
-                        frag.start = ((long)(frag.start / objOcrOffset.timescale) * 10000000) + tsoffset3.Ticks;
+                        frag.start = ((long)(frag.start / objOcrOffset.timescale) * 10000000) + tsoffset.Ticks;
                     }
                 }
             }
@@ -320,7 +426,50 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             if (jsonOcr != "" && data.deleteAsset != null && ((bool)data.deleteAsset))
             // If asset deletion was asked
             {
-                outputAsset3.Delete();
+                outputAsset.Delete();
+            }
+        }
+
+        //
+        // Video Annotator
+        //
+        if (data.assetVideoAnnotationId != null)
+        {
+            // Get the asset
+            string assetid = data.assetVideoAnnotationId;
+            var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
+
+            if (outputAsset == null)
+            {
+                log.Info($"Asset not found {assetid}");
+                return req.CreateResponse(HttpStatusCode.BadRequest, new
+                {
+                    error = "Asset not found"
+                });
+            }
+
+            var jsonFile = outputAsset.AssetFiles.Where(a => a.Name.ToUpper().EndsWith(".JSON")).FirstOrDefault();
+
+            if (jsonFile != null)
+            {
+                jsonAnnotation = ReturnContent(jsonFile);
+                objAnnotation = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonAnnotation);
+                objAnnotationOffset = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonAnnotation);
+
+                if (data.timeOffset != null) // let's update the json with new timecode
+                {
+                    var tsoffset = TimeSpan.Parse((string)data.timeOffset);
+                    foreach (var frag in objAnnotationOffset.fragments)
+                    {
+                        frag.start = ((long)(frag.start / objAnnotationOffset.timescale) * 10000000) + tsoffset.Ticks;
+                    }
+                }
+            }
+
+            if (jsonAnnotation != "" && data.deleteAsset != null && ((bool)data.deleteAsset))
+            // If asset deletion was asked
+            {
+                outputAsset.Delete();
             }
         }
 
@@ -343,6 +492,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             jsonOffset = Newtonsoft.Json.JsonConvert.SerializeObject(objFaceDetectionOffset),
             jpgFaces = Newtonsoft.Json.JsonConvert.SerializeObject(jpgFaces)
         },
+        mesThumbnail = new
+        {
+            pngThumbnails = Newtonsoft.Json.JsonConvert.SerializeObject(pngThumbnails)
+        },        
         motionDetection = new
         {
             json = Newtonsoft.Json.JsonConvert.SerializeObject(objMotionDetection),
@@ -352,6 +505,11 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         {
             json = Newtonsoft.Json.JsonConvert.SerializeObject(objOcr),
             jsonOffset = Newtonsoft.Json.JsonConvert.SerializeObject(objOcrOffset)
+        },
+        videoAnnotation = new
+        {
+            json = Newtonsoft.Json.JsonConvert.SerializeObject(objAnnotation),
+            jsonOffset = Newtonsoft.Json.JsonConvert.SerializeObject(objAnnotationOffset)
         }
     });
 }
@@ -373,6 +531,38 @@ static public void CopyJPGsAsync(CloudBlobContainer sourceBlobContainer, CloudBl
     foreach (var sourceBlob in blobList)
     {
         if ((sourceBlob as CloudBlob).Name.EndsWith(".jpg"))
+        {
+            log.Info("Source blob : " + (sourceBlob as CloudBlob).Uri.ToString());
+            CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(prefix + (sourceBlob as CloudBlob).Name);
+            if (destinationBlob.Exists())
+            {
+                log.Info("Destination blob already exists. Skipping: " + destinationBlob.Uri.ToString());
+            }
+            else
+            {
+                log.Info("Copying blob " + sourceBlob.Uri.ToString() + " to " + destinationBlob.Uri.ToString());
+                CopyBlobAsync(sourceBlob as CloudBlob, destinationBlob);
+            }
+        }
+    }
+}
+
+static public void CopyPNGsAsync(CloudBlobContainer sourceBlobContainer, CloudBlobContainer destinationBlobContainer, string prefix, TraceWriter log)
+{
+    if (destinationBlobContainer.CreateIfNotExists())
+    {
+        destinationBlobContainer.SetPermissions(new BlobContainerPermissions
+        {
+            PublicAccess = BlobContainerPublicAccessType.Container // read-only access to container
+        });
+    }
+
+    string blobPrefix = null;
+    bool useFlatBlobListing = true;
+    var blobList = sourceBlobContainer.ListBlobs(blobPrefix, useFlatBlobListing, BlobListingDetails.None);
+    foreach (var sourceBlob in blobList)
+    {
+        if ((sourceBlob as CloudBlob).Name.EndsWith(".png"))
         {
             log.Info("Source blob : " + (sourceBlob as CloudBlob).Uri.ToString());
             CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(prefix + (sourceBlob as CloudBlob).Name);
