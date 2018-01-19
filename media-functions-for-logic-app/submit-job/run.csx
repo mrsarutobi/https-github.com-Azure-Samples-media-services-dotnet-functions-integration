@@ -346,7 +346,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             // Add an output asset to contain the results of the job. 
             // This output is specified as AssetCreationOptions.None, which 
             // means the output asset is not encrypted. 
-            outputEncoding = taskEncoding.OutputAssets.AddNew(asset.Name + " MES encoded", AssetCreationOptions.None);
+            outputEncoding = taskEncoding.OutputAssets.AddNew(asset.Name + " MES encoded", OutputStorageFromParam(data.mes), AssetCreationOptions.None);
         }
 
         if (data.mepw != null || data.workflowAssetId != null) // Premium Encoder Task
@@ -407,7 +407,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             // Add an output asset to contain the results of the job. 
             // This output is specified as AssetCreationOptions.None, which 
             // means the output asset is not encrypted. 
-            outputEncoding = taskEncoding.OutputAssets.AddNew(asset.Name + " Premium encoded", AssetCreationOptions.None);
+            outputEncoding = taskEncoding.OutputAssets.AddNew(asset.Name + " Premium encoded", OutputStorageFromParam(data.mepw), AssetCreationOptions.None);
         }
 
         IAsset an_asset = useEncoderOutputForAnalytics ? outputEncoding : asset;
