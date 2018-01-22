@@ -19,53 +19,45 @@ Input:
     },
      "indexV1" :             // Optional but required to index audio with Media Indexer v1
     {
-        "enabled" : True,    // True to add a Media Indexer v1 encoding task
         "language" : "English", // Optional. Default is "English"
         "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
     "indexV2" :             // Optional but required to index audio with Media Indexer v2
     {
-        "enabled" : True,    // True to add a Media Indexer v2 encoding task
         "language" : "EnUs", // Optional. Default is EnUs
         "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
     "ocr" :             // Optional but required to do OCR
     {
-        "enabled" : True, // True to add a OCR task
         "language" : "AutoDetect", // Optional (Autodetect is the default)
         "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
     "faceDetection" :             // Optional but required to do Face Detection
     {
-        "enabled": True, // True to add a Face Detection task
         "mode" : "PerFaceEmotion", // Optional (PerFaceEmotion is the default)
         "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
     "faceRedaction" :             // Optional but required to do Face Redaction
     {
-        "enabled" : True,                   // True to add a Face Redaction task
         "mode" : "analyze"                  // Optional (analyze is the default)
         "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
-     "motionDetection" :             // Optional but required to do Motion Detection
+    "motionDetection" :             // Optional but required to do Motion Detection
     {
-        "enabled" : True,                   // True to add a Motion Detection task
         "level" : "medium",                 // Optional (medium is the default)
         "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
-     "summarization" :                      // Optional but required to do Motion Detection
+    "summarization" :                      // Optional but required to do Motion Detection
     {
-        "enabled" : True,                   // True to add a summarization task
         "duration" : "0.0",                 // Optional (0.0 is the default)
         "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
-     "hyperlapse" :             // Optional but required to do Motion Detection
+    "hyperlapse" :             // Optional but required to do Motion Detection
     {
-        "enabled" : True,                   // True to add a hyperlapse task
         "speed" : "8", // Optional (8 is the default)
         "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
-     "videoAnnotation" :             // Optional but required to do Video Annotator
+    "videoAnnotation" :             // Optional but required to do Video Annotator
     {
         "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
