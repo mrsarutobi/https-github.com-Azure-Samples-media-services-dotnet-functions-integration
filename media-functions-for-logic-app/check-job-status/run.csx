@@ -1,5 +1,5 @@
 /*
-This function check a job status.
+This function checks a job status.
 
 Input:
 {

@@ -1,10 +1,13 @@
 /*
-This function create the asset files based on the blobs in the asset container.
+This function declares the asset files in the AMS asset based on the blobs in the asset container.
 
 Input:
 {
     "assetId" : "the Id of the asset"
 }
+
+Output:
+{}
 
 */
 

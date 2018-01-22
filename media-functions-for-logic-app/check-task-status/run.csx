@@ -1,5 +1,5 @@
 /*
-This function check a task status.
+This function checks a task status.
 
 Input:
 {

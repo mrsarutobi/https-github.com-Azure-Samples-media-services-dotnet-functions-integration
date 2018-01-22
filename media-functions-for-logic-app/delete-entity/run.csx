@@ -1,5 +1,5 @@
 /*
-This function delete AMS entities (job(s) and/or asset(s))
+This function delete AMS entities (job(s) and/or asset(s)).
 
 Input:
 {
