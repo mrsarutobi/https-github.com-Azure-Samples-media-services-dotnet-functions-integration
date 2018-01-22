@@ -202,7 +202,7 @@ private static CloudMediaContext _context = null;
 private static CloudStorageAccount _destinationStorageAccount = null;
 
 
-public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
+public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, ExecutionContext execContext))
 {
     int taskindex = 0;
     bool useEncoderOutputForAnalytics = false;
@@ -313,9 +313,12 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
                 //  preset = File.ReadAllText(@"D:\home\site\wwwroot\Presets\" + preset);
 
                 // Read in custom preset string
-                string homePath = Environment.GetEnvironmentVariable("HOME", EnvironmentVariableTarget.Process);
+                string homePath = execContext.FunctionDirectory; //  Environment.GetEnvironmentVariable("HOME", EnvironmentVariableTarget.Process);
                 log.Info("Home= " + homePath);
-                string presetPath;
+                string presetPath ;
+                System.IO.DirectoryInfo directoryInfo = System.IO.Directory.GetParent(homePath);
+presetPath = Path.Combine(directoryInfo, @"\presets\" + preset);
+ log.Info("presetPath= " + presetPath);
 
                 if (homePath == String.Empty)
                 {
