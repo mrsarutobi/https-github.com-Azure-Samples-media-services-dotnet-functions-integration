@@ -317,7 +317,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Ex
                 log.Info("Home= " + homePath);
                 string presetPath ;
                 System.IO.DirectoryInfo directoryInfo = System.IO.Directory.GetParent(homePath);
-presetPath = Path.Combine(directoryInfo, @"\presets\" + preset);
+presetPath = Path.Combine(directoryInfo.FullName, @"\presets\" + preset);
  log.Info("presetPath= " + presetPath);
 
                 if (homePath == String.Empty)
