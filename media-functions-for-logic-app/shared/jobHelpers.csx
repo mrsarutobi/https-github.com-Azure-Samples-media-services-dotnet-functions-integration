@@ -20,7 +20,7 @@ using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
 
-public static int AddTask(IJob job, IAsset sourceAsset, string value, string processor, string presetfilename, string stringtoreplace, ref int taskindex, int priority = 10, string specifiedStorageAccountName = null)
+public static int AddTask(Microsoft.Azure.WebJobs.ExecutionContext execContext, IJob job, IAsset sourceAsset, string value, string processor, string presetfilename, string stringtoreplace, ref int taskindex, int priority = 10, string specifiedStorageAccountName = null)
 {
     if (value != null)
     {
@@ -28,18 +28,8 @@ public static int AddTask(IJob job, IAsset sourceAsset, string value, string pro
         // processor to use for the specific task.
         IMediaProcessor mediaProcessor = GetLatestMediaProcessorByName(processor);
 
-        string homePath = Environment.GetEnvironmentVariable("HOME", EnvironmentVariableTarget.Process);
-        string presetPath;
-
-        if (homePath == String.Empty)
-        {
-            presetPath = @"../presets/" + presetfilename;
-        }
-        else
-        {
-            presetPath = Path.Combine(homePath, @"site\repository\media-functions-for-logic-app\presets\" + presetfilename);
-        }
-
+        string presetPath = Path.Combine(System.IO.Directory.GetParent(execContext.FunctionDirectory).FullName, "presets", presetfilename);
+        
         string Configuration = File.ReadAllText(presetPath).Replace(stringtoreplace, value);
 
         // Create a task with the encoding details, using a string preset.

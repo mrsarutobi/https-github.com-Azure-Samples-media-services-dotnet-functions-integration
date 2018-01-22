@@ -205,7 +205,7 @@ static readonly string _mediaservicesClientSecret = Environment.GetEnvironmentVa
 private static CloudMediaContext _context = null;
 private static CloudStorageAccount _destinationStorageAccount = null;
 
-public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
+public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Microsoft.Azure.WebJobs.ExecutionContext execContext)
 {
     // Variables
     int taskindex = 0;
@@ -233,7 +233,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
     IJob job = null;
     ITask taskEncoding = null;
     int NumberJobsQueue = 0;
-    
+
     int intervalsec = 60; // Interval for each subclip job (sec). Default is 60
 
     TimeSpan starttime = TimeSpan.FromSeconds(0);
@@ -372,8 +372,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
         duration = livetime - starttime;
         log.Info($"Value duration: {duration}");
 
-        string ConfigurationSubclip = File.ReadAllText(@"D:\home\site\wwwroot\Presets\LiveSubclip.json").Replace("0:00:00.000000", starttime.Subtract(TimeSpan.FromMilliseconds(100)).ToString()).Replace("0:00:30.000000", duration.Add(TimeSpan.FromMilliseconds(200)).ToString());
-
+        // D:\home\site\wwwroot\Presets\LiveSubclip.json
+        string ConfigurationSubclip = File.ReadAllText(Path.Combine(System.IO.Directory.GetParent(execContext.FunctionDirectory).FullName, "presets", "LiveSubclip.json")).Replace("0:00:00.000000", starttime.Subtract(TimeSpan.FromMilliseconds(100)).ToString()).Replace("0:00:30.000000", duration.Add(TimeSpan.FromMilliseconds(200)).ToString());
 
         int priority = 10;
         if (data.priority != null)
@@ -409,34 +409,34 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
 
         log.Info($"Adding media analytics tasks");
 
-/*
-        // Media Analytics
-        OutputIndex1 = AddTask(job, subclipasset, (string)data.indexV1Language, "Azure Media Indexer", "IndexerV1.xml", "English", ref taskindex);
-        OutputIndex2 = AddTask(job, subclipasset, (string)data.indexV2Language, "Azure Media Indexer 2 Preview", "IndexerV2.json", "EnUs", ref taskindex);
-        OutputOCR = AddTask(job, subclipasset, (string)data.ocrLanguage, "Azure Media OCR", "OCR.json", "AutoDetect", ref taskindex);
-        OutputFaceDetection = AddTask(job, subclipasset, (string)data.faceDetectionMode, "Azure Media Face Detector", "FaceDetection.json", "PerFaceEmotion", ref taskindex);
-        OutputFaceRedaction = AddTask(job, subclipasset, (string)data.faceRedactionMode, "Azure Media Redactor", "FaceRedaction.json", "combined", ref taskindex, priority - 1);
-        OutputMotion = AddTask(job, subclipasset, (string)data.motionDetectionLevel, "Azure Media Motion Detector", "MotionDetection.json", "medium", ref taskindex, priority - 1);
-        OutputSummarization = AddTask(job, subclipasset, (string)data.summarizationDuration, "Azure Media Video Thumbnails", "Summarization.json", "0.0", ref taskindex);
-        OutputHyperlapse = AddTask(job, subclipasset, (string)data.hyperlapseSpeed, "Azure Media Hyperlapse", "Hyperlapse.json", "8", ref taskindex);
-        OutputMesThumbnails = AddTask(job, subclipasset, (string)data.mesThumbnailsStart, "Media Encoder Standard", "MesThumbnails.json", "{Best}", ref taskindex);
-*/
+        /*
+                // Media Analytics
+                OutputIndex1 = AddTask(job, subclipasset, (string)data.indexV1Language, "Azure Media Indexer", "IndexerV1.xml", "English", ref taskindex);
+                OutputIndex2 = AddTask(job, subclipasset, (string)data.indexV2Language, "Azure Media Indexer 2 Preview", "IndexerV2.json", "EnUs", ref taskindex);
+                OutputOCR = AddTask(job, subclipasset, (string)data.ocrLanguage, "Azure Media OCR", "OCR.json", "AutoDetect", ref taskindex);
+                OutputFaceDetection = AddTask(job, subclipasset, (string)data.faceDetectionMode, "Azure Media Face Detector", "FaceDetection.json", "PerFaceEmotion", ref taskindex);
+                OutputFaceRedaction = AddTask(job, subclipasset, (string)data.faceRedactionMode, "Azure Media Redactor", "FaceRedaction.json", "combined", ref taskindex, priority - 1);
+                OutputMotion = AddTask(job, subclipasset, (string)data.motionDetectionLevel, "Azure Media Motion Detector", "MotionDetection.json", "medium", ref taskindex, priority - 1);
+                OutputSummarization = AddTask(job, subclipasset, (string)data.summarizationDuration, "Azure Media Video Thumbnails", "Summarization.json", "0.0", ref taskindex);
+                OutputHyperlapse = AddTask(job, subclipasset, (string)data.hyperlapseSpeed, "Azure Media Hyperlapse", "Hyperlapse.json", "8", ref taskindex);
+                OutputMesThumbnails = AddTask(job, subclipasset, (string)data.mesThumbnailsStart, "Media Encoder Standard", "MesThumbnails.json", "{Best}", ref taskindex);
+        */
 
         //new
-        OutputIndex1 = AddTask(job, subclipasset, (data.indexV1 == null) ? (string)data.indexV1Language : ((string)data.indexV1.language ?? "English") , "Azure Media Indexer", "IndexerV1.xml", "English", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.indexV1));
-        OutputIndex2 = AddTask(job, subclipasset, (data.indexV2 == null) ? (string)data.indexV2Language : ((string)data.indexV2.language ?? "EnUs"), "Azure Media Indexer 2 Preview", "IndexerV2.json", "EnUs", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.indexV2));
-        OutputOCR = AddTask(job, subclipasset, (data.ocr == null) ? (string)data.ocrLanguage : ((string)data.ocr.language ?? "AutoDetect"), "Azure Media OCR", "OCR.json", "AutoDetect", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.ocr));
-        OutputFaceDetection = AddTask(job, subclipasset, (data.faceDetection == null) ? (string)data.faceDetectionMode : ((string)data.faceDetection.mode ?? "PerFaceEmotion"), "Azure Media Face Detector", "FaceDetection.json", "PerFaceEmotion", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.faceDetection));
-        OutputFaceRedaction = AddTask(job, subclipasset, (data.faceRedaction == null) ? (string)data.faceRedactionMode : ((string)data.faceRedaction.mode ?? "comined"), "Azure Media Redactor", "FaceRedaction.json", "combined", ref taskindex, priority - 1, specifiedStorageAccountName: OutputStorageFromParam(data.faceRedaction));
-        OutputMotion = AddTask(job, subclipasset, (data.motionDetection == null) ? (string)data.motionDetectionLevel : ((string)data.motionDetection.level ?? "medium"), "Azure Media Motion Detector", "MotionDetection.json", "medium", ref taskindex, priority - 1, specifiedStorageAccountName: OutputStorageFromParam(data.motionDetection));
-        OutputSummarization = AddTask(job, subclipasset, (data.summarization == null) ? (string)data.summarizationDuration : ((string)data.summarization.duration ?? "0.0"), "Azure Media Video Thumbnails", "Summarization.json", "0.0", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.summarization));
-        OutputVideoAnnotation = AddTask(job, subclipasset,(data.videoAnnotation != null) ? "1.0" : null, "Azure Media Video Annotator", "VideoAnnotation.json", "1.0", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.videoAnnotation));
+        OutputIndex1 = AddTask(execContext, job, subclipasset, (data.indexV1 == null) ? (string)data.indexV1Language : ((string)data.indexV1.language ?? "English"), "Azure Media Indexer", "IndexerV1.xml", "English", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.indexV1));
+        OutputIndex2 = AddTask(execContext, job, subclipasset, (data.indexV2 == null) ? (string)data.indexV2Language : ((string)data.indexV2.language ?? "EnUs"), "Azure Media Indexer 2 Preview", "IndexerV2.json", "EnUs", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.indexV2));
+        OutputOCR = AddTask(execContext, job, subclipasset, (data.ocr == null) ? (string)data.ocrLanguage : ((string)data.ocr.language ?? "AutoDetect"), "Azure Media OCR", "OCR.json", "AutoDetect", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.ocr));
+        OutputFaceDetection = AddTask(execContext, job, subclipasset, (data.faceDetection == null) ? (string)data.faceDetectionMode : ((string)data.faceDetection.mode ?? "PerFaceEmotion"), "Azure Media Face Detector", "FaceDetection.json", "PerFaceEmotion", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.faceDetection));
+        OutputFaceRedaction = AddTask(execContext, job, subclipasset, (data.faceRedaction == null) ? (string)data.faceRedactionMode : ((string)data.faceRedaction.mode ?? "comined"), "Azure Media Redactor", "FaceRedaction.json", "combined", ref taskindex, priority - 1, specifiedStorageAccountName: OutputStorageFromParam(data.faceRedaction));
+        OutputMotion = AddTask(execContext, job, subclipasset, (data.motionDetection == null) ? (string)data.motionDetectionLevel : ((string)data.motionDetection.level ?? "medium"), "Azure Media Motion Detector", "MotionDetection.json", "medium", ref taskindex, priority - 1, specifiedStorageAccountName: OutputStorageFromParam(data.motionDetection));
+        OutputSummarization = AddTask(execContext, job, subclipasset, (data.summarization == null) ? (string)data.summarizationDuration : ((string)data.summarization.duration ?? "0.0"), "Azure Media Video Thumbnails", "Summarization.json", "0.0", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.summarization));
+        OutputVideoAnnotation = AddTask(execContext, job, subclipasset, (data.videoAnnotation != null) ? "1.0" : null, "Azure Media Video Annotator", "VideoAnnotation.json", "1.0", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.videoAnnotation));
 
         // MES Thumbnails
-        OutputMesThumbnails = AddTask(job, subclipasset, (data.mesThumbnails != null) ? ((string)data.mesThumbnails.Start ?? "{Best}") : null, "Media Encoder Standard", "MesThumbnails.json", "{Best}", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.mesThumbnails));
- 
+        OutputMesThumbnails = AddTask(execContext, job, subclipasset, (data.mesThumbnails != null) ? ((string)data.mesThumbnails.Start ?? "{Best}") : null, "Media Encoder Standard", "MesThumbnails.json", "{Best}", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.mesThumbnails));
+
         // Hyperlapse
-        OutputHyperlapse = AddTask(job, subclipasset, (data.hyperlapse == null) ? (string)data.hyperlapseSpeed : ((string)data.hyperlapse.speed ?? "8"), "Azure Media Hyperlapse", "Hyperlapse.json", "8", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.hyperlapse));
+        OutputHyperlapse = AddTask(execContext, job, subclipasset, (data.hyperlapse == null) ? (string)data.hyperlapseSpeed : ((string)data.hyperlapse.speed ?? "8"), "Azure Media Hyperlapse", "Hyperlapse.json", "8", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.hyperlapse));
 
         job.Submit();
         log.Info("Job Submitted");
@@ -507,7 +507,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             start = starttime,
             duration = duration,
         },
-         mesThumbnails = new
+        mesThumbnails = new
         {
             assetId = ReturnId(job, OutputMesThumbnails),
             taskId = ReturnTaskId(job, OutputMesThumbnails)
@@ -559,7 +559,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
             assetId = ReturnId(job, OutputVideoAnnotation),
             taskId = ReturnTaskId(job, OutputVideoAnnotation)
         },
-       
+
         channelName = channelName,
         programName = programName,
         programId = programid,

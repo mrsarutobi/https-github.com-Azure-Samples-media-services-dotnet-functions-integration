@@ -304,7 +304,7 @@
               "inputs": {
                 "body": {
                   "assetId": "@{body('create-empty-asset')['assetId']}",
-                  "mesPreset": "Adaptive Streaming"
+                  "mes": {}
                 },
                 "function": {
                   "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', variables('trimfunctionsAppName'),'/functions/submit-job')]"

@@ -22,49 +22,41 @@ Input:
     },
     "indexV1" :             // Optional but required to index audio with Media Indexer v1
     {
-        "enabled" : True,    // True to add a Media Indexer v1 encoding task
         "language" : "English", // Optional. Default is "English"
         "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
     "indexV2" :             // Optional but required to index audio with Media Indexer v2
     {
-        "enabled" : True,    // True to add a Media Indexer v2 encoding task
         "language" : "EnUs", // Optional. Default is EnUs
         "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
     "ocr" :             // Optional but required to do OCR
     {
-        "enabled" : True, // True to add a OCR task
         "language" : "AutoDetect", // Optional (Autodetect is the default)
         "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
     "faceDetection" :             // Optional but required to do Face Detection
     {
-        "enabled": True, // True to add a Face Detection task
         "mode" : "PerFaceEmotion", // Optional (PerFaceEmotion is the default)
         "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
     "faceRedaction" :             // Optional but required to do Face Redaction
     {
-        "enabled" : True,                   // True to add a Face Redaction task
         "mode" : "analyze"                  // Optional (analyze is the default)
         "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
      "motionDetection" :             // Optional but required to do Motion Detection
     {
-        "enabled" : True,                   // True to add a Motion Detection task
         "level" : "medium",                 // Optional (medium is the default)
         "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
      "summarization" :                      // Optional but required to do Motion Detection
     {
-        "enabled" : True,                   // True to add a summarization task
         "duration" : "0.0",                 // Optional (0.0 is the default)
         "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
      "hyperlapse" :             // Optional but required to do Motion Detection
     {
-        "enabled" : True,                   // True to add a hyperlapse task
         "speed" : "8", // Optional (8 is the default)
         "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
@@ -295,7 +287,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
             string preset = null;
             if (data.mes != null)
             {
-                    preset = (string)data.mes.preset;
+                preset = (string)data.mes.preset;
             }
             else
             {
@@ -306,30 +298,11 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 preset = "Content Adaptive Multiple Bitrate MP4";  // the default preset
             }
 
-
             if (preset.ToUpper().EndsWith(".JSON"))
             {
-                // Change or modify the custom preset JSON used here.
-                //  preset = File.ReadAllText(@"D:\home\site\wwwroot\Presets\" + preset);
-
-                // Read in custom preset string
-                string homePath = execContext.FunctionDirectory; //  Environment.GetEnvironmentVariable("HOME", EnvironmentVariableTarget.Process);
-                log.Info("homePath= " + homePath);
-                string presetPath ;
-                System.IO.DirectoryInfo directoryInfo = System.IO.Directory.GetParent(homePath);
-                  log.Info("directoryInfo.FullName= " + directoryInfo.FullName);
-presetPath = Path.Combine(directoryInfo.FullName, "presets" , preset);
- log.Info("presetPath= " + presetPath);
-
-                if (homePath == String.Empty)
-                {
-                    presetPath = @"../presets/" + preset;
-                }
-                else
-                {
-                    presetPath = Path.Combine(homePath, @"site\repository\media-functions-for-logic-app\presets\" + preset);
-                }
-                log.Info($"Preset path : {presetPath}");
+                // Build the folder path to the preset
+                string presetPath = Path.Combine(System.IO.Directory.GetParent(execContext.FunctionDirectory).FullName, "presets", preset);
+                log.Info("presetPath= " + presetPath);
                 preset = File.ReadAllText(presetPath);
             }
 
@@ -363,7 +336,7 @@ presetPath = Path.Combine(directoryInfo.FullName, "presets" , preset);
             {
                 workflowassetid = (string)data.workflowAssetId; // compatibility mode
             }
-            
+
             IAsset workflowAsset = _context.Assets.Where(a => a.Id == workflowassetid).FirstOrDefault();
 
             if (workflowAsset == null)
@@ -386,11 +359,11 @@ presetPath = Path.Combine(directoryInfo.FullName, "presets" , preset);
             }
             else if (data.workflowConfig != null)
             {
-                 premiumConfiguration = (string)data.workflowConfig; // compatibility mode
+                premiumConfiguration = (string)data.workflowConfig; // compatibility mode
             }
 
             // In some cases, a configuration can be loaded and passed it to the task to tuned the workflow
-            // premiumConfiguration=File.ReadAllText(@"D:\home\site\wwwroot\Presets\SetRuntime.xml").Replace("VideoFileName", VideoFile.Name).Replace("AudioFileName", AudioFile.Name);
+            // premiumConfiguration=File.ReadAllText(Path.Combine(System.IO.Directory.GetParent(execContext.FunctionDirectory).FullName, "presets", "SetRuntime.xml")).Replace("VideoFileName", VideoFile.Name).Replace("AudioFileName", AudioFile.Name);
 
             // Create a task
             taskEncoding = job.Tasks.AddNew("Premium Workflow encoding task",
@@ -414,20 +387,20 @@ presetPath = Path.Combine(directoryInfo.FullName, "presets" , preset);
         IAsset an_asset = useEncoderOutputForAnalytics ? outputEncoding : asset;
 
         // Media Analytics
-        OutputIndex1 = AddTask(job, an_asset, (data.indexV1 == null) ? (string)data.indexV1Language : ((string)data.indexV1.language ?? "English") , "Azure Media Indexer", "IndexerV1.xml", "English", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.indexV1));
-        OutputIndex2 = AddTask(job, an_asset, (data.indexV2 == null) ? (string)data.indexV2Language : ((string)data.indexV2.language ?? "EnUs"), "Azure Media Indexer 2 Preview", "IndexerV2.json", "EnUs", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.indexV2));
-        OutputOCR = AddTask(job, an_asset, (data.ocr == null) ? (string)data.ocrLanguage : ((string)data.ocr.language ?? "AutoDetect"), "Azure Media OCR", "OCR.json", "AutoDetect", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.ocr));
-        OutputFaceDetection = AddTask(job, an_asset, (data.faceDetection == null) ? (string)data.faceDetectionMode : ((string)data.faceDetection.mode ?? "PerFaceEmotion"), "Azure Media Face Detector", "FaceDetection.json", "PerFaceEmotion", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.faceDetection));
-        OutputFaceRedaction = AddTask(job, an_asset, (data.faceRedaction == null) ? (string)data.faceRedactionMode : ((string)data.faceRedaction.mode ?? "comined"), "Azure Media Redactor", "FaceRedaction.json", "combined", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.faceRedaction));
-        OutputMotion = AddTask(job, an_asset, (data.motionDetection == null) ? (string)data.motionDetectionLevel : ((string)data.motionDetection.level ?? "medium"), "Azure Media Motion Detector", "MotionDetection.json", "medium", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.motionDetection));
-        OutputSummarization = AddTask(job, an_asset, (data.summarization == null) ? (string)data.summarizationDuration : ((string)data.summarization.duration ?? "0.0"), "Azure Media Video Thumbnails", "Summarization.json", "0.0", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.summarization));
-        OutputVideoAnnotation = AddTask(job, an_asset,(data.videoAnnotation != null) ? "1.0" : null, "Azure Media Video Annotator", "VideoAnnotation.json", "1.0", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.videoAnnotation));
+        OutputIndex1 = AddTask(execContext, job, an_asset, (data.indexV1 == null) ? (string)data.indexV1Language : ((string)data.indexV1.language ?? "English"), "Azure Media Indexer", "IndexerV1.xml", "English", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.indexV1));
+        OutputIndex2 = AddTask(execContext, job, an_asset, (data.indexV2 == null) ? (string)data.indexV2Language : ((string)data.indexV2.language ?? "EnUs"), "Azure Media Indexer 2 Preview", "IndexerV2.json", "EnUs", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.indexV2));
+        OutputOCR = AddTask(execContext, job, an_asset, (data.ocr == null) ? (string)data.ocrLanguage : ((string)data.ocr.language ?? "AutoDetect"), "Azure Media OCR", "OCR.json", "AutoDetect", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.ocr));
+        OutputFaceDetection = AddTask(execContext, job, an_asset, (data.faceDetection == null) ? (string)data.faceDetectionMode : ((string)data.faceDetection.mode ?? "PerFaceEmotion"), "Azure Media Face Detector", "FaceDetection.json", "PerFaceEmotion", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.faceDetection));
+        OutputFaceRedaction = AddTask(execContext, job, an_asset, (data.faceRedaction == null) ? (string)data.faceRedactionMode : ((string)data.faceRedaction.mode ?? "comined"), "Azure Media Redactor", "FaceRedaction.json", "combined", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.faceRedaction));
+        OutputMotion = AddTask(execContext, job, an_asset, (data.motionDetection == null) ? (string)data.motionDetectionLevel : ((string)data.motionDetection.level ?? "medium"), "Azure Media Motion Detector", "MotionDetection.json", "medium", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.motionDetection));
+        OutputSummarization = AddTask(execContext, job, an_asset, (data.summarization == null) ? (string)data.summarizationDuration : ((string)data.summarization.duration ?? "0.0"), "Azure Media Video Thumbnails", "Summarization.json", "0.0", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.summarization));
+        OutputVideoAnnotation = AddTask(execContext, job, an_asset, (data.videoAnnotation != null) ? "1.0" : null, "Azure Media Video Annotator", "VideoAnnotation.json", "1.0", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.videoAnnotation));
 
         // MES Thumbnails
-        OutputMesThumbnails = AddTask(job, asset, (data.mesThumbnails != null) ? ((string)data.mesThumbnails.Start ?? "{Best}") : null, "Media Encoder Standard", "MesThumbnails.json", "{Best}", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.mesThumbnails));
- 
+        OutputMesThumbnails = AddTask(execContext, job, asset, (data.mesThumbnails != null) ? ((string)data.mesThumbnails.Start ?? "{Best}") : null, "Media Encoder Standard", "MesThumbnails.json", "{Best}", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.mesThumbnails));
+
         // Hyperlapse
-        OutputHyperlapse = AddTask(job, asset, (data.hyperlapse == null) ? (string)data.hyperlapseSpeed : ((string)data.hyperlapse.speed ?? "8"), "Azure Media Hyperlapse", "Hyperlapse.json", "8", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.hyperlapse));
+        OutputHyperlapse = AddTask(execContext, job, asset, (data.hyperlapse == null) ? (string)data.hyperlapseSpeed : ((string)data.hyperlapse.speed ?? "8"), "Azure Media Hyperlapse", "Hyperlapse.json", "8", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.hyperlapse));
 
         job.Submit();
         log.Info("Job Submitted");

@@ -58,7 +58,7 @@ private static CloudMediaContext _context = null;
 private static CloudStorageAccount _destinationStorageAccount = null;
 
 
-public static async Task<object> Run(HttpRequestMessage req, TraceWriter log)
+public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Microsoft.Azure.WebJobs.ExecutionContext execContext)
 {
     log.Info($"Webhook was triggered!");
 
