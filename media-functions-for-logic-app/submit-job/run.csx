@@ -186,7 +186,6 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.Azure.WebJobs;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using Microsoft.Azure.WebJobs.Extensions;
 
 // Read values from the App.config file.
 static string _storageAccountName = Environment.GetEnvironmentVariable("MediaServicesStorageAccountName");
