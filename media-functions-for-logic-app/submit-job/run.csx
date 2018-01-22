@@ -203,7 +203,7 @@ private static CloudMediaContext _context = null;
 private static CloudStorageAccount _destinationStorageAccount = null;
 
 
-public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, ExecutionContext execContext)
+public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Microsoft.Azure.WebJobs.ExecutionContext execContext)
 {
     int taskindex = 0;
     bool useEncoderOutputForAnalytics = false;
