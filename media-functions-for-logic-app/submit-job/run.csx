@@ -314,9 +314,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
 
                 // Read in custom preset string
                 string homePath = execContext.FunctionDirectory; //  Environment.GetEnvironmentVariable("HOME", EnvironmentVariableTarget.Process);
-                log.Info("Home= " + homePath);
+                log.Info("homePath= " + homePath);
                 string presetPath ;
                 System.IO.DirectoryInfo directoryInfo = System.IO.Directory.GetParent(homePath);
+                  log.Info("directoryInfo.FullName= " + directoryInfo.FullName);
 presetPath = Path.Combine(directoryInfo.FullName, @"\presets\" + preset);
  log.Info("presetPath= " + presetPath);
 
