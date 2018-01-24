@@ -1,5 +1,5 @@
 /*
-This function lists asset files
+This function lists asset files.
 
 Input:
 {

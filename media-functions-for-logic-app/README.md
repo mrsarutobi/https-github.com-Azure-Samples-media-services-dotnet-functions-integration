@@ -348,17 +348,17 @@ Input:
         "level" : "medium",                 // Optional (medium is the default)
         "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
-    "summarization" :                      // Optional but required to do Motion Detection
+    "summarization" :                      // Optional but required to do summarization
     {
         "duration" : "0.0",                 // Optional (0.0 is the default)
         "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
-    "hyperlapse" :             // Optional but required to do Motion Detection
+    "hyperlapse" :             // Optional but required to do hyperlapse
     {
         "speed" : "8", // Optional (8 is the default)
         "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
-    "videoAnnotation" :             // Optional but required to do Video Annotator
+    "videoAnnotation" :             // Optional but required to do Video Annotation
     {
         "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
@@ -566,17 +566,39 @@ his function returns media analytics from an asset.
 ```c#
 Input:
 {
-    "assetFaceRedactionId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Id of the source asset that contains media analytics (face redaction)
-    "assetMotionDetectionId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b",  // Id of the source asset that contains media analytics (motion detection)
-    "assetOcrId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b",  // Id of the source asset that contains media analytics (OCR)
-    "assetVideoAnnotationId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b",  // Id of the source asset that contains media analytics (video annotation)
-    "assetMesThumbnailsId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b",  // Id of the source asset that contains the mes thumbnails
-    "timeOffset" :"00:01:00", // optional, offset to add to subtitles (used for live analytics)
-    "copyToContainer" : "jpgfaces" // Optional, to copy jpg files to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
-    "copyToContainerThumbnail" : "thumbnails" // Optional, to copy png files to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
-    "copyToContainerAccountName" : "jhggjgghggkj" // storage account name. optional. if not provided, ams storage account is used
-    "copyToContainerAccountKey" "" // storage account key
-    "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
+    "faceRedaction" : 
+    {
+        "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains media analytics (face redaction)
+        "deleteAsset" : true, // Optional, delete the asset(s) once data has been read from it
+        "copyToContainer" : "jpgfaces" // Optional, to copy the faces (jpg files) to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
+        "copyToContainerAccountName" : "jhggjgghggkj" // storage account name. optional. if not provided, ams storage account is used
+        "copyToContainerAccountKey" "" // storage account key
+        },
+   "motionDetection" : 
+    {
+        "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains media analytics (motion detection)
+        "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
+    },
+     "ocr" : 
+    {
+        "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains media analytics (ocr)
+        "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
+    },
+   "videoAnnotation" : 
+    {
+        "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains the MES thumbnails
+        "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
+    },
+   "mesThumbnails" : 
+    {
+        "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains media analytics (face redaction)
+        "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
+        "copyToContainer" : "thumbnails" // Optional, to copy the thumbnails (png files) to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
+        "copyToContainerAccountName" : "jhggjgghggkj" // storage account name. optional. if not provided, ams storage account is used
+        "copyToContainerAccountKey" "" // storage account key
+     },
+
+     "timeOffset" :"00:01:00", // optional, offset to add to data from face redaction, ocr, video annotation (used for live analytics)
  }
 
 Output:
