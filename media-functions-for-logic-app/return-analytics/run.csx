@@ -585,7 +585,7 @@ static public List<Task> CopyFilesAsync(CloudBlobContainer sourceBlobContainer, 
                 log.Info("Source Blob size: " + size.ToString());
                 //mylistresults.Add(CopyBlobAsync(sourceBlob as CloudBlob, destinationBlob));
 
-                var signature = sourceBlob.GetSharedAccessSignature(new SharedAccessBlobPolicy
+                var signature = (sourceBlob as CloudBlob).GetSharedAccessSignature(new SharedAccessBlobPolicy
                 {
                     Permissions = SharedAccessBlobPermissions.Read,
                     SharedAccessExpiryTime = DateTime.UtcNow.AddHours(24)
