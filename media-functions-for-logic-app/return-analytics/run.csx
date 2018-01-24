@@ -3,17 +3,39 @@ This function returns media analytics from an asset.
 
 Input:
 {
-    "assetFaceRedactionId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Id of the source asset that contains media analytics (face redaction)
-    "assetMotionDetectionId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b",  // Id of the source asset that contains media analytics (motion detection)
-    "assetOcrId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b",  // Id of the source asset that contains media analytics (OCR)
-    "assetVideoAnnotationId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b",  // Id of the source asset that contains media analytics (video annotation)
-    "assetMesThumbnailsId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b",  // Id of the source asset that contains the mes thumbnails
-    "timeOffset" :"00:01:00", // optional, offset to add to subtitles (used for live analytics)
-    "copyToContainer" : "jpgfaces" // Optional, to copy jpg files to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
-    "copyToContainerThumbnail" : "thumbnails" // Optional, to copy png files to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
-    "copyToContainerAccountName" : "jhggjgghggkj" // storage account name. optional. if not provided, ams storage account is used
-    "copyToContainerAccountKey" "" // storage account key
-    "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
+    "faceRedaction" : 
+    {
+        "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains media analytics (face redaction)
+        "deleteAsset" : true, // Optional, delete the asset(s) once data has been read from it
+        "copyToContainer" : "jpgfaces" // Optional, to copy the faces (jpg files) to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
+        "copyToContainerAccountName" : "jhggjgghggkj" // storage account name. optional. if not provided, ams storage account is used
+        "copyToContainerAccountKey" "" // storage account key
+        },
+   "motionDetection" : 
+    {
+        "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains media analytics (motion detection)
+        "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
+    },
+     "ocr" : 
+    {
+        "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains media analytics (ocr)
+        "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
+    },
+   "videoAnnotation" : 
+    {
+        "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains the MES thumbnails
+        "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
+    },
+   "mesThumbnails" : 
+    {
+        "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains media analytics (face redaction)
+        "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
+        "copyToContainer" : "thumbnails" // Optional, to copy the thumbnails (png files) to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
+        "copyToContainerAccountName" : "jhggjgghggkj" // storage account name. optional. if not provided, ams storage account is used
+        "copyToContainerAccountKey" "" // storage account key
+     },
+
+     "timeOffset" :"00:01:00", // optional, offset to add to data from face redaction, ocr, video annotation (used for live analytics)
  }
 
 Output:
@@ -113,7 +135,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     dynamic objFaceDetectionOffset = new JObject();
 
     dynamic pngThumbnails = new JArray() as dynamic;
-    string prefixpng = "";    
+    string prefixpng = "";
 
     string jsonMotionDetection = "";
     dynamic objMotionDetection = new JObject();
@@ -136,17 +158,6 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
 
     log.Info(jsonContent);
 
-    if (data.assetFaceRedactionId == null && data.assetMotionDetectionId == null && data.assetOcrId == null && data.assetVideoAnnotationId == null)
-    {
-        // for test
-        // data.assetId = "nb:cid:UUID:d9496372-32f5-430d-a4c6-d21ec3e01525";
-
-        return req.CreateResponse(HttpStatusCode.BadRequest, new
-        {
-            error = "Please pass asset ID in the input object (assetFaceRedactionId and/or assetMotionDetectionId and/or assetOcrId and/or assetVideoAnnotationId)"
-        });
-    }
-
     log.Info($"Using Azure Media Service Rest API Endpoint : {_RESTAPIEndpoint}");
 
     try
@@ -163,8 +174,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         //
         // FACE REDACTION
         //
-        if (data.assetFaceRedactionId != null)
+        if (data.faceRedaction != null && data.faceRedaction.assetId != null)
         {
+            List<Task> listJPGCopies = new List<Task>();
+
             // Get the asset
             string assetid = data.assetFaceRedactionId;
             var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
@@ -192,19 +205,19 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
             }
 
             // Let's copy the JPG faces
-            if (data.copyToContainer != null)
+            if (data.faceRedaction.copyToContainer != null)
             {
-                copyToContainer = data.copyToContainer + DateTime.UtcNow.ToString("yyyyMMdd");
+                copyToContainer = data.faceRedaction.copyToContainer + DateTime.UtcNow.ToString("yyyyMMdd");
                 // let's copy JPG to a container
                 prefixjpg = outputAsset.Uri.Segments[1] + "-";
                 log.Info($"prefixjpg {prefixjpg}");
                 var sourceContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, outputAsset.Uri.Segments[1]);
 
                 CloudBlobContainer targetContainer;
-                if (data.copyToContainerAccountName != null)
+                if (data.faceRedaction.copyToContainerAccountName != null)
                 {
                     // copy to a specific storage account
-                    targetContainer = GetCloudBlobContainer((string)data.copyToContainerAccountName, (string)data.copyToContainerAccountKey, copyToContainer);
+                    targetContainer = GetCloudBlobContainer((string)data.faceRedaction.copyToContainerAccountName, (string)data.faceRedaction.copyToContainerAccountKey, copyToContainer);
                 }
                 else
                 {
@@ -212,7 +225,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                     targetContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, copyToContainer);
                 }
 
-                CopyFilesAsync(sourceContainer, targetContainer, prefixjpg, "jpg", log);
+                listJPGCopies = CopyFilesAsync(sourceContainer, targetContainer, prefixjpg, "jpg", log);
                 targetContainerUri = targetContainer.Uri.ToString();
             }
 
@@ -254,9 +267,18 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 }
             }
 
-            if (jsonFaceRedaction != "" && data.deleteAsset != null && ((bool)data.deleteAsset))
+            if (jsonFaceRedaction != "" && data.faceRedaction.deleteAsset != null && ((bool)data.faceRedaction.deleteAsset))
             // If asset deletion was asked
             {
+                // let's wait for the copy to finish before deleting the asset..
+                if (listJPGCopies.Count > 0)
+                {
+                    while (!listJPGCopies.All(r => r.IsCompleted))
+                    {
+                        Task.Delay(TimeSpan.FromSeconds(3d)).Wait();
+                    }
+                }
+
                 outputAsset.Delete();
             }
         }
@@ -264,10 +286,12 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         //
         // MES Thumbnails
         //
-        if (data.assetMesThumbnailsId != null)
+        if (data.mesThumbnails != null && data.mesThumbnails.assetId != null)
         {
+            List<Task> listPNGCopies = new List<Task>();
+
             // Get the asset
-            string assetid = data.assetMesThumbnailsId;
+            string assetid = data.mesThumbnails.assetId;
             var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
 
             if (outputAsset == null)
@@ -292,9 +316,9 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
             }
 
             // Let's copy the PNG Thumbnails
-            if (data.copyToContainerThumbnail != null)
+            if (data.mesThumbnails.copyToContainer != null)
             {
-                copyToContainer = data.copyToContainerThumbnail + DateTime.UtcNow.ToString("yyyyMMdd");
+                copyToContainer = data.mesThumbnails.copyToContainer + DateTime.UtcNow.ToString("yyyyMMdd");
                 // let's copy PNG to a container
                 prefixpng = outputAsset.Uri.Segments[1] + "-";
                 log.Info($"prefixpng {prefixpng}");
@@ -304,7 +328,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 if (data.copyToContainerAccountName != null)
                 {
                     // copy to a specific storage account
-                    targetContainer = GetCloudBlobContainer((string)data.copyToContainerAccountName, (string)data.copyToContainerAccountKey, copyToContainer);
+                    targetContainer = GetCloudBlobContainer((string)data.mesThumbnails.copyToContainerAccountName, (string)data.mesThumbnails.copyToContainerAccountKey, copyToContainer);
                 }
                 else
                 {
@@ -312,7 +336,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                     targetContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, copyToContainer);
                 }
 
-                CopyFilesAsync(sourceContainer, targetContainer, prefixpng, "png", log);
+                listPNGCopies = CopyFilesAsync(sourceContainer, targetContainer, prefixpng, "png", log);
                 targetContainerUri = targetContainer.Uri.ToString();
             }
 
@@ -338,9 +362,19 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 }
             }
 
-            if (data.deleteAsset != null && ((bool)data.deleteAsset))
+            if (data.mesThumbnails.deleteAsset != null && ((bool)data.mesThumbnails.deleteAsset))
             // If asset deletion was asked
             {
+                // let's wait for the copy to finish before deleting the asset..
+                if (listPNGCopies.Count > 0)
+                {
+                    while (!listPNGCopies.All(r => r.IsCompleted))
+                    {
+                        Task.Delay(TimeSpan.FromSeconds(3d)).Wait();
+                    }
+                }
+
+                // delete the asset
                 outputAsset.Delete();
             }
         }
@@ -348,10 +382,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         //
         // MOTION DETECTION
         //
-        if (data.assetMotionDetectionId != null)
+        if (data.motionDetection != null && data.motionDetection.assetId != null)
         {
             // Get the asset
-            string assetid = data.assetMotionDetectionId;
+            string assetid = data.motionDetection.assetId;
             var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
 
             if (outputAsset == null)
@@ -381,7 +415,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 }
             }
 
-            if (jsonMotionDetection != "" && data.deleteAsset != null && ((bool)data.deleteAsset))
+            if (jsonMotionDetection != "" && data.motionDetection.deleteAsset != null && ((bool)data.motionDetection.deleteAsset))
             // If asset deletion was asked
             {
                 outputAsset.Delete();
@@ -392,10 +426,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         //
         // OCR
         //
-        if (data.assetOcrId != null)
+        if (data.ocr != null && data.ocr.assetId != null)
         {
             // Get the asset
-            string assetid = data.assetOcrId;
+            string assetid = data.ocr.assetId;
             var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
 
             if (outputAsset == null)
@@ -425,7 +459,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 }
             }
 
-            if (jsonOcr != "" && data.deleteAsset != null && ((bool)data.deleteAsset))
+            if (jsonOcr != "" && data.ocr.deleteAsset != null && ((bool)data.ocr.deleteAsset))
             // If asset deletion was asked
             {
                 outputAsset.Delete();
@@ -435,10 +469,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         //
         // Video Annotator
         //
-        if (data.assetVideoAnnotationId != null)
+        if (data.videoAnnotation != null && data.videoAnnotation.assetId != null)
         {
             // Get the asset
-            string assetid = data.assetVideoAnnotationId;
+            string assetid = data.videoAnnotation.assetId;
             var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
 
             if (outputAsset == null)
@@ -468,7 +502,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 }
             }
 
-            if (jsonAnnotation != "" && data.deleteAsset != null && ((bool)data.deleteAsset))
+            if (jsonAnnotation != "" && data.videoAnnotation.deleteAsset != null && ((bool)data.videoAnnotation.deleteAsset))
             // If asset deletion was asked
             {
                 outputAsset.Delete();
@@ -497,7 +531,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         mesThumbnail = new
         {
             pngThumbnails = Newtonsoft.Json.JsonConvert.SerializeObject(pngThumbnails)
-        },        
+        },
         motionDetection = new
         {
             json = Newtonsoft.Json.JsonConvert.SerializeObject(objMotionDetection),
@@ -516,8 +550,11 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     });
 }
 
-static public void CopyFilesAsync(CloudBlobContainer sourceBlobContainer, CloudBlobContainer destinationBlobContainer, string prefix, string extension, TraceWriter log)
+static public List<Task> CopyFilesAsync(CloudBlobContainer sourceBlobContainer, CloudBlobContainer destinationBlobContainer, string prefix, string extension, TraceWriter log)
 {
+    // init the list of tasks
+    List<Task> mylistresults = new List<Task>();
+
     if (destinationBlobContainer.CreateIfNotExists())
     {
         destinationBlobContainer.SetPermissions(new BlobContainerPermissions
@@ -528,6 +565,8 @@ static public void CopyFilesAsync(CloudBlobContainer sourceBlobContainer, CloudB
 
     string blobPrefix = null;
     bool useFlatBlobListing = true;
+    long size = 0;
+
     var blobList = sourceBlobContainer.ListBlobs(blobPrefix, useFlatBlobListing, BlobListingDetails.None);
     foreach (var sourceBlob in blobList)
     {
@@ -542,8 +581,12 @@ static public void CopyFilesAsync(CloudBlobContainer sourceBlobContainer, CloudB
             else
             {
                 log.Info("Copying blob " + sourceBlob.Uri.ToString() + " to " + destinationBlob.Uri.ToString());
-                CopyBlobAsync(sourceBlob as CloudBlob, destinationBlob);
+                size = (sourceBlob as CloudBlob).Properties.Length;
+                log.Info("Source Blob size: " + size.ToString());
+                mylistresults.Add(CopyBlobAsync(sourceBlob as CloudBlob, destinationBlob));
             }
         }
     }
+
+    return mylistresults;
 }
