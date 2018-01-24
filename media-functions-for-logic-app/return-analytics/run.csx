@@ -6,7 +6,7 @@ Input:
     "faceRedaction" : 
     {
         "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains media analytics (face redaction)
-        "deleteAsset" : true, // Optional, delete the asset(s) once data has been read from it
+        "deleteAsset" : true, // Optional, delete the asset once data has been read from it
         "copyToContainer" : "jpgfaces" // Optional, to copy the faces (jpg files) to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
         "copyToContainerAccountName" : "jhggjgghggkj" // storage account name. optional. if not provided, ams storage account is used
         "copyToContainerAccountKey" "" // storage account key
@@ -14,22 +14,22 @@ Input:
    "motionDetection" : 
     {
         "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains media analytics (motion detection)
-        "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
+        "deleteAsset" : true, // Optional, delete the asset once data has been read from it
     },
      "ocr" : 
     {
         "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains media analytics (ocr)
-        "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
+        "deleteAsset" : true, // Optional, delete the asset once data has been read from it
     },
    "videoAnnotation" : 
     {
         "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains the MES thumbnails
-        "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
+        "deleteAsset" : true, // Optional, delete the asset once data has been read from it
     },
    "mesThumbnails" : 
     {
         "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains media analytics (face redaction)
-        "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
+        "deleteAsset" : true, // Optional, delete the asset once data has been read from it
         "copyToContainer" : "thumbnails" // Optional, to copy the thumbnails (png files) to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
         "copyToContainerAccountName" : "jhggjgghggkj" // storage account name. optional. if not provided, ams storage account is used
         "copyToContainerAccountKey" "" // storage account key
