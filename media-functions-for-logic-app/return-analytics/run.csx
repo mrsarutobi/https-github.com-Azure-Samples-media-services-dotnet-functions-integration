@@ -583,7 +583,15 @@ static public List<Task> CopyFilesAsync(CloudBlobContainer sourceBlobContainer, 
                 log.Info("Copying blob " + sourceBlob.Uri.ToString() + " to " + destinationBlob.Uri.ToString());
                 size = (sourceBlob as CloudBlob).Properties.Length;
                 log.Info("Source Blob size: " + size.ToString());
-                mylistresults.Add(CopyBlobAsync(sourceBlob as CloudBlob, destinationBlob));
+                //mylistresults.Add(CopyBlobAsync(sourceBlob as CloudBlob, destinationBlob));
+
+                var signature = sourceBlob.GetSharedAccessSignature(new SharedAccessBlobPolicy
+                {
+                    Permissions = SharedAccessBlobPermissions.Read,
+                    SharedAccessExpiryTime = DateTime.UtcNow.AddHours(24)
+                });
+
+                mylistresults.Add(destinationBlob.StartCopyAsync(new Uri(sourceBlob.Uri.AbsoluteUri + signature)));
             }
         }
     }
