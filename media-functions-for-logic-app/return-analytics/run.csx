@@ -179,7 +179,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
             List<Task> listJPGCopies = new List<Task>();
 
             // Get the asset
-            string assetid = data.assetFaceRedactionId;
+            string assetid = data.faceRedaction.assetId;
             var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
 
             if (outputAsset == null)
@@ -325,7 +325,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 var sourceContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, outputAsset.Uri.Segments[1]);
 
                 CloudBlobContainer targetContainer;
-                if (data.copyToContainerAccountName != null)
+                if (data.mesThumbnails.copyToContainerAccountName != null)
                 {
                     // copy to a specific storage account
                     targetContainer = GetCloudBlobContainer((string)data.mesThumbnails.copyToContainerAccountName, (string)data.mesThumbnails.copyToContainerAccountKey, copyToContainer);
