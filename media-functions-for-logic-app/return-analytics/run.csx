@@ -9,7 +9,7 @@ Input:
         "deleteAsset" : true, // Optional, delete the asset once data has been read from it
         "copyToContainer" : "jpgfaces" // Optional, to copy the faces (jpg files) to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
         "copyToContainerAccountName" : "jhggjgghggkj" // storage account name. optional. if not provided, ams storage account is used
-        "copyToContainerAccountKey" "" // storage account key
+        "copyToContainerAccountKey" "" // storage account key.
         },
    "motionDetection" : 
     {
@@ -158,22 +158,14 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     string jsonContent = await req.Content.ReadAsStringAsync();
     dynamic data = JsonConvert.DeserializeObject(jsonContent);
 
+    // Store the attached storage account to a dictionary
     Dictionary<string, string> attachedstoragecred = new Dictionary<string, string>();
-
-    /*
-    var attachedstoragecred = _attachedStorageCredentials
-    .Split(';')
-    .Select(part => part.Split('='))
-    .Where(part => part.Length == 2)
-    .ToDictionary(sp => sp[0], sp => sp[1]);
-    */
     log.Info(_attachedStorageCredentials);
     var tab = _attachedStorageCredentials.TrimEnd(';').Split(';');
     for (int i = 0; i < tab.Count(); i += 2)
     {
         attachedstoragecred.Add(tab[i], tab[i + 1]);
     }
-
 
     log.Info(jsonContent);
 
@@ -313,7 +305,6 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                         Task.Delay(TimeSpan.FromSeconds(3d)).Wait();
                     }
                 }
-
                 outputAsset.Delete();
             }
         }

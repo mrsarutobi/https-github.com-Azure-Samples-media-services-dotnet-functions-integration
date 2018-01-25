@@ -3,7 +3,8 @@ This function creates an empty asset.
 
 Input:
 {
-    "assetName" : "the name of the asset"
+    "assetName" : "the name of the asset",
+    "assetStorage" :"amsstore01" // optional. Name of attached storage where to create the asset 
 }
 
 Output:
@@ -92,7 +93,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
 
         log.Info("Context object created.");
 
-        newAsset = _context.Assets.Create(assetName, AssetCreationOptions.None);
+        newAsset = _context.Assets.Create(assetName, (string)data.assetStorage, AssetCreationOptions.None);
 
         log.Info("new asset created.");
 

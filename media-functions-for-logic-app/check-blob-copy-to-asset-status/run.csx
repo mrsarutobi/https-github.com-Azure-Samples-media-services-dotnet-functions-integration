@@ -5,7 +5,8 @@ Input:
 {
       "destinationContainer" : "mycontainer",
       "delay": 15000 // optional (default is 5000)
-    
+      "assetStorage" :"amsstore01" // optional. Name of attached storage where to create the asset. Please use the function setting variable MediaServicesAttachedStorageCredentials to pass the credentials
+   
 }
 Output:
 {
@@ -32,6 +33,8 @@ using Microsoft.WindowsAzure.Storage.Auth;
 private static readonly string _storageAccountName = Environment.GetEnvironmentVariable("MediaServicesStorageAccountName");
 private static readonly string _storageAccountKey = Environment.GetEnvironmentVariable("MediaServicesStorageAccountKey");
 
+static readonly string _attachedStorageCredentials = Environment.GetEnvironmentVariable("MediaServicesAttachedStorageCredentials");
+
 // Field for service context.
 private static CloudMediaContext _context = null;
 private static CloudStorageAccount _destinationStorageAccount = null;
@@ -45,6 +48,15 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     dynamic data = JsonConvert.DeserializeObject(jsonContent);
     log.Info("Request : " + jsonContent);
 
+    // Store the attached storage account to a dictionary
+    Dictionary<string, string> attachedstoragecred = new Dictionary<string, string>();
+    log.Info(_attachedStorageCredentials);
+    var tab = _attachedStorageCredentials.TrimEnd(';').Split(';');
+    for (int i = 0; i < tab.Count(); i += 2)
+    {
+        attachedstoragecred.Add(tab[i], tab[i + 1]);
+    }
+
     // Validate input objects
     int delay = 5000;
     if (data.destinationContainer == null)
@@ -57,11 +69,35 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     log.Info($"Wait " + delay + "(ms)");
     System.Threading.Thread.Sleep(delay);
 
+
+    string storname = _storageAccountName;
+    string storkey = _storageAccountKey;
+    if (data.assetStorage != null)
+    {
+        string assetstor = (string)data.assetStorage;
+        if (assetstor != _storageAccountName && attachedstoragecred.ContainsKey(assetstor)) // asset is using another storage than default but we have the key
+        {
+            storname = assetstor;
+            storkey = attachedstoragecred[storname];
+        }
+        else // we don't have the key for that storage
+        {
+            log.Info($"Face redaction Asset is in {assetstor} and key is not provided in MediaServicesAttachedStorageCredentials application settings");
+            return req.CreateResponse(HttpStatusCode.BadRequest, new
+            {
+                error = "Storage key is missing"
+            });
+        }
+    }
+
+    string destinationContainerName = data.destinationContainer;
+    CloudBlobContainer destinationBlobContainer = GetCloudBlobContainer(storname, storkey, destinationContainerName);
+
     CopyStatus copyStatus = CopyStatus.Success;
     try
     {
-        string destinationContainerName = data.destinationContainer;
-        CloudBlobContainer destinationBlobContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, destinationContainerName);
+        // string destinationContainerName = data.destinationContainer;
+        // CloudBlobContainer destinationBlobContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, destinationContainerName);
 
         string blobPrefix = null;
         bool useFlatBlobListing = true;

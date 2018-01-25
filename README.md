@@ -92,6 +92,7 @@ deployed with the azuredeploy.json template.
 - **AMSClientSecret** - your Service Principal Client Secret.
 - **MediaServicesStorageAccountName** - the storage account name tied to your Media Services account.
 - **MediaServicesStorageAccountKey** - the storage account key tied to your Media Services account.
+- **MediaServicesAttachedStorageCredentials** - list of attached storage accounts with the key, separated by ';'. This is used by some functions. Example "amstore01;gdsgdhjgj=;amstore02;dqghjqfqfjfld="
 - **StorageConnection** -  the functions.json file contains a "StorageConnection" property which must be set to an App Setting value that
   contains a connection string for your input storage account. Otherwise, you may end up with an error message at startup.
   Make sure to add a new AppSetting to your Functions project with the storage account name and connection string, and update
