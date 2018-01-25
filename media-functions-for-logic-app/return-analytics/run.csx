@@ -168,7 +168,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     .ToDictionary(sp => sp[0], sp => sp[1]);
     */
     log.Info(_attachedStorageCredentials);
-    var tab = _attachedStorageCredentials.TrimEnd(';').Split(';'));
+    var tab = _attachedStorageCredentials.TrimEnd(';').Split(';');
     for (int i = 0; i < tab.Count(); i += 2)
     {
         attachedstoragecred.Add(tab[i], tab[i + 1]);
