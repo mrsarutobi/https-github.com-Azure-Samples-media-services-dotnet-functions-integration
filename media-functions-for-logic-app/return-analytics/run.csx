@@ -158,11 +158,15 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     string jsonContent = await req.Content.ReadAsStringAsync();
     dynamic data = JsonConvert.DeserializeObject(jsonContent);
 
+    /*
     var attachedstoragecred = _attachedStorageCredentials
     .Split(';')
     .Select(part => part.Split('='))
     .Where(part => part.Length == 2)
     .ToDictionary(sp => sp[0], sp => sp[1]);
+    */
+    
+    var attachedstoragecred = _attachedStorageCredentials.TrimEnd(';').Split(';').ToDictionary(item => item.Split('=')[0], item => item.Split('=')[1]);
 
     log.Info(jsonContent);
 
@@ -229,7 +233,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 }
                 else // we don't have the key for that storage
                 {
-                    log.Info($"Face redaction Asset is in {outputAsset.StorageAccount} and key is not provided in MediaServicesAttachedStorageCredentials application settings");
+                    log.Info($"Face redaction Asset is in {outputAsset.StorageAccountName} and key is not provided in MediaServicesAttachedStorageCredentials application settings");
                     return req.CreateResponse(HttpStatusCode.BadRequest, new
                     {
                         error = "Storage key is missing"
@@ -356,7 +360,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 }
                 else // we don't have the key for that storage
                 {
-                    log.Info($"MES Thumbnails Asset is in {outputAsset.StorageAccount} and key is not provided in MediaServicesAttachedStorageCredentials application settings");
+                    log.Info($"MES Thumbnails Asset is in {outputAsset.StorageAccountName} and key is not provided in MediaServicesAttachedStorageCredentials application settings");
                     return req.CreateResponse(HttpStatusCode.BadRequest, new
                     {
                         error = "Storage key is missing"
