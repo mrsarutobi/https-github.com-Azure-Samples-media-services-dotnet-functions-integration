@@ -222,7 +222,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
 
                 string storname = _storageAccountName;
                 string storkey = _storageAccountKey;
-                if (outputAsset.StorageAccountName != _storageAccountName && attachedstoragecred.ContainsKey(outputAsset.StorageAccount)) // asset is using another storage than default but we have the key
+                if (outputAsset.StorageAccountName != _storageAccountName && attachedstoragecred.ContainsKey(outputAsset.StorageAccountName)) // asset is using another storage than default but we have the key
                 {
                     storname = outputAsset.StorageAccountName;
                     storkey = attachedstoragecred[storname];
@@ -349,7 +349,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
 
                 string storname = _storageAccountName;
                 string storkey = _storageAccountKey;
-                if (outputAsset.StorageAccountName != _storageAccountName && attachedstoragecred.ContainsKey(outputAsset.StorageAccount)) // asset is using another storage than default but we have the key
+                if (outputAsset.StorageAccountName != _storageAccountName && attachedstoragecred.ContainsKey(outputAsset.StorageAccountName)) // asset is using another storage than default but we have the key
                 {
                     storname = outputAsset.StorageAccountName;
                     storkey = attachedstoragecred[storname];
