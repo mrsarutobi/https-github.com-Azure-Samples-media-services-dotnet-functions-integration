@@ -158,6 +158,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     string jsonContent = await req.Content.ReadAsStringAsync();
     dynamic data = JsonConvert.DeserializeObject(jsonContent);
 
+    Dictionary<string, string> attachedstoragecred = new Dictionary<string, string>();
+
     /*
     var attachedstoragecred = _attachedStorageCredentials
     .Split(';')
@@ -165,8 +167,13 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     .Where(part => part.Length == 2)
     .ToDictionary(sp => sp[0], sp => sp[1]);
     */
-    
-    var attachedstoragecred = _attachedStorageCredentials.TrimEnd(';').Split(';').ToDictionary(item => item.Split('=')[0], item => item.Split('=')[1]);
+    log.Info(_attachedStorageCredentials);
+    var tab = _attachedStorageCredentials.TrimEnd(';').Split(';'));
+    for (int i = 0; i < tab.Count(); i += 2)
+    {
+        attachedstoragecred.Add(tab[i], tab[i + 1]);
+    }
+
 
     log.Info(jsonContent);
 
