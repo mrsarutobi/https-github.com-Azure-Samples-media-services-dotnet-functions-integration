@@ -119,6 +119,8 @@ static readonly string _RESTAPIEndpoint = Environment.GetEnvironmentVariable("AM
 static readonly string _mediaservicesClientId = Environment.GetEnvironmentVariable("AMSClientId");
 static readonly string _mediaservicesClientSecret = Environment.GetEnvironmentVariable("AMSClientSecret");
 
+static readonly string _attachedStorageCredentials = Environment.GetEnvironmentVariable("MediaServicesAttachedStorageCredentials");
+
 // Field for service context.
 private static CloudMediaContext _context = null;
 private static CloudStorageAccount _destinationStorageAccount = null;
@@ -155,6 +157,12 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
 
     string jsonContent = await req.Content.ReadAsStringAsync();
     dynamic data = JsonConvert.DeserializeObject(jsonContent);
+
+    var attachedstoragecred = _attachedStorageCredentials
+    .Split(';')
+    .Select(part => part.Split('='))
+    .Where(part => part.Length == 2)
+    .ToDictionary(sp => sp[0], sp => sp[1]);
 
     log.Info(jsonContent);
 
@@ -211,7 +219,23 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 // let's copy JPG to a container
                 prefixjpg = outputAsset.Uri.Segments[1] + "-";
                 log.Info($"prefixjpg {prefixjpg}");
-                var sourceContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, outputAsset.Uri.Segments[1]);
+
+                string storname = _storageAccountName;
+                string storkey = _storageAccountKey;
+                if (outputAsset.StorageAccount != _storageAccountName && _attachedStorageCredentials.ContainsKey(outputAsset.StorageAccount)) // asset is using another storage than default but we have the key
+                {
+                    storname = outputAsset.StorageAccount;
+                    storkey = _attachedStorageCredentials[storname];
+                }
+                else // we don't have the key for that storage
+                {
+                    log.Info($"Face redaction Asset is in {outputAsset.StorageAccount} and key is not provided in MediaServicesAttachedStorageCredentials application settings");
+                    return req.CreateResponse(HttpStatusCode.BadRequest, new
+                    {
+                        error = "Storage key is missing"
+                    });
+                }
+                var sourceContainer = GetCloudBlobContainer(storname, storkey, outputAsset.Uri.Segments[1]);
 
                 CloudBlobContainer targetContainer;
                 if (data.faceRedaction.copyToContainerAccountName != null)
@@ -322,7 +346,24 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 // let's copy PNG to a container
                 prefixpng = outputAsset.Uri.Segments[1] + "-";
                 log.Info($"prefixpng {prefixpng}");
-                var sourceContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, outputAsset.Uri.Segments[1]);
+
+                string storname = _storageAccountName;
+                string storkey = _storageAccountKey;
+                if (outputAsset.StorageAccount != _storageAccountName && _attachedStorageCredentials.ContainsKey(outputAsset.StorageAccount)) // asset is using another storage than default but we have the key
+                {
+                    storname = outputAsset.StorageAccount;
+                    storkey = _attachedStorageCredentials[storname];
+                }
+                else // we don't have the key for that storage
+                {
+                    log.Info($"MES Thumbnails Asset is in {outputAsset.StorageAccount} and key is not provided in MediaServicesAttachedStorageCredentials application settings");
+                    return req.CreateResponse(HttpStatusCode.BadRequest, new
+                    {
+                        error = "Storage key is missing"
+                    });
+                }
+
+                var sourceContainer = GetCloudBlobContainer(storname, storkey, outputAsset.Uri.Segments[1]);
 
                 CloudBlobContainer targetContainer;
                 if (data.mesThumbnails.copyToContainerAccountName != null)
