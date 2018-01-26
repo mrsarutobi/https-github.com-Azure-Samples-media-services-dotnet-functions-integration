@@ -228,19 +228,23 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
 
                 string storname = _storageAccountName;
                 string storkey = _storageAccountKey;
-                if (outputAsset.StorageAccountName != _storageAccountName && attachedstoragecred.ContainsKey(outputAsset.StorageAccountName)) // asset is using another storage than default but we have the key
+                if (outputAsset.StorageAccountName != _storageAccountName)
                 {
-                    storname = outputAsset.StorageAccountName;
-                    storkey = attachedstoragecred[storname];
-                }
-                else // we don't have the key for that storage
-                {
-                    log.Info($"Face redaction Asset is in {outputAsset.StorageAccountName} and key is not provided in MediaServicesAttachedStorageCredentials application settings");
-                    return req.CreateResponse(HttpStatusCode.BadRequest, new
+                    if (attachedstoragecred.ContainsKey(outputAsset.StorageAccountName)) // asset is using another storage than default but we have the key
                     {
-                        error = "Storage key is missing"
-                    });
+                        storname = outputAsset.StorageAccountName;
+                        storkey = attachedstoragecred[storname];
+                    }
+                    else // we don't have the key for that storage
+                    {
+                        log.Info($"Face redaction Asset is in {outputAsset.StorageAccountName} and key is not provided in MediaServicesAttachedStorageCredentials application settings");
+                        return req.CreateResponse(HttpStatusCode.BadRequest, new
+                        {
+                            error = "Storage key is missing"
+                        });
+                    }
                 }
+
                 var sourceContainer = GetCloudBlobContainer(storname, storkey, outputAsset.Uri.Segments[1]);
 
                 CloudBlobContainer targetContainer;
@@ -354,18 +358,21 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
 
                 string storname = _storageAccountName;
                 string storkey = _storageAccountKey;
-                if (outputAsset.StorageAccountName != _storageAccountName && attachedstoragecred.ContainsKey(outputAsset.StorageAccountName)) // asset is using another storage than default but we have the key
+                if (outputAsset.StorageAccountName != _storageAccountName)
                 {
-                    storname = outputAsset.StorageAccountName;
-                    storkey = attachedstoragecred[storname];
-                }
-                else // we don't have the key for that storage
-                {
-                    log.Info($"MES Thumbnails Asset is in {outputAsset.StorageAccountName} and key is not provided in MediaServicesAttachedStorageCredentials application settings");
-                    return req.CreateResponse(HttpStatusCode.BadRequest, new
+                    if (attachedstoragecred.ContainsKey(outputAsset.StorageAccountName)) // asset is using another storage than default but we have the key
                     {
-                        error = "Storage key is missing"
-                    });
+                        storname = outputAsset.StorageAccountName;
+                        storkey = attachedstoragecred[storname];
+                    }
+                    else // we don't have the key for that storage
+                    {
+                        log.Info($"MES Thumbnails Asset is in {outputAsset.StorageAccountName} and key is not provided in MediaServicesAttachedStorageCredentials application settings");
+                        return req.CreateResponse(HttpStatusCode.BadRequest, new
+                        {
+                            error = "Storage key is missing"
+                        });
+                    }
                 }
 
                 var sourceContainer = GetCloudBlobContainer(storname, storkey, outputAsset.Uri.Segments[1]);

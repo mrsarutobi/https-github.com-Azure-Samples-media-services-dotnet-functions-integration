@@ -121,19 +121,23 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
 
         string storname = _storageAccountName;
         string storkey = _storageAccountKey;
-        if (asset.StorageAccountName != _storageAccountName && attachedstoragecred.ContainsKey(asset.StorageAccountName)) // asset is using another storage than default but we have the key
+        if (asset.StorageAccountName != _storageAccountName)
         {
-            storname = asset.StorageAccountName;
-            storkey = attachedstoragecred[storname];
-        }
-        else // we don't have the key for that storage
-        {
-            log.Info($"Face redaction Asset is in {asset.StorageAccountName} and key is not provided in MediaServicesAttachedStorageCredentials application settings");
-            return req.CreateResponse(HttpStatusCode.BadRequest, new
+            if (attachedstoragecred.ContainsKey(asset.StorageAccountName)) // asset is using another storage than default but we have the key
             {
-                error = "Storage key is missing"
-            });
+                storname = asset.StorageAccountName;
+                storkey = attachedstoragecred[storname];
+            }
+            else // we don't have the key for that storage
+            {
+                log.Info($"Face redaction Asset is in {asset.StorageAccountName} and key is not provided in MediaServicesAttachedStorageCredentials application settings");
+                return req.CreateResponse(HttpStatusCode.BadRequest, new
+                {
+                    error = "Storage key is missing"
+                });
+            }
         }
+        
         CloudBlobContainer assetContainer = GetCloudBlobContainer(storname, storkey, asset.Uri.Segments[1]);
 
         /*

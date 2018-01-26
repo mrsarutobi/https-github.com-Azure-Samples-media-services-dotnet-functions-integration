@@ -78,18 +78,21 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     if (data.assetStorage != null)
     {
         string assetstor = (string)data.assetStorage;
-        if (assetstor != _storageAccountName && attachedstoragecred.ContainsKey(assetstor)) // asset is using another storage than default but we have the key
+        if (assetstor != _storageAccountName)
         {
-            storname = assetstor;
-            storkey = attachedstoragecred[storname];
-        }
-        else // we don't have the key for that storage
-        {
-            log.Info($"Face redaction Asset is in {assetstor} and key is not provided in MediaServicesAttachedStorageCredentials application settings");
-            return req.CreateResponse(HttpStatusCode.BadRequest, new
+            if (attachedstoragecred.ContainsKey(assetstor)) // asset is using another storage than default but we have the key
             {
-                error = "Storage key is missing"
-            });
+                storname = assetstor;
+                storkey = attachedstoragecred[storname];
+            }
+            else // we don't have the key for that storage
+            {
+                log.Info($"Face redaction Asset is in {assetstor} and key is not provided in MediaServicesAttachedStorageCredentials application settings");
+                return req.CreateResponse(HttpStatusCode.BadRequest, new
+                {
+                    error = "Storage key is missing"
+                });
+            }
         }
     }
 
