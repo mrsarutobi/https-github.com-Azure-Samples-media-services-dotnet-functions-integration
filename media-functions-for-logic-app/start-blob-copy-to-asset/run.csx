@@ -61,12 +61,16 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
 
     // Store the attached storage account to a dictionary
     Dictionary<string, string> attachedstoragecred = new Dictionary<string, string>();
-    log.Info(_attachedStorageCredentials);
-    var tab = _attachedStorageCredentials.TrimEnd(';').Split(';');
-    for (int i = 0; i < tab.Count(); i += 2)
+    if (_attachedStorageCredentials != null)
     {
-        attachedstoragecred.Add(tab[i], tab[i + 1]);
+        log.Info(_attachedStorageCredentials);
+        var tab = _attachedStorageCredentials.TrimEnd(';').Split(';');
+        for (int i = 0; i < tab.Count(); i += 2)
+        {
+            attachedstoragecred.Add(tab[i], tab[i + 1]);
+        }
     }
+
 
     // Validate input objects
     if (data.assetId == null)
