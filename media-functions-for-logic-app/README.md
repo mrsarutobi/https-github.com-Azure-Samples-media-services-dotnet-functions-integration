@@ -153,8 +153,8 @@ This function monitor the copy of files (blobs) to a new asset previously create
 Input:
 {
       "destinationContainer" : "mycontainer",
-      "delay": 15000 // optional (default is 5000)
-    
+      "delay": 15000; // optional (default is 5000)
+      "assetStorage" :"amsstore01" // optional. Name of attached storage where to create the asset. Please use the function setting variable MediaServicesAttachedStorageCredentials to pass the credentials
 }
 Output:
 {
@@ -255,7 +255,8 @@ This function creates an empty asset.
 ```c#
 Input:
 {
-    "assetName" : "the name of the asset"
+    "assetName" : "the name of the asset",
+    "assetStorage" :"amsstore01" // optional. Name of attached storage where to create the asset 
 }
 
 Output:
