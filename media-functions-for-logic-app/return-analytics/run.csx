@@ -299,8 +299,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 // let's wait for the copy to finish before deleting the asset..
                 if (listJPGCopies.Count > 0)
                 {
+                    log.Info("JPG Copy with asset deletion was asked. Checking copy status...");
                     while (!listJPGCopies.All(r => r.IsCompleted))
                     {
+                        log.Info("JPG Copy not finished. Waiting 3s...");
                         Task.Delay(TimeSpan.FromSeconds(3d)).Wait();
                     }
                 }
@@ -413,8 +415,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 // let's wait for the copy to finish before deleting the asset..
                 if (listPNGCopies.Count > 0)
                 {
+                    log.Info("PNG Copy with asset deletion was asked. Checking copy status...");
                     while (!listPNGCopies.All(r => r.IsCompleted))
                     {
+                        log.Info("PNG Copy not finished. Waiting 3s...");
                         Task.Delay(TimeSpan.FromSeconds(3d)).Wait();
                     }
                 }
