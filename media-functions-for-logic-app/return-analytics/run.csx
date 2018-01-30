@@ -87,6 +87,7 @@ Output:
 #r "System.Xml.Linq"
 #load "../Shared/mediaServicesHelpers.csx"
 #load "../Shared/copyBlobHelpers.csx"
+#load "../Shared/keyHelpers.csx"
 
 using System;
 using System.Net;
@@ -158,17 +159,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     string jsonContent = await req.Content.ReadAsStringAsync();
     dynamic data = JsonConvert.DeserializeObject(jsonContent);
 
-    // Store the attached storage account to a dictionary
-    Dictionary<string, string> attachedstoragecred = new Dictionary<string, string>();
-    if (_attachedStorageCredentials != null)
-    {
-        log.Info(_attachedStorageCredentials);
-        var tab = _attachedStorageCredentials.TrimEnd(';').Split(';');
-        for (int i = 0; i < tab.Count(); i += 2)
-        {
-            attachedstoragecred.Add(tab[i], tab[i + 1]);
-        }
-    }
+    log.Info(_attachedStorageCredentials);
+    var attachedstoragecred = ReturnStorageCredentials(_attachedStorageCredentials);
 
     log.Info(jsonContent);
 

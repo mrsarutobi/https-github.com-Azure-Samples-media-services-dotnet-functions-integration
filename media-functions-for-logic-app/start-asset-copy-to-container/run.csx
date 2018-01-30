@@ -22,6 +22,7 @@ Output:
 #load "../Shared/copyBlobHelpers.csx"
 #load "../Shared/ingestAssetConfigHelpers.csx"
 #load "../Shared/mediaServicesHelpers.csx"
+#load "../Shared/keyHelpers.csx"
 
 using System;
 using System.Net;
@@ -43,6 +44,8 @@ static readonly string _RESTAPIEndpoint = Environment.GetEnvironmentVariable("AM
 static readonly string _mediaservicesClientId = Environment.GetEnvironmentVariable("AMSClientId");
 static readonly string _mediaservicesClientSecret = Environment.GetEnvironmentVariable("AMSClientSecret");
 
+static readonly string _attachedStorageCredentials = Environment.GetEnvironmentVariable("MediaServicesAttachedStorageCredentials");
+
 // Field for service context.
 private static CloudMediaContext _context = null;
 private static CloudStorageAccount _destinationStorageAccount = null;
@@ -55,6 +58,9 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     string jsonContent = await req.Content.ReadAsStringAsync();
     dynamic data = JsonConvert.DeserializeObject(jsonContent);
     log.Info("Request : " + jsonContent);
+
+    log.Info(_attachedStorageCredentials);
+    var attachedstoragecred = ReturnStorageCredentials(_attachedStorageCredentials);
 
     // Validate input objects
     if (data.assetId == null)
@@ -99,13 +105,34 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         if (asset == null)
             return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Asset not found" });
 
+
+        string storname = _storageAccountName;
+        string storkey = _storageAccountKey;
+        if (asset.StorageAccountName != _storageAccountName)
+        {
+            if (attachedstoragecred.ContainsKey(outputAsset.StorageAccountName)) // asset is using another storage than default but we have the key
+            {
+                storname = outputAsset.StorageAccountName;
+                storkey = attachedstoragecred[storname];
+            }
+            else // we don't have the key for that storage
+            {
+                log.Info($"Face redaction Asset is in {outputAsset.StorageAccountName} and key is not provided in MediaServicesAttachedStorageCredentials application settings");
+                return req.CreateResponse(HttpStatusCode.BadRequest, new
+                {
+                    error = "Storage key is missing"
+                });
+            }
+        }
+
+
         // Setup blob container
-        CloudBlobContainer sourceBlobContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, asset.Uri.Segments[1]);
+        CloudBlobContainer sourceBlobContainer = GetCloudBlobContainer(storname, storkey, asset.Uri.Segments[1]);
         CloudBlobContainer destinationBlobContainer = GetCloudBlobContainer(targetStorageAccountName, targetStorageAccountKey, targetContainer);
         destinationBlobContainer.CreateIfNotExists();
 
         var files = asset.AssetFiles.ToList().Where(f => ((string.IsNullOrEmpty(endsWith) || f.Name.EndsWith(endsWith)) && (string.IsNullOrEmpty(startsWith) || f.Name.StartsWith(startsWith))));
-        
+
         foreach (var file in files)
         {
             CloudBlob sourceBlob = sourceBlobContainer.GetBlockBlobReference(file.Name);
