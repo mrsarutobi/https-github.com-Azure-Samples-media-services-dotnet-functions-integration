@@ -65,7 +65,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     log.Info(jsonContent);
 
     log.Info(_attachedStorageCredentials);
-    var attachedstoragecred = ReturnStorageCredentials(_attachedStorageCredentials);
+    var attachedstoragecred = ReturnStorageCredentials();
 
     if (data.assetId == null)
     {

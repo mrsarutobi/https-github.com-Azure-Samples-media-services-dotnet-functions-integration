@@ -21,9 +21,8 @@ using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
 
 
-public static Dictionary<string, string> ReturnStorageCredentials() //string attachedStorageCredentialsString
+public static Dictionary<string, string> ReturnStorageCredentials()
 {
-    
     // Store the attached storage account to a dictionary
     Dictionary<string, string> attachedstoragecredDict = new Dictionary<string, string>();
     if (_attachedStorageCredentials != null)
