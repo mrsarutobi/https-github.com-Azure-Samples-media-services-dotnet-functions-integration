@@ -160,7 +160,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     dynamic data = JsonConvert.DeserializeObject(jsonContent);
 
     log.Info(_attachedStorageCredentials);
-    var attachedstoragecred = ReturnStorageCredentials(_attachedStorageCredentials);
+    var attachedstoragecred = ReturnStorageCredentials();
 
     log.Info(jsonContent);
 
