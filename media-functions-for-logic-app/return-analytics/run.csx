@@ -182,7 +182,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         //
         if (data.faceRedaction != null && data.faceRedaction.assetId != null)
         {
-            List<Task> listJPGCopies = new List<Task>();
+            List<CloudBlob> listJPGCopies = new List<CloudBlob>();
 
             // Get the asset
             string assetid = data.faceRedaction.assetId;
@@ -300,7 +300,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 if (listJPGCopies.Count > 0)
                 {
                     log.Info("JPG Copy with asset deletion was asked. Checking copy status...");
-                    while (!listJPGCopies.All(r => r.IsCompleted))
+                    while (listJPGCopies.Any(r => r.CopyState.Status == CopyStatus.Pending))
                     {
                         log.Info("JPG Copy not finished. Waiting 3s...");
                         Task.Delay(TimeSpan.FromSeconds(3d)).Wait();
@@ -315,7 +315,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         //
         if (data.mesThumbnails != null && data.mesThumbnails.assetId != null)
         {
-            List<Task> listPNGCopies = new List<Task>();
+            List<CloudBlob> listPNGCopies = new List<CloudBlob>();
 
             // Get the asset
             string assetid = data.mesThumbnails.assetId;
@@ -416,7 +416,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 if (listPNGCopies.Count > 0)
                 {
                     log.Info("PNG Copy with asset deletion was asked. Checking copy status...");
-                    while (!listPNGCopies.All(r => r.IsCompleted))
+                    while (listPNGCopies.Any(r => r.CopyState.Status == CopyStatus.Pending))
                     {
                         log.Info("PNG Copy not finished. Waiting 3s...");
                         Task.Delay(TimeSpan.FromSeconds(3d)).Wait();
@@ -599,10 +599,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     });
 }
 
-static public List<Task> CopyFilesAsync(CloudBlobContainer sourceBlobContainer, CloudBlobContainer destinationBlobContainer, string prefix, string extension, TraceWriter log)
+static public List<CloudBlob> CopyFilesAsync(CloudBlobContainer sourceBlobContainer, CloudBlobContainer destinationBlobContainer, string prefix, string extension, TraceWriter log)
 {
     // init the list of tasks
-    List<Task> mylistresults = new List<Task>();
+    List<CloudBlob> mylistresults = new List<CloudBlob>();
 
     if (destinationBlobContainer.CreateIfNotExists())
     {
@@ -640,7 +640,11 @@ static public List<Task> CopyFilesAsync(CloudBlobContainer sourceBlobContainer, 
                     SharedAccessExpiryTime = DateTime.UtcNow.AddHours(24)
                 });
 
-                mylistresults.Add(destinationBlob.StartCopyAsync(new Uri(sourceBlob.Uri.AbsoluteUri + signature)));
+                //mylistresults.Add(destinationBlob.StartCopyAsync(new Uri(sourceBlob.Uri.AbsoluteUri + signature)));
+                destinationBlob.StartCopyAsync(new Uri(sourceBlob.Uri.AbsoluteUri + signature));
+
+                mylistresults.Add(destinationBlob);
+
             }
         }
     }
