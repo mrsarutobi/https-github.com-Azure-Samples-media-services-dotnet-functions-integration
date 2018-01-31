@@ -305,7 +305,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                     while (continueLoop)
                     {
                         listJPGCopies = listJPGCopies.Where(r => r.CopyState.Status == CopyStatus.Pending).ToList();
-                        if (listJPGCopies.Count < 0)
+                        if (listJPGCopies.Count == 0)
                         {
                             continueLoop = false;
                         }
