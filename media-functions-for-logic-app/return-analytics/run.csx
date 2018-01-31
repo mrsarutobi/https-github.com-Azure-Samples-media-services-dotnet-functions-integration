@@ -296,14 +296,25 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
             if (jsonFaceRedaction != "" && data.faceRedaction.deleteAsset != null && ((bool)data.faceRedaction.deleteAsset))
             // If asset deletion was asked
             {
+
                 // let's wait for the copy to finish before deleting the asset..
                 if (listJPGCopies.Count > 0)
                 {
                     log.Info("JPG Copy with asset deletion was asked. Checking copy status...");
-                    while (listJPGCopies.Any(r => r.CopyState.Status == CopyStatus.Pending))
+                    bool continueLoop = true;
+                    while (continueLoop)
                     {
-                        log.Info("JPG Copy not finished. Waiting 3s...");
-                        Task.Delay(TimeSpan.FromSeconds(3d)).Wait();
+                        listJPGCopies = listJPGCopies.Where(r => r.CopyState.Status == CopyStatus.Pending).ToList();
+                        if (listPNGCopies.Count == 0)
+                        {
+                            continueLoop = false;
+                        }
+                        else
+                        {
+                            log.Info("PNG Copy not finished. Waiting 3s...");
+                            Task.Delay(TimeSpan.FromSeconds(3d)).Wait();
+                            listJPGCopies.All(r => r.FetchAttributes());
+                        }
                     }
                 }
                 outputAsset.Delete();
@@ -416,10 +427,20 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 if (listPNGCopies.Count > 0)
                 {
                     log.Info("PNG Copy with asset deletion was asked. Checking copy status...");
-                    while (listPNGCopies.Any(r => r.CopyState.Status == CopyStatus.Pending))
+                    bool continueLoop = true;
+                    while (continueLoop)
                     {
-                        log.Info("PNG Copy not finished. Waiting 3s...");
-                        Task.Delay(TimeSpan.FromSeconds(3d)).Wait();
+                        listPNGCopies = listPNGCopies.Where(r => r.CopyState.Status == CopyStatus.Pending).ToList();
+                        if (listPNGCopies.Count == 0)
+                        {
+                            continueLoop = false;
+                        }
+                        else
+                        {
+                            log.Info("PNG Copy not finished. Waiting 3s...");
+                            Task.Delay(TimeSpan.FromSeconds(3d)).Wait();
+                            listPNGCopies.All(r => r.FetchAttributes());
+                        }
                     }
                 }
 
