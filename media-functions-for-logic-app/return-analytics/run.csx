@@ -305,7 +305,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                     while (continueLoop)
                     {
                         listJPGCopies = listJPGCopies.Where(r => r.CopyState.Status == CopyStatus.Pending).ToList();
-                        if (listPNGCopies.Count == 0)
+                        if (listJPGCopies.Count == 0)
                         {
                             continueLoop = false;
                         }
@@ -313,7 +313,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                         {
                             log.Info("PNG Copy not finished. Waiting 3s...");
                             Task.Delay(TimeSpan.FromSeconds(3d)).Wait();
-                            listJPGCopies.All(r => r.FetchAttributes());
+                            listJPGCopies.ForEach(r => r.FetchAttributes());
                         }
                     }
                 }
@@ -439,7 +439,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                         {
                             log.Info("PNG Copy not finished. Waiting 3s...");
                             Task.Delay(TimeSpan.FromSeconds(3d)).Wait();
-                            listPNGCopies.All(r => r.FetchAttributes());
+                            listPNGCopies.ForEach(r => r.FetchAttributes());
                         }
                     }
                 }
