@@ -6,6 +6,7 @@ Input:
     "jobId" : "nb:jid:UUID:1ceaa82f-2607-4df9-b034-cd730dad7097", // Mandatory, Id of the job
     "taskId" : "nb:tid:UUID:cdc25b10-3ed7-4005-bcf9-6222b35b5be3", // Mandatory, Id of the task
     "extendedInfo" : true // optional. Returns ams account unit size, nb units, nb of jobs in queue, scheduled and running states. Only if job is complete or error
+    "noWait" : true // optional. Set this parameter if you don't want the function to wait. Otherwise it waits for 15 seconds if the job is not completed before doing another check and terminate
  }
 
 Output:
@@ -144,19 +145,25 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
             });
         }
 
-
-        for (int i = 1; i <= 3; i++) // let's wait 3 times 5 seconds (15 seconds)
+        if (data.noWait != null && (bool)data.noWait)
         {
-            log.Info($"Task {task.Id} status is {task.State}");
-
-            if (task.State == JobState.Finished || task.State == JobState.Canceled || task.State == JobState.Error)
+            // No wait
+        }
+        else
+        {
+            for (int i = 1; i <= 3; i++) // let's wait 3 times 5 seconds (15 seconds)
             {
-                break;
-            }
+                log.Info($"Task {task.Id} status is {task.State}");
 
-            log.Info("Waiting 5 s...");
-            System.Threading.Thread.Sleep(5 * 1000);
-            task = job.Tasks.Where(j => j.Id == taskid).FirstOrDefault();
+                if (task.State == JobState.Finished || task.State == JobState.Canceled || task.State == JobState.Error)
+                {
+                    break;
+                }
+
+                log.Info("Waiting 5 s...");
+                System.Threading.Thread.Sleep(5 * 1000);
+                task = job.Tasks.Where(j => j.Id == taskid).FirstOrDefault();
+            }
         }
 
         if (task.State == JobState.Error || task.State == JobState.Canceled)

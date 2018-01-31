@@ -5,7 +5,7 @@ Input:
 {
     "assetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", // Mandatory, Id of the source asset
     "startsWith" : "video", //optional, list only files that start with name video (filter)
-    "endsWidth" : ".mp4", //optional, list only files that end with .mp4 (filter)
+    "endsWith" : ".mp4", //optional, list only files that end with .mp4 (filter)
 }
 
 Output:
