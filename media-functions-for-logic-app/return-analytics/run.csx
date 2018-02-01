@@ -427,197 +427,189 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 if (listPNGCopies.Count > 0)
                 {
                     log.Info("PNG Copy with asset deletion was asked. Checking copy status...");
-                    bool continueLoop = true;
-                    while (continueLoop)
+                    while (listPNGCopies.Any(r => r.CopyState.Status == CopyStatus.Pending))
                     {
-                        listPNGCopies = listPNGCopies.Where(r => r.CopyState.Status == CopyStatus.Pending);
-                        if (listPNGCopies.Count == 0)
-                        {
-                            continueLoop = false;
-                        }
-                        else
-                        {
-                            log.Info("PNG Copy not finished. Waiting 3s...");
-                            Task.Delay(TimeSpan.FromSeconds(3d)).Wait();
-                            listPNGCopies.ForEach(r => r.FetchAttributes());
-                        }
+                        log.Info("PNG Copy not finished. Waiting 3s...");
+                        Task.Delay(TimeSpan.FromSeconds(3d)).Wait();
+                        listPNGCopies.ForEach(r => r.FetchAttributes());
                     }
                 }
-
-                // delete the asset
-                //outputAsset.Delete();
             }
+
+            // delete the asset
+            //outputAsset.Delete();
         }
+    }
 
         //
         // MOTION DETECTION
         //
-        if (data.motionDetection != null && data.motionDetection.assetId != null)
+    if (data.motionDetection != null && data.motionDetection.assetId != null)
+    {
+        // Get the asset
+        string assetid = data.motionDetection.assetId;
+        var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
+
+        if (outputAsset == null)
         {
-            // Get the asset
-            string assetid = data.motionDetection.assetId;
-            var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
-
-            if (outputAsset == null)
+            log.Info($"Asset not found {assetid}");
+            return req.CreateResponse(HttpStatusCode.BadRequest, new
             {
-                log.Info($"Asset not found {assetid}");
-                return req.CreateResponse(HttpStatusCode.BadRequest, new
-                {
-                    error = "Asset not found"
-                });
-            }
+                error = "Asset not found"
+            });
+        }
 
-            var jsonFile = outputAsset.AssetFiles.Where(a => a.Name.ToUpper().EndsWith(".JSON")).FirstOrDefault();
+        var jsonFile = outputAsset.AssetFiles.Where(a => a.Name.ToUpper().EndsWith(".JSON")).FirstOrDefault();
 
-            if (jsonFile != null)
+        if (jsonFile != null)
+        {
+            jsonMotionDetection = ReturnContent(jsonFile);
+            objMotionDetection = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonMotionDetection);
+            objMotionDetectionOffset = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonMotionDetection);
+
+            if (data.timeOffset != null) // let's update the json with new timecode
             {
-                jsonMotionDetection = ReturnContent(jsonFile);
-                objMotionDetection = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonMotionDetection);
-                objMotionDetectionOffset = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonMotionDetection);
-
-                if (data.timeOffset != null) // let's update the json with new timecode
+                var tsoffset2 = TimeSpan.Parse((string)data.timeOffset);
+                foreach (var frag in objMotionDetectionOffset.fragments)
                 {
-                    var tsoffset2 = TimeSpan.Parse((string)data.timeOffset);
-                    foreach (var frag in objMotionDetectionOffset.fragments)
-                    {
-                        frag.start = ((long)(frag.start / objMotionDetectionOffset.timescale) * 10000000) + tsoffset2.Ticks;
-                    }
+                    frag.start = ((long)(frag.start / objMotionDetectionOffset.timescale) * 10000000) + tsoffset2.Ticks;
                 }
-            }
-
-            if (jsonMotionDetection != "" && data.motionDetection.deleteAsset != null && ((bool)data.motionDetection.deleteAsset))
-            // If asset deletion was asked
-            {
-                outputAsset.Delete();
             }
         }
 
-
-        //
-        // OCR
-        //
-        if (data.ocr != null && data.ocr.assetId != null)
+        if (jsonMotionDetection != "" && data.motionDetection.deleteAsset != null && ((bool)data.motionDetection.deleteAsset))
+        // If asset deletion was asked
         {
-            // Get the asset
-            string assetid = data.ocr.assetId;
-            var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
-
-            if (outputAsset == null)
-            {
-                log.Info($"Asset not found {assetid}");
-                return req.CreateResponse(HttpStatusCode.BadRequest, new
-                {
-                    error = "Asset not found"
-                });
-            }
-
-            var jsonFile = outputAsset.AssetFiles.Where(a => a.Name.ToUpper().EndsWith(".JSON")).FirstOrDefault();
-
-            if (jsonFile != null)
-            {
-                jsonOcr = ReturnContent(jsonFile);
-                objOcr = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonOcr);
-                objOcrOffset = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonOcr);
-
-                if (data.timeOffset != null) // let's update the json with new timecode
-                {
-                    var tsoffset = TimeSpan.Parse((string)data.timeOffset);
-                    foreach (var frag in objOcrOffset.fragments)
-                    {
-                        frag.start = ((long)(frag.start / objOcrOffset.timescale) * 10000000) + tsoffset.Ticks;
-                    }
-                }
-            }
-
-            if (jsonOcr != "" && data.ocr.deleteAsset != null && ((bool)data.ocr.deleteAsset))
-            // If asset deletion was asked
-            {
-                outputAsset.Delete();
-            }
+            outputAsset.Delete();
         }
-
-        //
-        // Video Annotator
-        //
-        if (data.videoAnnotation != null && data.videoAnnotation.assetId != null)
-        {
-            // Get the asset
-            string assetid = data.videoAnnotation.assetId;
-            var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
-
-            if (outputAsset == null)
-            {
-                log.Info($"Asset not found {assetid}");
-                return req.CreateResponse(HttpStatusCode.BadRequest, new
-                {
-                    error = "Asset not found"
-                });
-            }
-
-            var jsonFile = outputAsset.AssetFiles.Where(a => a.Name.ToUpper().EndsWith(".JSON")).FirstOrDefault();
-
-            if (jsonFile != null)
-            {
-                jsonAnnotation = ReturnContent(jsonFile);
-                objAnnotation = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonAnnotation);
-                objAnnotationOffset = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonAnnotation);
-
-                if (data.timeOffset != null) // let's update the json with new timecode
-                {
-                    var tsoffset = TimeSpan.Parse((string)data.timeOffset);
-                    foreach (var frag in objAnnotationOffset.fragments)
-                    {
-                        frag.start = ((long)(frag.start / objAnnotationOffset.timescale) * 10000000) + tsoffset.Ticks;
-                    }
-                }
-            }
-
-            if (jsonAnnotation != "" && data.videoAnnotation.deleteAsset != null && ((bool)data.videoAnnotation.deleteAsset))
-            // If asset deletion was asked
-            {
-                outputAsset.Delete();
-            }
-        }
-
     }
+
+
+    //
+    // OCR
+    //
+    if (data.ocr != null && data.ocr.assetId != null)
+    {
+        // Get the asset
+        string assetid = data.ocr.assetId;
+        var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
+
+        if (outputAsset == null)
+        {
+            log.Info($"Asset not found {assetid}");
+            return req.CreateResponse(HttpStatusCode.BadRequest, new
+            {
+                error = "Asset not found"
+            });
+        }
+
+        var jsonFile = outputAsset.AssetFiles.Where(a => a.Name.ToUpper().EndsWith(".JSON")).FirstOrDefault();
+
+        if (jsonFile != null)
+        {
+            jsonOcr = ReturnContent(jsonFile);
+            objOcr = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonOcr);
+            objOcrOffset = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonOcr);
+
+            if (data.timeOffset != null) // let's update the json with new timecode
+            {
+                var tsoffset = TimeSpan.Parse((string)data.timeOffset);
+                foreach (var frag in objOcrOffset.fragments)
+                {
+                    frag.start = ((long)(frag.start / objOcrOffset.timescale) * 10000000) + tsoffset.Ticks;
+                }
+            }
+        }
+
+        if (jsonOcr != "" && data.ocr.deleteAsset != null && ((bool)data.ocr.deleteAsset))
+        // If asset deletion was asked
+        {
+            outputAsset.Delete();
+        }
+    }
+
+    //
+    // Video Annotator
+    //
+    if (data.videoAnnotation != null && data.videoAnnotation.assetId != null)
+    {
+        // Get the asset
+        string assetid = data.videoAnnotation.assetId;
+        var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
+
+        if (outputAsset == null)
+        {
+            log.Info($"Asset not found {assetid}");
+            return req.CreateResponse(HttpStatusCode.BadRequest, new
+            {
+                error = "Asset not found"
+            });
+        }
+
+        var jsonFile = outputAsset.AssetFiles.Where(a => a.Name.ToUpper().EndsWith(".JSON")).FirstOrDefault();
+
+        if (jsonFile != null)
+        {
+            jsonAnnotation = ReturnContent(jsonFile);
+            objAnnotation = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonAnnotation);
+            objAnnotationOffset = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonAnnotation);
+
+            if (data.timeOffset != null) // let's update the json with new timecode
+            {
+                var tsoffset = TimeSpan.Parse((string)data.timeOffset);
+                foreach (var frag in objAnnotationOffset.fragments)
+                {
+                    frag.start = ((long)(frag.start / objAnnotationOffset.timescale) * 10000000) + tsoffset.Ticks;
+                }
+            }
+        }
+
+        if (jsonAnnotation != "" && data.videoAnnotation.deleteAsset != null && ((bool)data.videoAnnotation.deleteAsset))
+        // If asset deletion was asked
+        {
+            outputAsset.Delete();
+        }
+    }
+
+}
     catch (Exception ex)
+{
+    log.Info($"Exception {ex}");
+    return req.CreateResponse(HttpStatusCode.InternalServerError, new
     {
-        log.Info($"Exception {ex}");
-        return req.CreateResponse(HttpStatusCode.InternalServerError, new
-        {
-            Error = ex.ToString()
-        });
-    }
-
-    log.Info($"");
-    return req.CreateResponse(HttpStatusCode.OK, new
-    {
-        faceRedaction = new
-        {
-            json = Newtonsoft.Json.JsonConvert.SerializeObject(objFaceDetection),
-            jsonOffset = Newtonsoft.Json.JsonConvert.SerializeObject(objFaceDetectionOffset),
-            jpgFaces = Newtonsoft.Json.JsonConvert.SerializeObject(jpgFaces)
-        },
-        mesThumbnail = new
-        {
-            pngThumbnails = Newtonsoft.Json.JsonConvert.SerializeObject(pngThumbnails)
-        },
-        motionDetection = new
-        {
-            json = Newtonsoft.Json.JsonConvert.SerializeObject(objMotionDetection),
-            jsonOffset = Newtonsoft.Json.JsonConvert.SerializeObject(objMotionDetectionOffset)
-        },
-        ocr = new
-        {
-            json = Newtonsoft.Json.JsonConvert.SerializeObject(objOcr),
-            jsonOffset = Newtonsoft.Json.JsonConvert.SerializeObject(objOcrOffset)
-        },
-        videoAnnotation = new
-        {
-            json = Newtonsoft.Json.JsonConvert.SerializeObject(objAnnotation),
-            jsonOffset = Newtonsoft.Json.JsonConvert.SerializeObject(objAnnotationOffset)
-        }
+        Error = ex.ToString()
     });
+}
+
+log.Info($"");
+return req.CreateResponse(HttpStatusCode.OK, new
+{
+    faceRedaction = new
+    {
+        json = Newtonsoft.Json.JsonConvert.SerializeObject(objFaceDetection),
+        jsonOffset = Newtonsoft.Json.JsonConvert.SerializeObject(objFaceDetectionOffset),
+        jpgFaces = Newtonsoft.Json.JsonConvert.SerializeObject(jpgFaces)
+    },
+    mesThumbnail = new
+    {
+        pngThumbnails = Newtonsoft.Json.JsonConvert.SerializeObject(pngThumbnails)
+    },
+    motionDetection = new
+    {
+        json = Newtonsoft.Json.JsonConvert.SerializeObject(objMotionDetection),
+        jsonOffset = Newtonsoft.Json.JsonConvert.SerializeObject(objMotionDetectionOffset)
+    },
+    ocr = new
+    {
+        json = Newtonsoft.Json.JsonConvert.SerializeObject(objOcr),
+        jsonOffset = Newtonsoft.Json.JsonConvert.SerializeObject(objOcrOffset)
+    },
+    videoAnnotation = new
+    {
+        json = Newtonsoft.Json.JsonConvert.SerializeObject(objAnnotation),
+        jsonOffset = Newtonsoft.Json.JsonConvert.SerializeObject(objAnnotationOffset)
+    }
+});
 }
 
 static public List<CloudBlob> CopyFilesAsync(CloudBlobContainer sourceBlobContainer, CloudBlobContainer destinationBlobContainer, string prefix, string extension, TraceWriter log)
