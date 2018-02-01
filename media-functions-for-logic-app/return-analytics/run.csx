@@ -428,8 +428,11 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 {
                     log.Info(listPNGCopies.Count.ToString() + " PNG copies");
                     log.Info("PNG Copy with asset deletion was asked. Checking copy status...");
-                    listPNGCopies[0].FetchAttributes();
-                    log.Info(listPNGCopies[0].CopyState.Status.ToString() + " is the copy status");
+                    var destBlob = listPNGCopies[0] as CloudBlob;
+                    log.Info("fetch attributes...");
+                    destBlob.FetchAttributes();
+                    log.Info("done...");
+                    log.Info(destBlob.CopyState.Status.ToString() + " is the copy status");
                     while (listPNGCopies.Any(r => r.CopyState.Status == CopyStatus.Pending))
                     {
                         log.Info("PNG Copy not finished. Waiting 3s...");
