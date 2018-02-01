@@ -251,7 +251,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                     targetContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, copyToContainer);
                 }
 
-                listJPGCopies = CopyFilesAsync(sourceContainer, targetContainer, prefixjpg, "jpg", log);
+                listJPGCopies = await CopyFilesAsync(sourceContainer, targetContainer, prefixjpg, "jpg", log);
                 targetContainerUri = targetContainer.Uri.ToString();
             }
 
@@ -394,7 +394,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                     targetContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, copyToContainer);
                 }
 
-                listPNGCopies = CopyFilesAsync(sourceContainer, targetContainer, prefixpng, "png", log);
+                listPNGCopies = await CopyFilesAsync(sourceContainer, targetContainer, prefixpng, "png", log);
                 targetContainerUri = targetContainer.Uri.ToString();
             }
 
@@ -618,7 +618,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     });
 }
 
-static public List<CloudBlob> CopyFilesAsync(CloudBlobContainer sourceBlobContainer, CloudBlobContainer destinationBlobContainer, string prefix, string extension, TraceWriter log)
+static public async List<CloudBlob> CopyFilesAsync(CloudBlobContainer sourceBlobContainer, CloudBlobContainer destinationBlobContainer, string prefix, string extension, TraceWriter log)
 {
     // init the list of tasks
     List<CloudBlob> mylistresults = new List<CloudBlob>();
