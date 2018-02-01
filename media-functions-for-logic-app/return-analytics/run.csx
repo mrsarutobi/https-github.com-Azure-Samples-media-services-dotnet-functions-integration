@@ -429,7 +429,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                     log.Info(listPNGCopies.Count.ToString() + " PNG copies");
                     log.Info("PNG Copy with asset deletion was asked. Checking copy status...");
                     var destBlob = listPNGCopies[0] as CloudBlob;
-                    log.Info("blob name: " + destBlob.Name);
+                    log.Info("blob url: " + destBlob.Uri.ToString());
                     log.Info("fetch attributes...");
                     destBlob.FetchAttributes();
                     log.Info("done...");
