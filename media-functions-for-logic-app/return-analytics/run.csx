@@ -660,7 +660,7 @@ static public List<CloudBlob> CopyFilesAsync(CloudBlobContainer sourceBlobContai
                 });
 
                 //mylistresults.Add(destinationBlob.StartCopyAsync(new Uri(sourceBlob.Uri.AbsoluteUri + signature)));
-                destinationBlob.StartCopyAsync(new Uri(sourceBlob.Uri.AbsoluteUri + signature));
+                await destinationBlob.StartCopyAsync(new Uri(sourceBlob.Uri.AbsoluteUri + signature));
 
                 mylistresults.Add(destinationBlob);
 
