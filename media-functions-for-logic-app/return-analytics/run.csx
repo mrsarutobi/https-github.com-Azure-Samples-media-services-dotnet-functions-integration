@@ -443,7 +443,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                         }
                     }
                 }
-                //outputAsset.Delete();
+                outputAsset.Delete();
             }
         }
 
