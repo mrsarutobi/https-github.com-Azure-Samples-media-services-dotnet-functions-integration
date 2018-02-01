@@ -439,7 +439,6 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
             // delete the asset
             //outputAsset.Delete();
         }
-    }
 
         //
         // MOTION DETECTION
