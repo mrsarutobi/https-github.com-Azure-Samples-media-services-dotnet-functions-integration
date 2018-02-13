@@ -1,13 +1,16 @@
 /*
-This function generates a manifest (.ism) from the MP4/MA4 files in the asset. It makes this file primary.
-This manifest is needed to stream MP4 file(s) with Azure Media Services
+This function generates a manifest (.ism) from the MP4/M4A files in the asset. It makes this file primary.
+This manifest is needed to stream MP4 file(s) with Azure Media Services.
+
+Caution : such assets are not guaranteed to work with Dynamic Packaging.
+
 Note : this function makes  guesses to determine the files for the video tracks and audio tracks.
-The code can be wrong. Please check the SMIL generated data for your scenario and your source assets!
+These guesses can be wrong. Please check the SMIL generated data for your scenario and your source assets.
 
 Input:
 {
-    "fileName" : "manifest.ism", // Optional. file name of the manifest to create
     "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Mandatory, Id of the asset
+    "fileName" : "manifest.ism", // Optional. file name of the manifest to create
 }
 
 Output:
@@ -107,7 +110,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
             });
         }
 
-        log.Info(@"creation of file {fileName}");
+        log.Info($"creation of file {fileName}");
 
         // Manifest generate
         manifestInfo = LoadAndUpdateManifestTemplate(destAsset, execContext);
@@ -125,10 +128,11 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
             filetocreate.Upload(s);
         }
 
+        log.Info("Manifest file created.");
+
         // let's make the manifest the primary file of the asset
         SetFileAsPrimary(destAsset, fileName);
-
-
+        log.Info("Manifest file set as primary.");
     }
     catch (Exception ex)
     {
@@ -146,7 +150,6 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         manifestContent = manifestInfo.Content
     });
 }
-
 
 public static Stream GenerateStreamFromString(string s)
 {
