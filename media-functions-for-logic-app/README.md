@@ -283,6 +283,30 @@ Output:
 }
 ```
 
+### generate-ism-manifest
+
+This function generates a manifest (.ism) from the MP4/M4A files in the asset. It makes this file primary.
+This manifest is needed to stream MP4 file(s) with Azure Media Services.
+
+Caution : such assets are not guaranteed to work with Dynamic Packaging.
+
+Note : this function makes  guesses to determine the files for the video tracks and audio tracks.
+These guesses can be wrong. Please check the SMIL generated data for your scenario and your source assets.
+
+```c#
+Input:
+{
+    "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Mandatory, Id of the asset
+    "fileName" : "manifest.ism", // Optional. file name of the manifest to create
+}
+
+Output:
+{
+    "fileName" : "manifest.ism" // The name of the manifest file created
+    "manifestContent" : "" // the SMIL data created as an asset file    
+}
+```
+
 ### list-asset-files
 
 This function lists asset files.
