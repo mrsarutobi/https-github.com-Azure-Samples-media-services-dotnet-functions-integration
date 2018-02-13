@@ -110,7 +110,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         log.Info(@"creation of file {fileName}");
 
         // Manifest generate
-        manifestInfo = LoadAndUpdateManifestTemplate(destAsset);
+        manifestInfo = LoadAndUpdateManifestTemplate(destAsset, execContext);
 
         // if not file name passed, then we use the one generated based on mp4 files names
         if (fileName == null)
