@@ -25,7 +25,7 @@ public static Dictionary<string, string> ReturnStorageCredentials()
 {
     // Store the attached storage account to a dictionary
     Dictionary<string, string> attachedstoragecredDict = new Dictionary<string, string>();
-    if (_attachedStorageCredentials != null)
+    if (!string.IsNullOrWhiteSpace(_attachedStorageCredentials))
     {
         var tab = _attachedStorageCredentials.TrimEnd(';').Split(';');
         for (int i = 0; i < tab.Count(); i += 2)
