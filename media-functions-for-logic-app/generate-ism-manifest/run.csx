@@ -11,12 +11,14 @@ Input:
 {
     "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Mandatory, Id of the asset
     "fileName" : "manifest.ism", // Optional. file name of the manifest to create
+    "checkStreamingEndpointResponse" : true // Optional. If true, then the asset is published temporarly and the function checks that the streaming endpoint returns a valid client manifest. It's a good way to know if the asset looks streamable (GOP aligned, etc)
 }
 
 Output:
 {
     "fileName" : "manifest.ism" // The name of the manifest file created
-    "manifestContent" : "" // the SMIL data created as an asset file    
+    "manifestContent" : "" // the SMIL data created as an asset file 
+    "checkStreamingEndpointResponseSuccess" : true //if check is successful 
 }
 */
 
@@ -85,6 +87,9 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
 
     log.Info($"Using Azure Media Service Rest API Endpoint : {_RESTAPIEndpoint}");
 
+    bool checkStreamingEndpointResponse = false;
+    bool checkStreamingEndpointResponseSuccess = true;
+
     try
     {
         fileName = (string)data.fileName;
@@ -133,6 +138,33 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         // let's make the manifest the primary file of the asset
         SetFileAsPrimary(destAsset, fileName);
         log.Info("Manifest file set as primary.");
+
+
+
+        if (data.checkStreamingEndpointResponse != null && (bool)data.checkStreamingEndpointResponse)
+        {
+            checkStreamingEndpointResponse = true;
+            // testing streaming
+            // publish with a streaming locator (1 hour)
+            IAccessPolicy readPolicy = _context.AccessPolicies.Create("readPolicy", TimeSpan.FromHours(1), AccessPermissions.Read);
+            ILocator outputLocator = _context.Locators.CreateLocator(LocatorType.OnDemandOrigin, destAsset, readPolicy);
+            var publishurlsmooth = GetValidOnDemandURI(destAsset);
+
+            try
+            {
+                WebRequest request = WebRequest.Create(publishurlsmooth.ToString());
+                WebResponse response = request.GetResponse();
+                response.Close();
+            }
+
+            catch (Exception ex)
+            {
+                checkStreamingEndpointResponseSuccess = false;
+            }
+            outputLocator.Delete();
+            readPolicy.Delete();
+        }
+
     }
     catch (Exception ex)
     {
@@ -144,11 +176,24 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     }
 
     log.Info($"");
-    return req.CreateResponse(HttpStatusCode.OK, new
+
+    if (checkStreamingEndpointResponse)
     {
-        fileName = fileName,
-        manifestContent = manifestInfo.Content
-    });
+        return req.CreateResponse(HttpStatusCode.OK, new
+        {
+            fileName = fileName,
+            manifestContent = manifestInfo.Content,
+            checkStreamingEndpointResponseSuccess = checkStreamingEndpointResponseSuccess
+        });
+    }
+    else
+    {
+        return req.CreateResponse(HttpStatusCode.OK, new
+        {
+            fileName = fileName,
+            manifestContent = manifestInfo.Content
+        });
+    }
 }
 
 public static Stream GenerateStreamFromString(string s)
