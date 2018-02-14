@@ -7,6 +7,8 @@ Caution : such assets are not guaranteed to work with Dynamic Packaging.
 Note : this function makes  guesses to determine the files for the video tracks and audio tracks.
 These guesses can be wrong. Please check the SMIL generated data for your scenario and your source assets.
 
+As an option, this function can check that the streaming endpoint returns a successful client manifest.
+
 Input:
 {
     "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Mandatory, Id of the asset

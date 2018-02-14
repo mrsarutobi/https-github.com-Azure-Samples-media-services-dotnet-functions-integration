@@ -290,20 +290,24 @@ This manifest is needed to stream MP4 file(s) with Azure Media Services.
 
 Caution : such assets are not guaranteed to work with Dynamic Packaging.
 
-Note : this function makes  guesses to determine the files for the video tracks and audio tracks.
+Note : this function makes guesses to determine the files for the video tracks and audio tracks.
 These guesses can be wrong. Please check the SMIL generated data for your scenario and your source assets.
+
+As an option, this function can check that the streaming endpoint returns a successful client manifest.
 
 ```c#
 Input:
 {
     "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Mandatory, Id of the asset
     "fileName" : "manifest.ism", // Optional. file name of the manifest to create
+    "checkStreamingEndpointResponse" : true // Optional. If true, then the asset is published temporarly and the function checks that the streaming endpoint returns a valid client manifest. It's a good way to know if the asset looks streamable (GOP aligned, etc)
 }
 
 Output:
 {
     "fileName" : "manifest.ism" // The name of the manifest file created
-    "manifestContent" : "" // the SMIL data created as an asset file    
+    "manifestContent" : "" // the SMIL data created as an asset file 
+    "checkStreamingEndpointResponseSuccess" : true //if check is successful 
 }
 ```
 
