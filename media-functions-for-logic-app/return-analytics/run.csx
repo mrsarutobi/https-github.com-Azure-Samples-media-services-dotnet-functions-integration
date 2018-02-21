@@ -290,9 +290,9 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                     {
                         long oldcalc = ((long)(frag.start / objFaceDetectionOffset.timescale) * 10000000) + tsoffset.Ticks;
                         log.Info($"oldcalc {oldcalc}");
-                        long newcalc = ((long)((double)frag.start / (double)objFaceDetectionOffset.timescale) * 10000000d) + tsoffset.Ticks;
+                        long newcalc = ((long)(((double)frag.start / (double)objFaceDetectionOffset.timescale) * 10000000d)) + tsoffset.Ticks;
                         log.Info($"newcalc {newcalc}");
-                        frag.start = ((long)((double)frag.start / (double)objFaceDetectionOffset.timescale) * 10000000d) + tsoffset.Ticks;
+                        frag.start = ((long)(((double)frag.start / (double)objFaceDetectionOffset.timescale) * 10000000d)) + tsoffset.Ticks;
                     }
                 }
             }
