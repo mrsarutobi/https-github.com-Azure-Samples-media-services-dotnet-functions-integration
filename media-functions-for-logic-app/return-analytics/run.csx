@@ -288,7 +288,11 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                     var tsoffset = TimeSpan.Parse((string)data.timeOffset);
                     foreach (var frag in objFaceDetectionOffset.fragments)
                     {
-                        frag.start = ((long)(frag.start / objFaceDetectionOffset.timescale) * 10000000) + tsoffset.Ticks;
+                        long oldcalc = ((long)(frag.start / objFaceDetectionOffset.timescale) * 10000000) + tsoffset.Ticks;
+                        log.Info($"oldcalc {oldcalc}");
+                        long newcalc = ((long)((double)frag.start / (double)objFaceDetectionOffset.timescale) * 10000000d) + tsoffset.Ticks;
+                        log.Info($"newcalc {newcalc}");
+                        frag.start = ((long)((double)frag.start / (double)objFaceDetectionOffset.timescale) * 10000000d) + tsoffset.Ticks;
                     }
                 }
             }
