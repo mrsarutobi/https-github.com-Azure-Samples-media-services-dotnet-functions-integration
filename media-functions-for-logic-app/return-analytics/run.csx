@@ -156,6 +156,8 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     string prefixjpg = "";
     string targetContainerUri = "";
 
+    TimeSpan timeOffset = new TimeSpan(0);
+
     string jsonContent = await req.Content.ReadAsStringAsync();
     dynamic data = JsonConvert.DeserializeObject(jsonContent);
 
@@ -176,6 +178,12 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
 
         _context = new CloudMediaContext(new Uri(_RESTAPIEndpoint), tokenProvider);
 
+
+        // Offset value ?
+        if (data.timeOffset != null) // let's store the offset
+        {
+            timeOffset = TimeSpan.Parse((string)data.timeOffset);
+        }
 
         //
         // FACE REDACTION
@@ -283,16 +291,12 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 objFaceDetection = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonFaceRedaction);
                 objFaceDetectionOffset = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonFaceRedaction);
 
-                if (data.timeOffset != null) // let's update the json with new timecode
+                if (timeOffset.Ticks != 0) // Let's add the offset
                 {
-                    var tsoffset = TimeSpan.Parse((string)data.timeOffset);
                     foreach (var frag in objFaceDetectionOffset.fragments)
                     {
-                        long oldcalc = ((long)(frag.start / objFaceDetectionOffset.timescale) * 10000000) + tsoffset.Ticks;
-                        log.Info($"oldcalc {oldcalc}");
-                        long newcalc = ((long)(((double)frag.start / (double)objFaceDetectionOffset.timescale) * 10000000d)) + tsoffset.Ticks;
-                        log.Info($"newcalc {newcalc}");
-                        frag.start = ((long)(((double)frag.start / (double)objFaceDetectionOffset.timescale) * 10000000d)) + tsoffset.Ticks;
+                        frag.start = ((long)(frag.start)) + (long)((((double)timeOffset / (double)TimeSpan.TicksPerSecond) * (double)objFaceDetectionOffset.timescale));
+                        //frag.start = ((long)(((double)frag.start / (double)objFaceDetectionOffset.timescale) * 10000000d)) + offsetTicks;
                     }
                 }
             }
@@ -477,12 +481,21 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 objMotionDetection = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonMotionDetection);
                 objMotionDetectionOffset = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonMotionDetection);
 
+                /*
                 if (data.timeOffset != null) // let's update the json with new timecode
                 {
                     var tsoffset2 = TimeSpan.Parse((string)data.timeOffset);
                     foreach (var frag in objMotionDetectionOffset.fragments)
                     {
                         frag.start = ((long)(frag.start / objMotionDetectionOffset.timescale) * 10000000) + tsoffset2.Ticks;
+                    }
+                }
+                */
+                if (timeOffset.Ticks != 0) // Let's add the offset
+                {
+                    foreach (var frag in objFaceDetectionOffset.fragments)
+                    {
+                        frag.start = ((long)(frag.start)) + (long)((((double)timeOffset / (double)TimeSpan.TicksPerSecond) * (double)objMotionDetectionOffset.timescale));
                     }
                 }
             }
@@ -521,12 +534,21 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 objOcr = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonOcr);
                 objOcrOffset = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonOcr);
 
+                /*
                 if (data.timeOffset != null) // let's update the json with new timecode
                 {
                     var tsoffset = TimeSpan.Parse((string)data.timeOffset);
                     foreach (var frag in objOcrOffset.fragments)
                     {
                         frag.start = ((long)(frag.start / objOcrOffset.timescale) * 10000000) + tsoffset.Ticks;
+                    }
+                }
+                */
+                if (timeOffset.Ticks != 0) // Let's add the offset
+                {
+                    foreach (var frag in objFaceDetectionOffset.fragments)
+                    {
+                        frag.start = ((long)(frag.start)) + (long)((((double)timeOffset / (double)TimeSpan.TicksPerSecond) * (double)objOcrOffset.timescale));
                     }
                 }
             }
@@ -564,12 +586,21 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 objAnnotation = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonAnnotation);
                 objAnnotationOffset = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonAnnotation);
 
+                /*
                 if (data.timeOffset != null) // let's update the json with new timecode
                 {
                     var tsoffset = TimeSpan.Parse((string)data.timeOffset);
                     foreach (var frag in objAnnotationOffset.fragments)
                     {
                         frag.start = ((long)(frag.start / objAnnotationOffset.timescale) * 10000000) + tsoffset.Ticks;
+                    }
+                }
+                */
+                if (timeOffset.Ticks != 0) // Let's add the offset
+                {
+                    foreach (var frag in objFaceDetectionOffset.fragments)
+                    {
+                        frag.start = ((long)(frag.start)) + (long)((((double)timeOffset / (double)TimeSpan.TicksPerSecond) * (double)objAnnotationOffset.timescale));
                     }
                 }
             }
