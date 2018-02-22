@@ -295,7 +295,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 {
                     foreach (var frag in objFaceDetectionOffset.fragments)
                     {
-                        frag.start = ((long)(frag.start)) + (long)((((double)timeOffset / (double)TimeSpan.TicksPerSecond) * (double)objFaceDetectionOffset.timescale));
+                        frag.start = ((long)(frag.start)) + (long)((((double)timeOffset.Ticks / (double)TimeSpan.TicksPerSecond) * (double)objFaceDetectionOffset.timescale));
                         //frag.start = ((long)(((double)frag.start / (double)objFaceDetectionOffset.timescale) * 10000000d)) + offsetTicks;
                     }
                 }
@@ -495,7 +495,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 {
                     foreach (var frag in objFaceDetectionOffset.fragments)
                     {
-                        frag.start = ((long)(frag.start)) + (long)((((double)timeOffset / (double)TimeSpan.TicksPerSecond) * (double)objMotionDetectionOffset.timescale));
+                        frag.start = ((long)(frag.start)) + (long)((((double)timeOffset.Ticks / (double)TimeSpan.TicksPerSecond) * (double)objMotionDetectionOffset.timescale));
                     }
                 }
             }
@@ -548,7 +548,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 {
                     foreach (var frag in objFaceDetectionOffset.fragments)
                     {
-                        frag.start = ((long)(frag.start)) + (long)((((double)timeOffset / (double)TimeSpan.TicksPerSecond) * (double)objOcrOffset.timescale));
+                        frag.start = ((long)(frag.start)) + (long)((((double)timeOffset.Ticks / (double)TimeSpan.TicksPerSecond) * (double)objOcrOffset.timescale));
                     }
                 }
             }
@@ -600,7 +600,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 {
                     foreach (var frag in objFaceDetectionOffset.fragments)
                     {
-                        frag.start = ((long)(frag.start)) + (long)((((double)timeOffset / (double)TimeSpan.TicksPerSecond) * (double)objAnnotationOffset.timescale));
+                        frag.start = ((long)(frag.start)) + (long)((((double)timeOffset.Ticks / (double)TimeSpan.TicksPerSecond) * (double)objAnnotationOffset.timescale));
                     }
                 }
             }
