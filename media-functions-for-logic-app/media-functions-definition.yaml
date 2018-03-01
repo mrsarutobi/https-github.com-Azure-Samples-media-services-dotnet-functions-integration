@@ -10,7 +10,7 @@ schemes:
 paths:
   /api/add-textfile-to-asset:
     post:
-      operationId: /api/add-textfile-to-asset/post
+      operationId: add-textfile-to-asset
       produces: []
       consumes: []
       parameters: []
@@ -24,7 +24,7 @@ paths:
         - apikeyQuery: []
   /api/check-blob-copy-to-asset-status:
     post:
-      operationId: /api/check-blob-copy-to-asset-status/post
+      operationId: check-blob-copy-to-asset-status
       produces: []
       consumes: []
       parameters: []
@@ -38,7 +38,7 @@ paths:
         - apikeyQuery: []
   /api/check-blob-copy-to-container-status:
     post:
-      operationId: /api/check-blob-copy-to-container-status/post
+      operationId: check-blob-copy-to-container-status
       produces:
         - application/json
       consumes:
@@ -53,57 +53,57 @@ paths:
           schema:
             type: object
             properties:
-              jobId:
-                description: Job ID
+              targetStorageAccountName:
+                description: Target Storage account name
                 type: string
-                x-ms-summary: jobId
+                x-ms-summary: targetStorageAccountName
                 x-ms-visibility: important
-              extendedInfo:
-                description: >-
-                  optional. Returns ams account unit size, nb units, nb of jobs
-                  in queue, scheduled and running states. Only if job is
-                  complete or error
-                type: boolean
-                x-ms-summary: extendedInfo
+              targetStorageAccountKey:
+                description: Target Storage account key
+                type: string
+                x-ms-summary: targetStorageAccountKey
+                x-ms-visibility: important
+              targetContainer:
+                description: Target container
+                type: string
+                x-ms-summary: targetContainer
+                x-ms-visibility: important
+              delay:
+                description: Delay in ms
+                type: number
+                x-ms-summary: delay
                 x-ms-visibility: optional
-              noWait:
-                description: >-
-                  optional. Set this parameter if you don't want the function to
-                  wait. Otherwise it waits for 15 seconds if the job is not
-                  completed before doing another check and terminate
-                type: boolean
-                x-ms-summary: noWait
+              fileNamePrefix:
+                description: File name prefix (video.mp4 or video)
+                type: string
+                x-ms-summary: fileNamePrefix
                 x-ms-visibility: optional
       description: >-
         Replace with Operation Object
         #http://swagger.io/specification/#operationObject
       responses:
         '200':
-          description: Job Data
+          description: Copy Status
           schema:
             type: object
             properties:
-              jobState:
+              copyStatus:
                 type: number
-                description: Returns Yes or No depending on calculations
-                x-ms-summary: Message
+                description: Returns copy status (2 as example)
+                x-ms-summary: copyStatus
               isRunning:
-                type: boolean
-                description: The revenue opportunity cost
-                x-ms-summary: RevenueOpportunity
+                type: string
+                description: True if job is still running
+                x-ms-summary: isRunning
               isSuccessful:
-                type: boolean
-                description: The cost in $ to fix the turbine
-                x-ms-summary: CostToFix
-              progress:
-                type: number
-                description: Returns Yes or No depending on calculations
-                x-ms-summary: Message
+                type: string
+                description: True if job is a success
+                x-ms-summary: isSuccessful
       security:
         - apikeyQuery: []
   /api/check-job-status:
     post:
-      operationId: /api/check-job-status/post
+      operationId: check-job-status
       produces:
         - application/json
       consumes:
@@ -181,7 +181,7 @@ paths:
         - apikeyQuery: []
   /api/check-task-status:
     post:
-      operationId: /api/check-task-status/post
+      operationId: check-task-status
       produces: []
       consumes: []
       parameters: []
@@ -195,7 +195,7 @@ paths:
         - apikeyQuery: []
   /api/create-empty-asset:
     post:
-      operationId: /api/create-empty-asset/post
+      operationId: create-empty-asset
       produces: []
       consumes: []
       parameters: []
@@ -209,7 +209,7 @@ paths:
         - apikeyQuery: []
   /api/delete-entity:
     post:
-      operationId: /api/delete-entity/post
+      operationId: delete-entity
       produces: []
       consumes: []
       parameters: []
@@ -223,7 +223,7 @@ paths:
         - apikeyQuery: []
   /api/generate-ism-manifest:
     post:
-      operationId: /api/generate-ism-manifest/post
+      operationId: generate-ism-manifest
       produces: []
       consumes: []
       parameters: []
@@ -237,7 +237,7 @@ paths:
         - apikeyQuery: []
   /api/list-asset-files:
     post:
-      operationId: /api/list-asset-files/post
+      operationId: list-asset-files
       produces:
         - application/json
       consumes:
@@ -285,7 +285,7 @@ paths:
         - apikeyQuery: []
   /api/live-subclip-analytics:
     post:
-      operationId: /api/live-subclip-analytics/post
+      operationId: live-subclip-analytics
       produces:
         - application/json
       consumes:
@@ -368,7 +368,7 @@ paths:
         - apikeyQuery: []
   /api/publish-asset:
     post:
-      operationId: /api/publish-asset/post
+      operationId: publish-asset
       produces:
         - application/json
       consumes:
@@ -416,7 +416,7 @@ paths:
         - apikeyQuery: []
   /api/return-analytics:
     post:
-      operationId: /api/return-analytics/post
+      operationId: return-analytics
       produces: []
       consumes: []
       parameters: []
@@ -430,7 +430,7 @@ paths:
         - apikeyQuery: []
   /api/return-subtitles:
     post:
-      operationId: /api/return-subtitles/post
+      operationId: return-subtitles
       produces:
         - application/json
       consumes:
@@ -485,7 +485,7 @@ paths:
         - apikeyQuery: []
   /api/set-media-ru:
     post:
-      operationId: /api/set-media-ru/post
+      operationId: set-media-ru
       produces: []
       consumes: []
       parameters: []
@@ -499,7 +499,7 @@ paths:
         - apikeyQuery: []
   /api/start-asset-copy-to-container:
     post:
-      operationId: /api/start-asset-copy-to-container/post
+      operationId: start-asset-copy-to-container
       produces: []
       consumes: []
       parameters: []
@@ -513,7 +513,7 @@ paths:
         - apikeyQuery: []
   /api/start-blob-copy-to-asset:
     post:
-      operationId: /api/start-blob-copy-to-asset/post
+      operationId: start-blob-copy-to-asset
       produces: []
       consumes: []
       parameters: []
@@ -527,7 +527,7 @@ paths:
         - apikeyQuery: []
   /api/submit-job:
     post:
-      operationId: /api/submit-job/post
+      operationId: submit-job
       produces: []
       consumes: []
       parameters: []
@@ -541,7 +541,7 @@ paths:
         - apikeyQuery: []
   /api/sync-asset:
     post:
-      operationId: /api/sync-asset/post
+      operationId: sync-asset
       produces: []
       consumes: []
       parameters: []

@@ -76,7 +76,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
 
         string blobPrefix = null;
 
-        if (data.fileNamePrefix != null)
+        if (!string.IsNullOrWhiteSpace((string)data.fileNamePrefix))
         {
             blobPrefix = (string)data.fileNamePrefix;
             log.Info($"{blobPrefix}");
