@@ -1,0 +1,561 @@
+swagger: '2.0'
+info:
+  title: media-service-functionsqgqpvnruqdbza.azurewebsites.net
+  version: 1.0.0
+host: media-service-functionsqgqpvnruqdbza.azurewebsites.net
+basePath: /
+schemes:
+  - https
+  - http
+paths:
+  /api/add-textfile-to-asset:
+    post:
+      operationId: /api/add-textfile-to-asset/post
+      produces: []
+      consumes: []
+      parameters: []
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Success operation
+      security:
+        - apikeyQuery: []
+  /api/check-blob-copy-to-asset-status:
+    post:
+      operationId: /api/check-blob-copy-to-asset-status/post
+      produces: []
+      consumes: []
+      parameters: []
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Success operation
+      security:
+        - apikeyQuery: []
+  /api/check-blob-copy-to-container-status:
+    post:
+      operationId: /api/check-blob-copy-to-container-status/post
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: Info to check job status
+          x-ms-summary: Job ID
+          x-ms-visibility: important
+          required: true
+          schema:
+            type: object
+            properties:
+              jobId:
+                description: Job ID
+                type: string
+                x-ms-summary: jobId
+                x-ms-visibility: important
+              extendedInfo:
+                description: >-
+                  optional. Returns ams account unit size, nb units, nb of jobs
+                  in queue, scheduled and running states. Only if job is
+                  complete or error
+                type: boolean
+                x-ms-summary: extendedInfo
+                x-ms-visibility: optional
+              noWait:
+                description: >-
+                  optional. Set this parameter if you don't want the function to
+                  wait. Otherwise it waits for 15 seconds if the job is not
+                  completed before doing another check and terminate
+                type: boolean
+                x-ms-summary: noWait
+                x-ms-visibility: optional
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Job Data
+          schema:
+            type: object
+            properties:
+              jobState:
+                type: number
+                description: Returns Yes or No depending on calculations
+                x-ms-summary: Message
+              isRunning:
+                type: boolean
+                description: The revenue opportunity cost
+                x-ms-summary: RevenueOpportunity
+              isSuccessful:
+                type: boolean
+                description: The cost in $ to fix the turbine
+                x-ms-summary: CostToFix
+              progress:
+                type: number
+                description: Returns Yes or No depending on calculations
+                x-ms-summary: Message
+      security:
+        - apikeyQuery: []
+  /api/check-job-status:
+    post:
+      operationId: /api/check-job-status/post
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: Info to check job status
+          x-ms-summary: Job ID
+          x-ms-visibility: important
+          required: true
+          schema:
+            type: object
+            properties:
+              jobId:
+                description: Job ID
+                type: string
+                x-ms-summary: jobId
+                x-ms-visibility: important
+              extendedInfo:
+                description: >-
+                  optional. Returns ams account unit size, nb units, nb of jobs
+                  in queue, scheduled and running states. Only if job is
+                  complete or error
+                type: boolean
+                x-ms-summary: extendedInfo
+                x-ms-visibility: optional
+              noWait:
+                description: >-
+                  optional. Set this parameter if you don't want the function to
+                  wait. Otherwise it waits for 15 seconds if the job is not
+                  completed before doing another check and terminate
+                type: boolean
+                x-ms-summary: noWait
+                x-ms-visibility: optional
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Job Status
+          x-ms-summary: Job Status
+          schema:
+            type: object
+            properties:
+              jobState:
+                type: number
+                description: Current Job State
+                x-ms-summary: Job State
+              isRunning:
+                type: boolean
+                description: Check if job is currently running
+                x-ms-summary: Is Running
+              isSuccessful:
+                type: boolean
+                description: Was the job successful
+                x-ms-summary: Is Successful
+              errorText:
+                type: string
+                description: error(s) text if job state is error
+                x-ms-summary: Error Text
+              startTime:
+                type: string
+                x-ms-summary: Start Time
+              endTime:
+                type: string
+                x-ms-summary: End Time
+              runningDuration:
+                type: number
+                x-ms-summary: Running Duration
+              progress:
+                type: number
+                x-ms-summary: Progress
+      security:
+        - apikeyQuery: []
+  /api/check-task-status:
+    post:
+      operationId: /api/check-task-status/post
+      produces: []
+      consumes: []
+      parameters: []
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Success operation
+      security:
+        - apikeyQuery: []
+  /api/create-empty-asset:
+    post:
+      operationId: /api/create-empty-asset/post
+      produces: []
+      consumes: []
+      parameters: []
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Success operation
+      security:
+        - apikeyQuery: []
+  /api/delete-entity:
+    post:
+      operationId: /api/delete-entity/post
+      produces: []
+      consumes: []
+      parameters: []
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Success operation
+      security:
+        - apikeyQuery: []
+  /api/generate-ism-manifest:
+    post:
+      operationId: /api/generate-ism-manifest/post
+      produces: []
+      consumes: []
+      parameters: []
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Success operation
+      security:
+        - apikeyQuery: []
+  /api/list-asset-files:
+    post:
+      operationId: /api/list-asset-files/post
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: Info to check job status
+          x-ms-summary: Job ID
+          x-ms-visibility: important
+          required: true
+          schema:
+            type: object
+            properties:
+              assetId:
+                description: Asset ID
+                type: string
+                x-ms-summary: Asset Id
+                x-ms-visibility: important
+              startsWith:
+                type: string
+                x-ms-summary: Starts With
+                x-ms-visibility: optional
+              endsWith:
+                type: string
+                x-ms-summary: Ends With
+                x-ms-visibility: optional
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Job Status
+          x-ms-summary: Job Status
+          schema:
+            type: object
+            properties:
+              assetFiles:
+                type: array
+                items:
+                  type: string
+                description: Current Job State
+                x-ms-summary: Job State
+      security:
+        - apikeyQuery: []
+  /api/live-subclip-analytics:
+    post:
+      operationId: /api/live-subclip-analytics/post
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: Info to create a subclip job
+          x-ms-summary: Request Body
+          x-ms-visibility: important
+          required: true
+          schema:
+            type: string
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Success operation
+          x-ms-summary: Live Clip
+          schema:
+            type: object
+            properties:
+              triggerStart:
+                type: string
+                description: When the trigger started
+                x-ms-summary: Trigger Start
+              jobId:
+                type: string
+                x-ms-summary: Job Id
+              channelName:
+                type: string
+                x-ms-summary: Channel Name
+              programId:
+                type: string
+                x-ms-summary: Program Id
+              programName:
+                type: string
+                x-ms-summary: Program Name
+              programUrl:
+                type: string
+                x-ms-summary: Program Url
+              programState:
+                type: string
+                x-ms-summary: Program State
+              programStateChanged:
+                type: boolean
+                x-ms-summary: Program State Changed
+              otherJobsQueue:
+                type: number
+                x-ms-summary: Other Jobs Queue
+              subclip:
+                type: object
+                properties:
+                  assetId:
+                    type: string
+                    x-ms-summary: Subclp Asset Id
+                  taskId:
+                    type: string
+                    x-ms-summary: Subclp Task Id
+                  start:
+                    type: string
+                    x-ms-summary: Subclp Task Start
+                  duration:
+                    type: string
+                    x-ms-summary: Subclp Duration
+              indexV2:
+                type: object
+                properties:
+                  assetId:
+                    type: string
+                    x-ms-summary: IndexV2 Asset Id
+                  taskId:
+                    type: string
+                    x-ms-summary: IndexV2 Task Id
+                  language:
+                    type: string
+                    x-ms-summary: IndexV2 Language
+      security:
+        - apikeyQuery: []
+  /api/publish-asset:
+    post:
+      operationId: /api/publish-asset/post
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: Info to check job status
+          x-ms-summary: Asset Info
+          x-ms-visibility: important
+          required: true
+          schema:
+            type: object
+            properties:
+              assetId:
+                description: Asset ID
+                type: string
+                x-ms-summary: Asset Id
+                x-ms-visibility: important
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Success operation
+          x-ms-summary: Live Clip
+          schema:
+            type: object
+            properties:
+              playerUrl:
+                description: Url of demo AMP with content
+                type: string
+                x-ms-summary: Player Url
+              smoothUrl:
+                type: string
+                description: >-
+                  Url for the published asset (contains name.ism/manifest at the
+                  end) for dynamic packaging
+                x-ms-summary: Smooth Url
+              pathUrl:
+                type: string
+                description: Url of the asset (path)
+                x-ms-summary: Path Url
+      security:
+        - apikeyQuery: []
+  /api/return-analytics:
+    post:
+      operationId: /api/return-analytics/post
+      produces: []
+      consumes: []
+      parameters: []
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Success operation
+      security:
+        - apikeyQuery: []
+  /api/return-subtitles:
+    post:
+      operationId: /api/return-subtitles/post
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: Info to check job status
+          x-ms-summary: Subtitle info
+          x-ms-visibility: important
+          required: true
+          schema:
+            type: object
+            properties:
+              assetId:
+                description: Asset ID
+                type: string
+                x-ms-summary: Asset Id
+                x-ms-visibility: important
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Success operation
+          x-ms-summary: Live Clip
+          schema:
+            type: object
+            properties:
+              vttUrl:
+                type: string
+                description: the full path to vtt file if asset is published
+              ttmlUrl:
+                type: string
+                description: the full path to vtt file if asset is published
+              pathUrl:
+                type: string
+                description: the path to the asset if asset is published
+              vttDocument:
+                type: string
+                description: 'the full vtt document,'
+              vttDocumentOffset:
+                type: string
+                description: the full vtt document with offset
+              ttmlDocument:
+                type: string
+                description: the full ttml document
+              ttmlDocumentOffset:
+                type: string
+                description: the full ttml document with offset
+      security:
+        - apikeyQuery: []
+  /api/set-media-ru:
+    post:
+      operationId: /api/set-media-ru/post
+      produces: []
+      consumes: []
+      parameters: []
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Success operation
+      security:
+        - apikeyQuery: []
+  /api/start-asset-copy-to-container:
+    post:
+      operationId: /api/start-asset-copy-to-container/post
+      produces: []
+      consumes: []
+      parameters: []
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Success operation
+      security:
+        - apikeyQuery: []
+  /api/start-blob-copy-to-asset:
+    post:
+      operationId: /api/start-blob-copy-to-asset/post
+      produces: []
+      consumes: []
+      parameters: []
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Success operation
+      security:
+        - apikeyQuery: []
+  /api/submit-job:
+    post:
+      operationId: /api/submit-job/post
+      produces: []
+      consumes: []
+      parameters: []
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Success operation
+      security:
+        - apikeyQuery: []
+  /api/sync-asset:
+    post:
+      operationId: /api/sync-asset/post
+      produces: []
+      consumes: []
+      parameters: []
+      description: >-
+        Replace with Operation Object
+        #http://swagger.io/specification/#operationObject
+      responses:
+        '200':
+          description: Success operation
+      security:
+        - apikeyQuery: []
+definitions: {}
+securityDefinitions:
+  apikeyQuery:
+    type: apiKey
+    name: code
+    in: query
