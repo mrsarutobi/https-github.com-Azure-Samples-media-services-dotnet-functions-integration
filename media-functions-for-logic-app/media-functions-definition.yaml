@@ -11,9 +11,40 @@ paths:
   /api/add-textfile-to-asset:
     post:
       operationId: add-textfile-to-asset
-      produces: []
-      consumes: []
-      parameters: []
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: Info
+          x-ms-summary: Info
+          x-ms-visibility: important
+          required: true
+          schema:
+            type: object
+            properties:
+              document:
+                description: Content of the text file to create
+                type: string
+                x-ms-summary: Text Content
+                x-ms-visibility: important
+              fileName:
+                description: File name to create
+                type: string
+                x-ms-summary: File name
+                x-ms-visibility: important
+              assetId:
+                description: Id of the existing asset where to put the file
+                type: string
+                x-ms-summary: Existing Asset Id
+                x-ms-visibility: important
+              convertTtml:
+                description: Convert the document from ttml to vtt and create another vtt file in the asset
+                type: bool
+                x-ms-summary: Convert from ttml to vtt
+                x-ms-visibility: optional
       description: >-
         Replace with Operation Object
         #http://swagger.io/specification/#operationObject
@@ -25,15 +56,56 @@ paths:
   /api/check-blob-copy-to-asset-status:
     post:
       operationId: check-blob-copy-to-asset-status
-      produces: []
-      consumes: []
-      parameters: []
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          description: Info
+          x-ms-summary: Info
+          x-ms-visibility: important
+          required: true
+          schema:
+            type: object
+            properties:
+              destinationContainer:
+                description: Destination container
+                type: string
+                x-ms-summary: Destination container
+                x-ms-visibility: important
+              delay:
+                description: Delay in ms
+                type: number
+                x-ms-summary: Delay
+                x-ms-visibility: optional
+              assetStorage:
+                description: Name of the attached storage where to create the asset
+                type: string
+                x-ms-summary: storage name of the asset
+                x-ms-visibility: optional
       description: >-
         Replace with Operation Object
         #http://swagger.io/specification/#operationObject
       responses:
         '200':
-          description: Success operation
+          description: Copy Status
+          schema:
+            type: object
+            properties:
+              copyStatus:
+                type: number
+                description: Returns copy status (2 as example)
+                x-ms-summary: Copy Status
+              isRunning:
+                type: string
+                description: True if job is still running
+                x-ms-summary: is Running
+              isSuccessful:
+                type: string
+                description: True if job is a success
+                x-ms-summary: is Successful
       security:
         - apikeyQuery: []
   /api/check-blob-copy-to-container-status:
@@ -56,27 +128,27 @@ paths:
               targetStorageAccountName:
                 description: Target Storage account name
                 type: string
-                x-ms-summary: targetStorageAccountName
+                x-ms-summary: Target Storage Account Name
                 x-ms-visibility: important
               targetStorageAccountKey:
                 description: Target Storage account key
                 type: string
-                x-ms-summary: targetStorageAccountKey
+                x-ms-summary: target Storage Account Key
                 x-ms-visibility: important
               targetContainer:
                 description: Target container
                 type: string
-                x-ms-summary: targetContainer
+                x-ms-summary: Target Container
                 x-ms-visibility: important
               delay:
                 description: Delay in ms
                 type: number
-                x-ms-summary: delay
+                x-ms-summary: Delay
                 x-ms-visibility: optional
               fileNamePrefix:
                 description: File name prefix (video.mp4 or video)
                 type: string
-                x-ms-summary: fileNamePrefix
+                x-ms-summary: File Name Prefix
                 x-ms-visibility: optional
       description: >-
         Replace with Operation Object
@@ -90,15 +162,15 @@ paths:
               copyStatus:
                 type: number
                 description: Returns copy status (2 as example)
-                x-ms-summary: copyStatus
+                x-ms-summary: Copy Status
               isRunning:
                 type: string
                 description: True if job is still running
-                x-ms-summary: isRunning
+                x-ms-summary: is Running
               isSuccessful:
                 type: string
                 description: True if job is a success
-                x-ms-summary: isSuccessful
+                x-ms-summary: is Successful
       security:
         - apikeyQuery: []
   /api/check-job-status:
@@ -121,7 +193,7 @@ paths:
               jobId:
                 description: Job ID
                 type: string
-                x-ms-summary: jobId
+                x-ms-summary: Job Id
                 x-ms-visibility: important
               extendedInfo:
                 description: >-
@@ -129,7 +201,7 @@ paths:
                   in queue, scheduled and running states. Only if job is
                   complete or error
                 type: boolean
-                x-ms-summary: extendedInfo
+                x-ms-summary: Extended Info
                 x-ms-visibility: optional
               noWait:
                 description: >-
@@ -154,11 +226,11 @@ paths:
                 description: Current Job State
                 x-ms-summary: Job State
               isRunning:
-                type: boolean
+                type: string
                 description: Check if job is currently running
                 x-ms-summary: Is Running
               isSuccessful:
-                type: boolean
+                type: string
                 description: Was the job successful
                 x-ms-summary: Is Successful
               errorText:
