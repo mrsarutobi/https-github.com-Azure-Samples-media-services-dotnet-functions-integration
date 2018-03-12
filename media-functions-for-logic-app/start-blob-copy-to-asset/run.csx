@@ -12,7 +12,8 @@ Input:
 }
 Output:
 {
- "destinationContainer": "" // container of asset
+    "destinationContainer": "" // container of asset
+    "missingBob" : "True" // True if one of thee source blob is missing
 }
 
 */
@@ -83,6 +84,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     string _sourceStorageAccountName = data.sourceStorageAccountName;
     string _sourceStorageAccountKey = data.sourceStorageAccountKey;
     string assetId = data.assetId;
+    bool missingBlob = false;
 
     IAsset newAsset = null;
     IIngestManifest manifest = null;
@@ -128,7 +130,6 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         }
 
         CloudBlobContainer destinationBlobContainer = GetCloudBlobContainer(storname, storkey, newAsset.Uri.Segments[1]);
-        //CloudBlobContainer destinationBlobContainer = GetCloudBlobContainer(_storageAccountName, _storageAccountKey, newAsset.Uri.Segments[1]);
 
         sourceBlobContainer.CreateIfNotExists();
 
@@ -137,25 +138,9 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
             string fileName = (string)data.fileName;
 
             CloudBlob sourceBlob = sourceBlobContainer.GetBlockBlobReference(fileName);
-            CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(fileName);
 
-            if (destinationBlobContainer.CreateIfNotExists())
+            if (sourceBlob.Exists())
             {
-                log.Info("container created");
-                destinationBlobContainer.SetPermissions(new BlobContainerPermissions
-                {
-                    PublicAccess = BlobContainerPublicAccessType.Blob
-                });
-            }
-            CopyBlobAsync(sourceBlob, destinationBlob);
-        }
-
-        if (data.fileNames != null)
-        {
-            foreach (var file in data.fileNames)
-            {
-                string fileName = (string)file;
-                CloudBlob sourceBlob = sourceBlobContainer.GetBlockBlobReference(fileName);
                 CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(fileName);
 
                 if (destinationBlobContainer.CreateIfNotExists())
@@ -168,6 +153,37 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
                 }
                 CopyBlobAsync(sourceBlob, destinationBlob);
             }
+            else
+            {
+                missingBlob = true;
+            }
+        }
+
+        if (data.fileNames != null)
+        {
+            foreach (var file in data.fileNames)
+            {
+                string fileName = (string)file;
+                CloudBlob sourceBlob = sourceBlobContainer.GetBlockBlobReference(fileName);
+                if (sourceBlob.Exists())
+                {
+                    CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(fileName);
+
+                    if (destinationBlobContainer.CreateIfNotExists())
+                    {
+                        log.Info("container created");
+                        destinationBlobContainer.SetPermissions(new BlobContainerPermissions
+                        {
+                            PublicAccess = BlobContainerPublicAccessType.Blob
+                        });
+                    }
+                    CopyBlobAsync(sourceBlob, destinationBlob);
+                }
+                else
+                {
+                    missingBlob = true;
+                }
+            }
         }
     }
     catch (Exception ex)
@@ -179,6 +195,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
 
     return req.CreateResponse(HttpStatusCode.OK, new
     {
-        destinationContainer = newAsset.Uri.Segments[1]
+        destinationContainer = newAsset.Uri.Segments[1],
+        missingBlob = missingBlob.ToString()
     });
 }
