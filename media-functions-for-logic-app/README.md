@@ -268,6 +268,21 @@ Output:
 }
 ```
 
+### delete-asset-files
+
+This function deletes the files from a specific asset.
+```c#
+Input:
+{
+    "assetId" : "the Id of the asset",
+    "startsWith" : "video", //optional, copy only files that start with name video
+    "endsWith" : ".mp4", //optional, copy only files that end with .mp4
+}
+Output:
+{
+}
+```
+
 ### delete-entity
 
 This function delete AMS entities (job(s) and/or asset(s)).
