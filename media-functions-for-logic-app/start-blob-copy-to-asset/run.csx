@@ -8,7 +8,9 @@ Input:
     "fileNames" : [ "filename.mp4" , "filename2.mp4"],
     "sourceStorageAccountName" : "",
     "sourceStorageAccountKey": "",
-    "sourceContainer" : ""
+    "sourceContainer" : "",
+    "noWait" : true // optional. Set this parameter if you don't want the function to wait if the fileName blob is missing. Otherwise it waits for 15 seconds if the blob missing. There is no wait for fileNames 
+
 }
 Output:
 {
@@ -138,6 +140,25 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
             string fileName = (string)data.fileName;
 
             CloudBlob sourceBlob = sourceBlobContainer.GetBlockBlobReference(fileName);
+
+            if (data.noWait != null && (bool)data.noWait)
+            {
+                // No wait
+            }
+            else
+            {
+                for (int i = 1; i <= 3; i++) // let's wait 3 times 5 seconds (15 seconds)
+                {
+                    if (sourceBlob.Exists())
+                    {
+                        break;
+                    }
+
+                    log.Info("Waiting 5 s...");
+                    System.Threading.Thread.Sleep(5 * 1000);
+                    sourceBlob = sourceBlobContainer.GetBlockBlobReference(fileName);
+                }
+            }
 
             if (sourceBlob.Exists())
             {
