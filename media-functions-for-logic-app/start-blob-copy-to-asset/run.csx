@@ -9,13 +9,13 @@ Input:
     "sourceStorageAccountName" : "",
     "sourceStorageAccountKey": "",
     "sourceContainer" : "",
-    "noWait" : true // optional. Set this parameter if you don't want the function to wait if the fileName blob is missing. Otherwise it waits for 15 seconds if the blob missing. There is no wait for fileNames 
+    "wait" : true // optional. Set this parameter if you want the function to wait up to 15s if the fileName blob is missing. Otherwise it does not wait. I applies to fileName, not for fileNames 
 
 }
 Output:
 {
     "destinationContainer": "" // container of asset
-    "missingBob" : "True" // True if one of thee source blob is missing
+    "missingBob" : "True" // True if one of the source blob(s) is missing
 }
 
 */
@@ -141,11 +141,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
 
             CloudBlob sourceBlob = sourceBlobContainer.GetBlockBlobReference(fileName);
 
-            if (data.noWait != null && (bool)data.noWait)
-            {
-                // No wait
-            }
-            else
+            if (data.wait != null && (bool)data.wait)
             {
                 for (int i = 1; i <= 3; i++) // let's wait 3 times 5 seconds (15 seconds)
                 {
