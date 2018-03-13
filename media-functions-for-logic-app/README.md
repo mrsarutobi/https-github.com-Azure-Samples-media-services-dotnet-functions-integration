@@ -765,11 +765,13 @@ Input:
     "fileNames" : [ "filename.mp4" , "filename2.mp4"],
     "sourceStorageAccountName" : "",
     "sourceStorageAccountKey": "",
-    "sourceContainer" : ""
+    "sourceContainer" : "",
+    "wait" : true // optional. Set this parameter if you want the function to wait up to 15s if the fileName blob is missing. Otherwise it does not wait. I applies to fileName, not for fileNames 
 }
 Output:
 {
- "destinationContainer": "" // container of asset
+    "destinationContainer": "asset-2e26fd08-1436-44b1-8b92-882a757071dd" // container of asset
+    "missingBob" : "True" // True if one of the source blob(s) is missing
 }
 ```
 
