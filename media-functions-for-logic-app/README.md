@@ -145,7 +145,7 @@ This template creates a Logic app which
 ![Screen capture](images/logicapp5-3.png?raw=true)
 
 
-Example of [semaphore file](encodedasset0.json)
+Example of [semaphore file](encodedasset0.json) that must be created and uploaded along with the video files.
 
 ```json
 [
