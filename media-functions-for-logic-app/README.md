@@ -129,7 +129,7 @@ Notes
 This template creates a Logic app which
 
 * monitors a container in Azure Storage (blob trigger) for new JSON semaphore files,
-  * See an ![example of semaphore file](encodedasset0.json) 
+  * See an [example of semaphore file](encodedasset0.json) below 
 * imports all the video files declared in the semaphore file to a single asset
   * Note: it waits for all the video files to arrive in the container. If you upload all the files with AZCOPY or Aspera, the video files arrive after the semaphore file given the size, so the need for the wait.
 * creates a client manifest in the asset,
@@ -145,7 +145,7 @@ This template creates a Logic app which
 ![Screen capture](images/logicapp5-3.png?raw=true)
 
 
-Example of ![example of semaphore file](encodedasset0.json)
+Example of [example of semaphore file](encodedasset0.json)
 
 ```json
 [
