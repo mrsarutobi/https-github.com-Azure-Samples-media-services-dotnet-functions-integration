@@ -124,6 +124,27 @@ Notes
 * you should allocate sufficient reserved units in the Media Services account otherwise the job queue will grow over time. Start with 4 S2 reserved units and monitor the queue. 
 
 
+## Fith Logic App : Importing pre-encoded asset to Azure Media Services
+
+This template creates a Logic app which
+
+* monitors a container in Azure Storage (blob trigger) for new JSON semaphore files,
+  * See an ![example of semaphore file](encodedasset0.json?raw=true) 
+* imports all the video files declared in the semaphore file to a single asset
+  * Note: it waits for all the video files to arrive in the container. If you upload all the files with AZCOPY or Aspera, the video files arrive after the semaphore file given the size, so the need for the wait.
+* creates a client manifest in the asset,
+* publishes the asset
+
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp5-preencoded-asset-deploy.json" target="_blank">
+    <img src="http://azuredeploy.net/deploybutton.png"/>
+</a>
+
+![Screen capture](images/logicapp5-1.png?raw=true)
+![Screen capture](images/logicapp5-2.png?raw=true)
+![Screen capture](images/logicapp5-3.png?raw=true)
+
+
 ## Functions documentation
 This section lists the functions available and describes the input and output parameters.
 

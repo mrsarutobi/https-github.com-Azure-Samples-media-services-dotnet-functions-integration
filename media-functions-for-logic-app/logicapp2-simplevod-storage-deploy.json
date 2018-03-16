@@ -32,13 +32,6 @@
         "description": "Storage account where videos must be copied to trigger the workflow."
       }
     },
-    "storageContainerToWatch": {
-      "type": "string",
-      "metadata": {
-        "description": "Container in the ingest storage where videos must be copied to trigger the workflow."
-      },
-      "defaultValue": "ingestvideos"
-    },
     "outlookSendEmailTo": {
       "type": "string",
       "metadata": {
@@ -88,9 +81,6 @@
                 "interval": 3
               },
               "splitOn": "@triggerBody()",
-              "metadata": {
-                "L2luZ2VzdA==": "[concat('/',parameters('storageContainerToWatch'))]"
-              },
               "type": "ApiConnection",
               "inputs": {
                 "host": {
@@ -101,7 +91,6 @@
                 "method": "get",
                 "path": "/datasets/default/triggers/batch/onupdatedfile",
                 "queries": {
-                  "folderId": "L2luZ2VzdA==",
                   "maxFileCount": 10
                 }
               }

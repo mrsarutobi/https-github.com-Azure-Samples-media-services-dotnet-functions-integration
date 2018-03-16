@@ -1,0 +1,363 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "logicAppName": {
+      "type": "string",
+      "defaultValue": "PreencodedAssetWorflow",
+      "metadata": {
+        "description": "Name of the Logic App."
+      }
+    },
+    "functionsAppResourceGroup": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Name of resource group used by the functions app already deployed."
+      }
+    },
+    "functionsAppName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Name of the functions app already deployed."
+      }
+    },
+    "storageAccountNameForTheIngest": {
+      "type": "string",
+      "metadata": {
+        "description": "Storage account where videos must be copied to trigger the workflow."
+      }
+    }
+   },
+  "variables": {
+    "logicAppLocation": "[resourceGroup().location]",
+    "trimlogicAppName": "[trim(parameters('logicAppName'))]",
+    "trimfunctionsAppName": "[trim(parameters('functionsAppName'))]",
+    "storageAccountid": "[resourceId('Microsoft.Storage/storageAccounts', trim(parameters('storageAccountNameForTheIngest')))]",
+    "azureblob_3_Connection_Name": "azureblob-3",
+    "azureblob_3_Connection_DisplayName": "[parameters('storageAccountNameForTheIngest')]",
+    "trimstorageAccountNameForTheIngest": "[trim(parameters('storageAccountNameForTheIngest'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2016-06-01",
+      "name": "[parameters('logicAppName')]",
+      "location": "[variables('logicAppLocation')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/connections', variables('azureblob_3_Connection_Name'))]"
+      ],
+      "properties": {
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            }
+          },
+          "triggers": {
+            "When_one_or_more_blobs_are_added_or_modified_(metadata_only)": {
+              "recurrence": {
+                "frequency": "Minute",
+                "interval": 1
+              },
+              "splitOn": "@triggerBody()",
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['azureblob']['connectionId']"
+                  }
+                },
+                "method": "get",
+                "path": "/datasets/default/triggers/batch/onupdatedfile",
+                "queries": {
+                  "maxFileCount": 10
+                }
+              }
+            }
+          },
+          "actions": {
+            "Condition": {
+              "actions": {},
+              "runAfter": {
+                "Initialize_variable_Storage_Account_Key": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Terminate": {
+                    "runAfter": {},
+                    "type": "Terminate",
+                    "inputs": {
+                      "runStatus": "Cancelled"
+                    }
+                  }
+                }
+              },
+              "expression": "@contains(triggerBody()?['DisplayName'], '.json')",
+              "type": "If"
+            },
+            "Delete_blob_json": {
+              "runAfter": {
+                "For_each_file_-_delete": [
+                  "Succeeded"
+                ]
+              },
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['azureblob']['connectionId']"
+                  }
+                },
+                "method": "delete",
+                "path": "/datasets/default/files/@{encodeURIComponent(encodeURIComponent(triggerBody()?['Path']))}"
+              }
+            },
+            "For_each": {
+              "foreach": "@json(body('Get_blob_content'))",
+              "actions": {
+                "Until": {
+                  "actions": {
+                    "start-blob-copy-to-asset_2": {
+                      "runAfter": {},
+                      "type": "Function",
+                      "inputs": {
+                        "body": {
+                          "assetId": "@{body('create-empty-asset')['assetId']}",
+                          "fileName": "@{items('For_each')['fileName']}",
+                          "sourceContainer": "@split(triggerBody()?['Path'],'/')[1]",
+                          "sourceStorageAccountKey": "@{variables('IngestStorageKey')}",
+                          "sourceStorageAccountName": "@{variables('IngestStorageAccount')}",
+                          "wait": "True"
+                        },
+                        "function": {
+                          "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/',variables('trimfunctionsAppName'),'/functions/start-blob-copy-to-asset')]"
+                        }
+                      }
+                    }
+                  },
+                  "runAfter": {},
+                  "expression": "@equals(body('start-blob-copy-to-asset_2')['missingBlob'], 'False')",
+                  "limit": {
+                    "count": 600,
+                    "timeout": "PT2H"
+                  },
+                  "type": "Until"
+                }
+              },
+              "runAfter": {
+                "create-empty-asset": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Foreach"
+            },
+            "For_each_file_-_delete": {
+              "foreach": "@json(base64ToString(body('Get_blob_content')['$content']))",
+              "actions": {
+                "Delete_blob_mp4": {
+                  "runAfter": {},
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['azureblob']['connectionId']"
+                      }
+                    },
+                    "method": "delete",
+                    "path": "/datasets/default/files/@{encodeURIComponent(encodeURIComponent(concat('/',split(triggerBody()?['Path'],'/')[1],'/',items('For_each_file_-_delete')['fileName'])))}"
+                  }
+                }
+              },
+              "runAfter": {
+                "publish-asset": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Foreach"
+            },
+            "Get_blob_content": {
+              "runAfter": {
+                "Condition": [
+                  "Succeeded"
+                ]
+              },
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['azureblob']['connectionId']"
+                  }
+                },
+                "method": "get",
+                "path": "/datasets/default/files/@{encodeURIComponent(encodeURIComponent(triggerBody()?['Path']))}/content",
+                "queries": {
+                  "inferContentType": false
+                }
+              }
+            },
+            "Initialize_variable_Storage_Account_Key": {
+              "runAfter": {
+                "Initialize_variable_Storage_Account_Name": [
+                  "Succeeded"
+                ]
+              },
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "IngestStorageKey",
+                    "type": "String",
+                    "value": "[listKeys(variables('storageAccountid'),'2015-05-01-preview').key1]"
+                  }
+                ]
+              }
+            },
+            "Initialize_variable_Storage_Account_Name": {
+              "runAfter": {},
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "IngestStorageAccount",
+                    "type": "String",
+                    "value": "[variables('trimstorageAccountNameForTheIngest')]"
+                  }
+                ]
+              }
+            },
+            "Until_copy_finishes": {
+              "actions": {
+                "check-blob-copy-to-asset-status": {
+                  "runAfter": {},
+                  "type": "Function",
+                  "inputs": {
+                    "body": {
+                      "destinationContainer": "@{body('create-empty-asset')['containerPath']}"
+                    },
+                    "function": {
+                      "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/',variables('trimfunctionsAppName'),'/functions/check-blob-copy-to-asset-status')]"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "For_each": [
+                  "Succeeded"
+                ]
+              },
+              "expression": "@equals(body('check-blob-copy-to-asset-status')['isRunning'], string(False))",
+              "limit": {
+                "count": 600,
+                "timeout": "PT2H"
+              },
+              "type": "Until"
+            },
+            "create-empty-asset": {
+              "runAfter": {
+                "Get_blob_content": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "assetName": "@triggerBody()?['DisplayName']",
+                  "json": "@{body('Get_blob_content')}"
+                },
+                "function": {
+                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/',variables('trimfunctionsAppName'),'/functions/create-empty-asset')]",
+                }
+              }
+            },
+            "generate-ism-manifest": {
+              "runAfter": {
+                "sync-asset": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "assetId": "@{body('create-empty-asset')['assetId']}"
+                },
+                "function": {
+                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/',variables('trimfunctionsAppName'),'/functions/generate-ism-manifest')]"
+                }
+              }
+            },
+            "publish-asset": {
+              "runAfter": {
+                "generate-ism-manifest": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "assetId": "@{body('create-empty-asset')['assetId']}"
+                },
+                "function": {
+                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/',variables('trimfunctionsAppName'),'/functions/publish-asset')]"
+                }
+              }
+            },
+            "sync-asset": {
+              "runAfter": {
+                "Until_copy_finishes": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "assetId": "@{body('create-empty-asset')['assetId']}"
+                },
+                "function": {
+                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/',variables('trimfunctionsAppName'),'/functions/sync-asset')]"
+                }
+              }
+            }
+          },
+          "outputs": {}
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "azureblob": {
+                "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/', variables('logicAppLocation'), '/managedApis/azureblob')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', variables('azureblob_3_Connection_Name'))]",
+                "connectionName": "[variables('azureblob_3_Connection_Name')]"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Web/connections",
+      "apiVersion": "2016-06-01",
+      "location": "[variables('logicAppLocation')]",
+      "name": "[variables('azureblob_3_Connection_Name')]",
+      "properties": {
+        "api": {
+          "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/', variables('logicAppLocation'), '/managedApis/azureblob')]"
+        },
+        "displayName": "[variables('azureblob_3_Connection_DisplayName')]",
+        "parameterValues": {
+          "accountName": "[variables('trimstorageAccountNameForTheIngest')]",
+          "accessKey": "[listKeys(variables('storageAccountid'),'2015-05-01-preview').key1]"
+        }
+      }
+    }
+  ],
+  "outputs": {}
+}
