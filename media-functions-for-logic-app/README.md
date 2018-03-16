@@ -130,10 +130,10 @@ This template creates a Logic app which
 
 * monitors a container in Azure Storage (blob trigger) for new JSON semaphore files,
   * See an [example of semaphore file](encodedasset0.json) below 
-* imports all the video files declared in the semaphore file to a single asset
+* imports all the video files declared in the semaphore file to a single asset,
   * Note: it waits for all the video files to arrive in the container. If you upload all the files with AZCOPY or Aspera, the video files arrive after the semaphore file given the size, so the need for the wait.
 * creates a client manifest in the asset,
-* publishes the asset for dynamic packaging
+* publishes the asset with dynamic packaging for adaptive streaming.
 
 
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp5-preencoded-asset-deploy.json" target="_blank">
@@ -145,7 +145,7 @@ This template creates a Logic app which
 ![Screen capture](images/logicapp5-3.png?raw=true)
 
 
-Example of [example of semaphore file](encodedasset0.json)
+Example of [semaphore file](encodedasset0.json)
 
 ```json
 [
