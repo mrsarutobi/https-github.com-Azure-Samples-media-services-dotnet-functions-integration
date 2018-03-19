@@ -162,4 +162,4 @@ Example of [semaphore file](encodedasset0.json) that must be created and uploade
 ```
 
 ## Functions documentation
-This [page](functions-documentation.md) lists the functions available and describes the input and output parameters.
+This [page](Functions-documentation.md) lists the functions available and describes the input and output parameters.
