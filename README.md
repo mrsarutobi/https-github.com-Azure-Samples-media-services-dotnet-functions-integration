@@ -225,13 +225,12 @@ See the [Read Me for 103-aspera-ingest](/103-aspera-ingest/README.md) for more d
 
 # Media Services Functions for Logic Apps
 ## media-functions-for-logic-app
-Functions : create-empty-asset, sync-asset, live-subclip-analytics, submit-job, check-job-status, check-task-status, publish-asset, return-subtitles, return-analytics, set-media-ru, add-textfile-to-asset, delete-entity.
+Functions : add-textfile-to-asset, check-blob-copy-to-asset-status, check-blob-copy-to-container-status, check-job-status, check-task-status, create-empty-asset, delete-asset-files, delete-entity, generate-ism-manifest, list-asset-files, live-subclip-analytics, publish-asset, return-analytics, return-subtitles, set-media-ru, start-asset-copy-to-container, start-blob-copy-to-asset, submit-job, sync-asset.
 These functions are designed to be called by a Logic App.
 
-One specific patterns to pay attention to here include the check-job-status function which is used to poll for 
-job status from a Logic App workflow.
+One specific patterns to pay attention to here include the check-job-status function which is used to poll for job status from a Logic App workflow.
 
-Four logic apps samples are available as ARM templates in [media-functions-for-logic-app](/media-functions-for-logic-app): One basic VOD worflow (that does encoding), one bacic VOD workflow with blob trigger, one more advanced (that does encoding, indexing, subtitles translation), and one that processes a live stream for analytics. They can be easily deployed through a "Deploy to Azure" button in this section.
+Five logic apps samples are available as ARM templates in [media-functions-for-logic-app](/media-functions-for-logic-app): One basic VOD worflow (that does encoding), one bacic VOD workflow with blob trigger, one more advanced (that does encoding, indexing, subtitles translation), one that processes a live stream for analytics and one which imports pre-encoded files as single asset in Azure Media Services. They can be easily deployed through a "Deploy to Azure" button in this section.
 
 In order to practice the deployment of Azure functions for Media Services and the deployment of a Logic App advanced workflow, a detailed hands-on guide was written. You can find the document [here](/media-functions-for-logic-app/Lab).
 
