@@ -61,6 +61,10 @@ Input:
     {
         "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
+    "contentModeration" :                   // Optional but required to do Content Moderator
+    {
+        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
+    },
 
 
     // General job properties
@@ -131,16 +135,21 @@ Output:
             assetId : "",
             taskId : ""
         },
-         "mesThumbnails" :
+        "mesThumbnails" :
         {
             assetId : "",
             taskId : ""
         },
-         "videoAnnotation" :
+        "videoAnnotation" :
         {
             assetId : "",
             taskId : ""
-        }
+        },
+        "contentModeration" :
+        {
+            assetId : "",
+            taskId : ""
+        },
         "programId" = programid,
         "channelName" : "",
         "programName" : "",
@@ -213,6 +222,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     int OutputHyperlapse = -1;
     int OutputMesThumbnails = -1;
     int OutputVideoAnnotation = -1;
+    int OutputContentModeration = -1;
 
     int id = 0;
     string programid = "";
@@ -424,6 +434,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         OutputMotion = AddTask(execContext, job, subclipasset, (data.motionDetection == null) ? (string)data.motionDetectionLevel : ((string)data.motionDetection.level ?? "medium"), "Azure Media Motion Detector", "MotionDetection.json", "medium", ref taskindex, priority - 1, specifiedStorageAccountName: OutputStorageFromParam(data.motionDetection));
         OutputSummarization = AddTask(execContext, job, subclipasset, (data.summarization == null) ? (string)data.summarizationDuration : ((string)data.summarization.duration ?? "0.0"), "Azure Media Video Thumbnails", "Summarization.json", "0.0", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.summarization));
         OutputVideoAnnotation = AddTask(execContext, job, subclipasset, (data.videoAnnotation != null) ? "1.0" : null, "Azure Media Video Annotator", "VideoAnnotation.json", "1.0", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.videoAnnotation));
+        OutputContentModeration = AddTask(execContext, job, subclipasset, (data.contentModeration != null) ? "1.0" : null, "Azure Media Content Moderator", "ContentModeration.json", "1.0", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.contentModeration));
 
         // MES Thumbnails
         OutputMesThumbnails = AddTask(execContext, job, subclipasset, (data.mesThumbnails != null) ? ((string)data.mesThumbnails.Start ?? "{Best}") : null, "Media Encoder Standard", "MesThumbnails.json", "{Best}", ref taskindex, specifiedStorageAccountName: OutputStorageFromParam(data.mesThumbnails));
@@ -551,6 +562,11 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         {
             assetId = ReturnId(job, OutputVideoAnnotation),
             taskId = ReturnTaskId(job, OutputVideoAnnotation)
+        },
+        contentModeration = new
+        {
+            assetId = ReturnId(job, OutputContentModeration),
+            taskId = ReturnTaskId(job, OutputContentModeration)
         },
 
         channelName = channelName,

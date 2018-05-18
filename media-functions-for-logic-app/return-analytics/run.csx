@@ -26,6 +26,11 @@ Input:
         "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains the MES thumbnails
         "deleteAsset" : true, // Optional, delete the asset once data has been read from it
     },
+   "contentModeration" : 
+    {
+        "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains
+        "deleteAsset" : true, // Optional, delete the asset once data has been read from it
+    },
    "mesThumbnails" : 
     {
         "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains media analytics (face redaction)
@@ -78,6 +83,11 @@ Output:
         {
         "json" : "",      // the serialized json of the Video Annotator
         "jsonOffset" : ""      // the serialized json of Video Annotator with offset
+        },
+    "contentModeration":
+        {
+        "json" : "",      // the serialized json of the Content Moderation
+        "jsonOffset" : ""      // the serialized json of Content Moderation with offset
         }
  }
 */
@@ -151,6 +161,10 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
     string jsonAnnotation = "";
     dynamic objAnnotation = new JObject();
     dynamic objAnnotationOffset = new JObject();
+
+    string jsonModeration = "";
+    dynamic objModeration = new JObject();
+    dynamic objModerationOffset = new JObject();
 
     string copyToContainer = "";
     string prefixjpg = "";
@@ -581,6 +595,56 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
             }
         }
 
+        //
+        // Content Moderation
+        //
+        if (data.contentModeration != null && data.contentModeration.assetId != null)
+        {
+            // Get the asset
+            string assetid = data.contentModeration.assetId;
+            var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
+
+            if (outputAsset == null)
+            {
+                log.Info($"Asset not found {assetid}");
+                return req.CreateResponse(HttpStatusCode.BadRequest, new
+                {
+                    error = "Asset not found"
+                });
+            }
+
+            var jsonFile = outputAsset.AssetFiles.Where(a => a.Name.ToUpper().EndsWith(".JSON")).FirstOrDefault();
+            log.Info($"JSON file = {jsonFile}");
+
+            if (jsonFile != null)
+            {
+                jsonModeration = ReturnContent(jsonFile);
+                objModeration = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonModeration);
+                objModerationOffset = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonModeration);
+
+                if (timeOffset.Ticks != 0) // Let's add the offset
+                {
+                    foreach (var frag in objModerationOffset.fragments)
+                    {
+                        frag.start = ((long)(frag.start)) + (long)((((double)timeOffset.Ticks / (double)TimeSpan.TicksPerSecond) * (double)objModerationOffset.timescale));
+                        if (frag.events != null)
+                        {
+                            for (int i = 0; i < frag.events.Count; i++)
+                            {
+                                frag.events[i][0].timestamp = ((long)(frag.events[i][0].timestamp)) + (long)((((double)timeOffset.Ticks / (double)TimeSpan.TicksPerSecond) * (double)objModerationOffset.timescale));
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (jsonModeration != "" && data.contentModeration.deleteAsset != null && ((bool)data.contentModeration.deleteAsset))
+            // If asset deletion was asked
+            {
+                outputAsset.Delete();
+            }
+        }
+
     }
     catch (Exception ex)
     {
@@ -618,6 +682,11 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
         {
             json = Newtonsoft.Json.JsonConvert.SerializeObject(objAnnotation),
             jsonOffset = Newtonsoft.Json.JsonConvert.SerializeObject(objAnnotationOffset)
+        },
+        contentModeration = new
+        {
+            json = Newtonsoft.Json.JsonConvert.SerializeObject(objModeration),
+            jsonOffset = Newtonsoft.Json.JsonConvert.SerializeObject(objModerationOffset)
         }
     });
 }

@@ -9,49 +9,80 @@ This project contains examples of using Azure Functions with Azure Media Service
 The project includes several folders of sample Azure Functions for use with Azure Media Services that show workflows related
 to ingesting content directly from blob storage, encoding, and writing content back to blob storage.
 
-
 # How to use 201-logic-app-workflow-1 sample media workflow
 
+## Prerequisites for Media Workflow Logic Apps deployments
 
-## Setup media workflow functions on your Azure Subscription
-1. Fork https://github.com/Azure-Samples/media-services-dotnet-functions-integration to your own repo
-2. Deploy Azure Functions  
+### 1. Create an Azure Media Services account
 
-  <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fazuredeploy.json" target="_blank"><img src="http://azuredeploy.net/deploybutton.png"/></a>  
+Create a Media Services account in your subscription if don't have it already.
 
-  * This deployment script will create an Azure Media Services account and an Azure Storage account 
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshigeyf%2FDeployAzureMediaServices%2Fmaster%2Fazuredeploy.json)
+
+### 2. Create a Service Principal
+
+Create a Service Principal and save the password. It will be needed in step 4. To do so, go to the API tab in the account ([follow this article](https://docs.microsoft.com/en-us/azure/media-services/media-services-portal-get-started-with-aad#service-principal-authentication))
+
+### 3. Make sure the AMS streaming endpoint is started
+
+To enable streaming, go to the Azure portal, select the Azure Media Services account which has been created, and start the default streaming endpoint.
+
+![Screen capture](images/start-se-1.png?raw=true)
+
+![Screen capture](images/start-se-2.png?raw=true)
+
+### 4. Deploy the Azure functions
+
+4.1. Fork this repo to your own repo
+
+4.2. Deploy Azure Functions and select the **"201-logic-app-workflow-1"** Project (IMPORTANT!)
+
+Follow the guidelines in the [git tutorial](1-CONTRIBUTION-GUIDE/git-tutorial.md) for details on how to fork the project and use Git properly with this project.
+
+Note : if you never provided your GitHub account in the Azure portal before, the continous integration probably will probably fail and you won't see the functions. In that case, you need to setup it manually. Go to your azure functions deployment / Functions app settings / Configure continous integration. Select GitHub as a source and configure it to use your fork.
+
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fazuredeploy.json)
+
   * Please consider Consumption Plan or App Service Plan if you will deploy manually
     * Consumption Plan – Timeout of function will be 5 mins
     * App Service Plan (Dedicated Plan) – There is no timeout (if AlwaysOn is enabled)
   * If a deployment target resource group already contains an App Service Plan (Dedicated Plan), Azure Functions app will be contained in that App Service Plan (Dedicated Plan)
-3. Check App Settings of Azure Functions @ Azure Portal
+
+4.3. Check App Settings of Azure Functions @ Azure Portal
   * Plaese makes sure if the following environment Key/Value pairs in the "App Settings" of your Azure Functions are correctly configured
 
     | Key | Value Description |
     | --- | --- |
     | **Project** | Set the project name to "201-logic-app-workflow-1". This will bind the continous integration to this functions folder. |
-    | **AMSAccount** | Your AMS Account Name |
-    | **AMSKey** | Your AMS Account Key |
+    | **AMSAADTenantDomain** | Your AMS Azure AD Tenant Domain |
+    | **AMSRESTAPIEndpoint** | Your AMS REST API Endpoint |
+    | **AMSClientId** | Your AMS Service Principal App Id |
+    | **AMSClientSecret** | Your AMS Service Principal App Secret |
     | **MediaServicesStorageAccountName** | Your Media Services Storage Account Name |
     | **MediaServicesStorageAccountKey** | Your Media Services Storage Account Key |
 
-4. Check if Azure Functions are deployed from your Github repo into your Azure Function App  @ Azure Portal
+4.4. Check if Azure Functions are deployed from your Github repo into your Azure Function App  @ Azure Portal
   * If not, please do "Sync" manually from "Configure continusous integration" in Function app settings
-5. Deploy Logic App for sample media workflow  
 
-  <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshigeyf%2Fmedia-services-dotnet-functions-integration%2Fmaster%2F201-logic-app-workflow-1%2Fazuredeploy-logic-app-workflow.json" target="_blank"><img src="http://azuredeploy.net/deploybutton.png"/></a>  
+
+## Deploy Media Workflow Logic Apps
+
+### 1. Deploy Logic App 
+
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fshigeyf%2Fmedia-services-dotnet-functions-integration%2Fmaster%2F201-logic-app-workflow-1%2Fazuredeploy-logic-app-workflow-blobtrigger.json)
 
   * This deployment script will create a Logic App which is using the Azure Functions deployed above
   * Please refer the next section if you will deploy manually
-6. Update both API Connection's credentials for Outlook and OneDrve accounts
+
+### 2. Update both API Connection's credentials for Outlook and Azure Blob Storage accounts
 
 
 ## Run workflow
 1. Upload a source asset to a source container of your Azure Blob Storage account (specified with **SourceStorageAccountName** parameter in the deployment parameters)
 2. Create IngestAssetConfig JSON file or use a sample file.
 3. Run workflow
-  * Upload IngestAssetConfig JSON file to /AMSImports folder of your OneDrive account
-  * Workflow will be automatically triggered in cevery onfigured duration (default - 3 minutes)
+  * Upload IngestAssetConfig JSON file to /inputs folder of your Azure Blob Storage account (specified with **SourceStorageAccountName** parameter in the deployment parameters)
+  * Workflow will be automatically triggered in cevery onfigured duration (default - 1 minutes)
 
 
 ## Sample **IngestAssetConfig** JSON
