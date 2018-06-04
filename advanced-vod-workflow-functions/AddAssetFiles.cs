@@ -6,8 +6,8 @@
 //  Input:
 //      {
 //          "assetId": "nb:cid:UUID:68adb036-43b7-45e6-81bd-8cf32013c810",          // Id of the asset for copy destination
-//          "primaryFileName": "filename.mp4",                                      // File name of the primary AssetFile in the asset
-//          "fileNames": [ "filename.mp4" , "filename2.mp4" ]                       // (Optional) File names of copy target contents
+//          "fileNames": [ "filename.mp4" , "filename2.mp4" ],                      // File names of copy target contents
+//          "primaryFileName": "filename.mp4"                                       // File name of the primary AssetFile in the asset
 //      }
 //  Output:
 //      {

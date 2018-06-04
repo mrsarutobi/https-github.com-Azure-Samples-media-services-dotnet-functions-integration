@@ -116,7 +116,6 @@ namespace advanced_vod_functions
 
                 // Declare a new Media Processing Job
                 job = _context.Jobs.Create(jobName + " - " + asset.Name + " [" + assetId + "]");
-                job.Priority = jobPriority;
 
                 foreach (AMSMediaTask mediaTask in mediaTasks)
                 {
@@ -125,7 +124,7 @@ namespace advanced_vod_functions
                     if (mediaTask.configuration.StartsWith(base64encodedstringprefix))
                     {
                         byte[] b64decoded = Convert.FromBase64String(mediaTask.configuration.Substring(base64encodedstringprefix.Length));
-                        mediaTask.configuration = System.Text.ASCIIEncoding.ASCII.GetString(b64decoded);
+                        mediaTask.configuration = System.Text.Encoding.Unicode.GetString(b64decoded);
                     }
                     task = job.Tasks.AddNew(mediaTask.mediaTaskName, processor, mediaTask.configuration, TaskOptions.None);
                     if (mediaTask.additionalInputAssetIds != null)

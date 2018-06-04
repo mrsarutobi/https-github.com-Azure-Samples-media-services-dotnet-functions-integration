@@ -5,11 +5,11 @@
 //
 //  Input:
 //      {
-//          "jobId": "nb:jid:UUID:1904c0ff-0300-80c0-9cb2-f1e868091e81"    // Id of the media job
+//          "jobId": "nb:jid:UUID:1904c0ff-0300-80c0-9cb2-f1e868091e81",    // Id of the media job
 //      }
 //  Output:
 //      {
-//          "jobState": 0           // Status code of the media job
+//          "jobState": 0
 //          // https://docs.microsoft.com/en-us/dotnet/api/microsoft.windowsazure.mediaservices.client.jobstate?view=azure-dotnet
 //          //      Queued      0
 //          //      Scheduled   1
@@ -75,11 +75,6 @@ namespace advanced_vod_functions
                 {
                     return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Job not found" });
                 }
-
-                //if (job.State == JobState.Error || job.State == JobState.Canceled)
-                //{
-                //    return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Job was in error or cancelled" });
-                //}
             }
             catch (Exception e)
             {
