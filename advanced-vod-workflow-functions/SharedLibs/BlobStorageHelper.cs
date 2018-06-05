@@ -22,8 +22,8 @@ namespace advanced_vod_functions.SharedLibs
         private const string ResourceId = "https://storage.azure.com/"; // Storage resource endpoint
         private const string AuthEndpoint = "https://login.microsoftonline.com/{0}/oauth2/token"; // Azure AD OAuth endpoint
 
-        static public string AmsStorageAccountName = Environment.GetEnvironmentVariable("AMSStorageAccountName");
-        static public string AmsStorageAccountKey = Environment.GetEnvironmentVariable("AMSStorageAccountKey");
+        static public string AmsStorageAccountName = Environment.GetEnvironmentVariable("MediaServicesStorageAccountName");
+        static public string AmsStorageAccountKey = Environment.GetEnvironmentVariable("MediaServicesStorageAccountKey");
 
         static public string GetUserOAuthToken(string aadTenantDomain, string aadClientId, string aadClientSecret)
         {
