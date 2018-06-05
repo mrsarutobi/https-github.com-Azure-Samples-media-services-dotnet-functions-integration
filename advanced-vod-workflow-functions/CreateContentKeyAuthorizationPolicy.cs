@@ -86,7 +86,7 @@ namespace advanced_vod_functions
                     options.Add(policyOpiton);
                 }
 
-                policy = _context.ContentKeyAuthorizationPolicies.CreateAsync(contentKeyAuthorizationPolicyName).Result;
+                policy = _context.ContentKeyAuthorizationPolicies.CreateAsync("contentKeyAuthorizationPolicyName").Result;
                 foreach (var op in options) policy.Options.Add(op);
             }
             catch (Exception e)

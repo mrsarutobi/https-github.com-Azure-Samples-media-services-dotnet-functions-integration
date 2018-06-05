@@ -10,16 +10,15 @@
 //                                                                                  // Id of the ContentKeyAuthorizationPolicy object
 //          "assetDeliveryPolicyId": "nb:adpid:UUID:68adb036-43b7-45e6-81bd-8cf32013c810",
 //                                                                                  // Id of the AssetDeliveryPolicy object
-//          "contentKeyType": "CommonEncryption",                                   // Name of the ContentKeyType
+//          "contentKeyType": "CommonEncryption",                                   // Name of ContentKeyType
 //          // https://docs.microsoft.com/en-us/dotnet/api/microsoft.windowsazure.mediaservices.client.contentkeytype?view=azure-dotnet
 //          //  CommonEncryption
 //          //  CommonEncryptionCbcs
 //          //  EnvelopeEncryption
-//          "contentKeyName": "Common Encryption ContentKey"                        // (Optional) Name of the ContentKey object
+//          "contentKeyName": "Common Encryption ContentKey"                        // Name of ContentKey object
 //      }
 //  Output:
 //      {
-//          "contentKeyId": "nb:kid:UUID:489a97f4-9a31-4174-ac92-0c76e8dbdc06"      // Id of the ContentKey object
 //      }
 //
 
