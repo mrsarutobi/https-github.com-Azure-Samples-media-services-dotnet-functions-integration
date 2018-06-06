@@ -75,6 +75,11 @@ namespace advanced_vod_functions
                 {
                     return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Job not found" });
                 }
+
+                if (job.State == JobState.Error || job.State == JobState.Canceled)
+                {
+                    return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Job was in error or cancelled" });
+                }
             }
             catch (Exception e)
             {
