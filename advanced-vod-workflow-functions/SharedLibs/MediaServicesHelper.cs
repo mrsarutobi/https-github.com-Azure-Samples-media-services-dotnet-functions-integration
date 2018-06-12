@@ -5,11 +5,13 @@
 //
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
 using Microsoft.WindowsAzure.MediaServices.Client;
 using Microsoft.WindowsAzure.MediaServices.Client.DynamicEncryption;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 using Newtonsoft.Json;
 
@@ -82,6 +84,70 @@ namespace advanced_vod_functions.SharedLibs
             byte[] contentKey = GenericHelper.GetRandomBuffer(16);
             IContentKey key = context.ContentKeys.Create(keyId, contentKey, contentKeyName, keyType);
             return key;
+        }
+
+        public static string GetContentFromAssetFile(IAssetFile assetFile)
+        {
+            string datastring = null;
+
+            try
+            {
+                string tempPath = System.IO.Path.GetTempPath();
+                string filePath = Path.Combine(tempPath, assetFile.Name);
+
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+                assetFile.Download(filePath);
+
+                StreamReader streamReader = new StreamReader(filePath);
+                System.Text.Encoding fileEncoding = streamReader.CurrentEncoding;
+                datastring = streamReader.ReadToEnd();
+                streamReader.Close();
+
+                File.Delete(filePath);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+            return datastring;
+        }
+
+        public static CloudBlockBlob WriteContentToBlob(IAsset asset, CloudBlobContainer dstContainer, string dstBlobName, string blobContent)
+        {
+            string uri = null;
+            CloudBlockBlob blob = null;
+
+            try
+            {
+                //dstContainer.CreateIfNotExists();
+                blob = dstContainer.GetBlockBlobReference(dstBlobName);
+                blob.DeleteIfExists();
+
+                var options = new BlobRequestOptions()
+                {
+                    ServerTimeout = TimeSpan.FromMinutes(10)
+                };
+                using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(blobContent), false))
+                {
+                    blob.UploadFromStream(stream, null, options);
+                }
+
+                IAssetFile assetFile = asset.AssetFiles.Create(dstBlobName);
+                blob.FetchAttributes();
+                assetFile.ContentFileSize = blob.Properties.Length;
+                //assetFile.IsPrimary = false;
+                assetFile.Update();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+            return blob;
         }
 
     }

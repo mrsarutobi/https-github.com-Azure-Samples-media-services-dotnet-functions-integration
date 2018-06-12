@@ -10,8 +10,8 @@
 //      }
 //  Output:
 //      {
-//          "vttBlobSasUri": "https://mediademostorage.blob.core.windows.net/asset-67f7e54a-4141-4e30-becf-3f508fbdd85f/HoloLensDemo_aud_SpReco.vtt?sv=2017-04-17&sr=b&sig=EFk1BMbk4QveTXuXS8HS065fB76%2FjX90aeIrSzh8d5I%3D&st=2018-06-12T14%3A06%3A40Z&se=2018-06-12T14%3A21%3A40Z&sp=r",
-//          "ttmlBlobSasUri": "https://mediademostorage.blob.core.windows.net/asset-67f7e54a-4141-4e30-becf-3f508fbdd85f/HoloLensDemo_aud_SpReco.ttml?sv=2017-04-17&sr=b&sig=EFk1BMbk4QveTXuXS8HS065fB76%2FjX90aeIrSzh8d5I%3D&st=2018-06-12T14%3A06%3A40Z&se=2018-06-12T14%3A21%3A40Z&sp=r"
+//          "vttBlobSasUri": "https://mediademostorage.blob.core.windows.net/asset-67f7e54a-4141-4e30-becf-3f508fbdd85f/HoloLensDemo_aud_SpReco.vtt?sv=2017-04-17&sr=b&sig=EFk1BMbk4QveTXuXS8HS065fB76%2FjX90aeIrSzh8d5I%3D&st=2018-06-12T14%3A06%3A40Z&se=2018-06-12T14%3A21%3A40Z&sp=r"
+//          "ttmlBlobSasUri": "https://mediademostorage.blob.core.windows.net/asset-67f7e54a-4141-4e30-becf-3f508fbdd85f/HoloLensDemo_aud_SpReco.ttml?sv=2017-04-17&sr=b&sig=EFk1BMbk4QveTXuXS8HS065fB76%2FjX90aeIrSzh8d5I%3D&st=2018-06-12T14%3A06%3A40Z&se=2018-06-12T14%3A21%3A40Z&sp=r""
 //      }
 //
 
