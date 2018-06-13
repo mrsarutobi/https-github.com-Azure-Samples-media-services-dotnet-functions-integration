@@ -116,6 +116,7 @@ namespace advanced_vod_functions
 
                 // Declare a new Media Processing Job
                 job = _context.Jobs.Create(jobName + " - " + asset.Name + " [" + assetId + "]");
+                job.Priority = jobPriority;
 
                 foreach (AMSMediaTask mediaTask in mediaTasks)
                 {
