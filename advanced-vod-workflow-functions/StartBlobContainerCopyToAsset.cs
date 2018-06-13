@@ -62,13 +62,13 @@ namespace advanced_vod_functions
                 return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass sourceStorageAccountKey in the input object" });
             if (data.sourceContainer == null)
                 return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass sourceContainer in the input object" });
-            if (data.destinationContainer == null)
-                return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass destinationContainer in the input object" });
+            //if (data.destinationContainer == null)
+            //    return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass destinationContainer in the input object" });
             string assetId = data.assetId;
             string _sourceStorageAccountName = data.sourceStorageAccountName;
             string _sourceStorageAccountKey = data.sourceStorageAccountKey;
             string sourceContainerName = data.sourceContainer;
-            string destinationContainerName = data.destinationContainer;
+            //string destinationContainerName = data.destinationContainer;
             List<string> fileNames = null;
             if (data.fileNames != null)
             {
