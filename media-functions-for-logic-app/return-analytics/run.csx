@@ -572,6 +572,7 @@ public static async Task<object> Run(HttpRequestMessage req, TraceWriter log, Mi
             }
 
             var jsonFile = outputAsset.AssetFiles.Where(a => a.Name.ToUpper().EndsWith(".JSON")).FirstOrDefault();
+            log.Info($"JSON file = {jsonFile}");
 
             if (jsonFile != null)
             {

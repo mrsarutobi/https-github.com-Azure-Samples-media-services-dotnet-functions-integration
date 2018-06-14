@@ -64,6 +64,15 @@ To edit the code, you have a few options:
 
     For more detailed information, see [this blog](https://blogs.msdn.microsoft.com/webdev/2016/12/01/visual-studio-tools-for-azure-functions/).
 
+* Visual Studio 2017
+
+    To use VS 2017, you need to install the following:
+    * [Visual Studi 2017 15.5 or later](https://www.visualstudio.com/vs/)
+    * [Azure Functions Tools for Visual Studio](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs)
+        * Azure Functions Tools is included in the Azure development workload
+        * Make sure you include the Azure development workload in your Visual Studio 2017 installation.
+
+    You can develop pre-compiled functions in this platform. See [this article](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs) for more detailed information.
 
 ## How to run the sample
 
