@@ -42,12 +42,12 @@ public static IEnumerable<Uri> GetValidURIs(IAsset asset, string preferredSE = n
 
         var se = _context.StreamingEndpoints.AsEnumerable().Where(o =>
 
-            ( string.IsNullOrEmpty(preferredSE) || (o.Name == preferredSE) )
+            (string.IsNullOrEmpty(preferredSE) || (o.Name == preferredSE))
             &&
-            (!string.IsNullOrEmpty(preferredSE) || ( (o.State == StreamingEndpointState.Running) && (CanDoDynPackaging(o)   ))
+            (!string.IsNullOrEmpty(preferredSE) || ((o.State == StreamingEndpointState.Running) && (CanDoDynPackaging(o)))
                                                                     ))
         .OrderByDescending(o => o.CdnEnabled);
-       
+
 
         if (se.Count() == 0) // No running which can do dynpackaging SE and if not preferredSE. Let's use the default one to get URL
         {
@@ -173,4 +173,83 @@ public static string ReturnContent(IAssetFile assetFile)
     }
 
     return datastring;
+}
+
+
+public static Dictionary<string, AssetCreationOptions> AMSAssetCreationOptions = new Dictionary<string, AssetCreationOptions>()
+        {
+            { "CommonEncryptionProtected",      AssetCreationOptions.CommonEncryptionProtected },
+            { "EnvelopeEncryptionProtected",    AssetCreationOptions.EnvelopeEncryptionProtected },
+            { "None",                           AssetCreationOptions.None },
+            { "StorageEncrypted",               AssetCreationOptions.StorageEncrypted },
+        };
+
+public static Dictionary<string, AssetDeliveryPolicyType> AMSAssetDeliveryPolicyType = new Dictionary<string, AssetDeliveryPolicyType>()
+        {
+            { "NoDynamicEncryption",            AssetDeliveryPolicyType.NoDynamicEncryption },
+            { "DynamicEnvelopeEncryption",      AssetDeliveryPolicyType.DynamicEnvelopeEncryption },
+            { "DynamicCommonEncryption",        AssetDeliveryPolicyType.DynamicCommonEncryption },
+            { "DynamicCommonEncryptionCbcs",    AssetDeliveryPolicyType.DynamicCommonEncryptionCbcs },
+        };
+
+public static Dictionary<string, AssetDeliveryProtocol> AMSAssetDeliveryProtocol = new Dictionary<string, AssetDeliveryProtocol>()
+        {
+            { "SmoothStreaming",                AssetDeliveryProtocol.SmoothStreaming },
+            { "Dash",                           AssetDeliveryProtocol.Dash },
+            { "HLS",                            AssetDeliveryProtocol.HLS },
+            { "Hds",                            AssetDeliveryProtocol.Hds },
+            { "ProgressiveDownload",            AssetDeliveryProtocol.ProgressiveDownload },
+            { "All",                            AssetDeliveryProtocol.All },
+        };
+
+public enum AssetDeliveryContentProtection { AESClearKey = 1, PlayReady, Widevine, FairPlay };
+public static Dictionary<string, AssetDeliveryContentProtection> AMSAssetDeliveryContentProtection = new Dictionary<string, AssetDeliveryContentProtection>()
+        {
+            { "AESClearKey",        AssetDeliveryContentProtection.AESClearKey },
+            { "PlayReady",          AssetDeliveryContentProtection.PlayReady },
+            { "Widevine",           AssetDeliveryContentProtection.Widevine },
+            { "FairPlay",           AssetDeliveryContentProtection.FairPlay },
+        };
+
+public static Dictionary<string, ContentKeyType> AMSContentKeyType = new Dictionary<string, ContentKeyType>()
+        {
+            { "CommonEncryption",           ContentKeyType.CommonEncryption },
+            { "StorageEncryption",          ContentKeyType.StorageEncryption },
+            { "ConfigurationEncryption",    ContentKeyType.ConfigurationEncryption },
+            { "UrlEncryption",              ContentKeyType.UrlEncryption },
+            { "EnvelopeEncryption",         ContentKeyType.EnvelopeEncryption },
+            { "CommonEncryptionCbcs",       ContentKeyType.CommonEncryptionCbcs },
+            { "FairPlayASk",                ContentKeyType.FairPlayASk },
+            { "FairPlayPfxPassword",        ContentKeyType.FairPlayPfxPassword },
+        };
+
+public static IContentKey CreateContentKey(CloudMediaContext context, string contentKeyName, ContentKeyType keyType, string keyId = null, string contentKeyb64 = null)
+{
+    byte[] contentKey;
+
+    var keyidguid = (keyId == null) ? Guid.NewGuid() : Guid.Parse(keyId);
+
+    if (contentKeyb64 == null)
+    {
+        contentKey = GetRandomBuffer(16);
+    }
+    else
+    {
+        contentKey = Convert.FromBase64String(contentKeyb64);
+    }
+
+    IContentKey key = context.ContentKeys.Create(keyidguid, contentKey, contentKeyName, keyType);
+    return key;
+}
+
+public static byte[] GetRandomBuffer(int length)
+{
+    var returnValue = new byte[length];
+
+    using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider())
+    {
+        rng.GetBytes(returnValue);
+    }
+
+    return returnValue;
 }
