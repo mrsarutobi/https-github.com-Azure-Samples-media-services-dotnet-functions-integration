@@ -6,6 +6,8 @@ using System.ServiceModel;
 using Microsoft.WindowsAzure.MediaServices.Client;
 using System.IO;
 using System.Text;
+using Microsoft.WindowsAzure.MediaServices.Client.ContentKeyAuthorization;
+using Microsoft.WindowsAzure.MediaServices.Client.DynamicEncryption;
 
 private static IMediaProcessor GetLatestMediaProcessorByName(string mediaProcessorName)
 {
