@@ -4,12 +4,10 @@
 // Shared Library
 //
 
-
 using System;
 using System.Collections.Generic;
 using Microsoft.WindowsAzure.MediaServices.Client;
 using Newtonsoft.Json;
-
 
 namespace media_functions_for_logic_app
 {

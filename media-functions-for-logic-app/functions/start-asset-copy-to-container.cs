@@ -19,16 +19,12 @@ Output:
 
 */
 
-
 using System;
 using System.Net;
 using Newtonsoft.Json;
 using Microsoft.WindowsAzure.MediaServices.Client;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
-using Microsoft.WindowsAzure.Storage.Auth;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs;
 using System.Net.Http;

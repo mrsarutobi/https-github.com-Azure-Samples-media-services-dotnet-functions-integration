@@ -7,19 +7,14 @@
 using System;
 using Microsoft.WindowsAzure.MediaServices.Client;
 using System.IO;
-using System.Text;
-using Microsoft.WindowsAzure.MediaServices.Client.DynamicEncryption;
 using System.Collections.Generic;
 using System.Linq;
-using System.ServiceModel;
 using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.Azure.WebJobs.Host;
 using System.Xml.Linq;
 
 namespace media_functions_for_logic_app
 {
-
-
     public class ManifestHelpers
     {
         public static Stream GenerateStreamFromString(string s)

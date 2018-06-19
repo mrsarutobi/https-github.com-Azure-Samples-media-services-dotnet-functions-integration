@@ -168,24 +168,14 @@ using System;
 using System.Net;
 using System.Net.Http;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Microsoft.WindowsAzure.MediaServices.Client;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
-using System.Web;
-using Microsoft.Azure;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
-using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.Azure.WebJobs;
-using System.Xml;
-using System.Xml.Linq;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Azure.WebJobs.Host;
 
 namespace media_functions_for_logic_app

@@ -71,6 +71,8 @@ namespace media_functions_for_logic_app
             string contentKeyAuthorizationPolicyId = data.contentKeyAuthorizationPolicyId;
             string assetDeliveryPolicyId = data.assetDeliveryPolicyId;
             string contentKeyTypeName = data.contentKeyType;
+            string contentKeyId = data.keyId;
+            string contentKeySecret = data.contentKey;
 
             if (!MediaServicesHelper.AMSContentKeyType.ContainsKey(contentKeyTypeName))
                 return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass a valid contentKeyType in the input object" });
@@ -118,21 +120,44 @@ namespace media_functions_for_logic_app
                 {
                     return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "AssetDeliveryPolicy not found" });
                 }
-                switch (contentKeyType)
+
+                if (contentKeyId != null)
                 {
-                    case ContentKeyType.CommonEncryption:
-                        if (contentKeyName == null) contentKeyName = "Common Encryption ContentKey";
-                        contentKey = MediaServicesHelper.CreateContentKey(_context, contentKeyName, ContentKeyType.CommonEncryption);
-                        break;
-                    case ContentKeyType.CommonEncryptionCbcs:
-                        if (contentKeyName == null) contentKeyName = "Common Encryption CBCS ContentKey";
-                        contentKey = MediaServicesHelper.CreateContentKey(_context, contentKeyName, ContentKeyType.CommonEncryptionCbcs);
-                        break;
-                    case ContentKeyType.EnvelopeEncryption:
-                        if (contentKeyName == null) contentKeyName = "Envelope Encryption ContentKey";
-                        contentKey = MediaServicesHelper.CreateContentKey(_context, contentKeyName, ContentKeyType.EnvelopeEncryption);
-                        break;
+                    string keyiddwitprefix = "";
+
+                    if (contentKeyId.StartsWith("nb:kid:UUID:"))
+                    {
+                        keyiddwitprefix = contentKeyId;
+                        contentKeyId = contentKeyId.Substring(12);
+                    }
+                    else
+                    {
+                        keyiddwitprefix = "nb:kid:UUID:" + contentKeyId;
+                    }
+
+                    // let's retrieve the key if it exists already
+                    contentKey = _context.ContentKeys.Where(k => k.Id == keyiddwitprefix).FirstOrDefault();
                 }
+
+                if (contentKey == null) // let's create it as it was not found or delivered to the function
+                {
+                    switch (contentKeyType)
+                    {
+                        case ContentKeyType.CommonEncryption:
+                            if (contentKeyName == null) contentKeyName = "Common Encryption ContentKey";
+                            contentKey = MediaServicesHelper.CreateContentKey(_context, contentKeyName, ContentKeyType.CommonEncryption, contentKeyId, contentKeySecret);
+                            break;
+                        case ContentKeyType.CommonEncryptionCbcs:
+                            if (contentKeyName == null) contentKeyName = "Common Encryption CBCS ContentKey";
+                            contentKey = MediaServicesHelper.CreateContentKey(_context, contentKeyName, ContentKeyType.CommonEncryptionCbcs, contentKeyId, contentKeySecret);
+                            break;
+                        case ContentKeyType.EnvelopeEncryption:
+                            if (contentKeyName == null) contentKeyName = "Envelope Encryption ContentKey";
+                            contentKey = MediaServicesHelper.CreateContentKey(_context, contentKeyName, ContentKeyType.EnvelopeEncryption, contentKeyId, contentKeySecret);
+                            break;
+                    }
+                }
+
                 asset.ContentKeys.Add(contentKey);
                 contentKey.AuthorizationPolicyId = ckaPolicy.Id;
                 contentKey = contentKey.UpdateAsync().Result;

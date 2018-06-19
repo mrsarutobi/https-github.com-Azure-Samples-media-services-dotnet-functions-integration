@@ -29,20 +29,11 @@ using System.Net;
 using System.Net.Http;
 using Newtonsoft.Json;
 using Microsoft.WindowsAzure.MediaServices.Client;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.IO;
-using System.Web;
-using Microsoft.Azure;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
-using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.Azure.WebJobs;
 using System.Xml.Linq;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Azure.WebJobs.Host;
 
 
