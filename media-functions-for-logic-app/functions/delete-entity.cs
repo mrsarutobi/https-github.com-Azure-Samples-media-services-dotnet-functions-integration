@@ -1,4 +1,7 @@
 /*
+
+Azure Media Services REST API v2 Function
+ 
 This function delete AMS entities (job(s) and/or asset(s)).
 
 Input:

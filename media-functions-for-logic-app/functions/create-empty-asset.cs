@@ -1,4 +1,7 @@
 /*
+
+Azure Media Services REST API v2 Function
+ 
 This function creates an empty asset.
 
 Input:

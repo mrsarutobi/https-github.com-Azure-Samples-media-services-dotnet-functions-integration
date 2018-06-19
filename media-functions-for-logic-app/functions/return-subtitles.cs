@@ -1,4 +1,7 @@
 /*
+
+Azure Media Services REST API v2 Function
+ 
 This function returns subtitles from an asset.
 
 Input:

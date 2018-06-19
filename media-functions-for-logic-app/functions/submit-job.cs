@@ -1,4 +1,7 @@
 /*
+
+Azure Media Services REST API v2 Function
+ 
 This function submits a job wth encoding and/or analytics.
 
 Input:

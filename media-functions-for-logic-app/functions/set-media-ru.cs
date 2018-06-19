@@ -1,5 +1,7 @@
 /*
 
+Azure Media Services REST API v2 Function
+
 This function sets the number and speed of media reserved units in the account.
 
 Input:

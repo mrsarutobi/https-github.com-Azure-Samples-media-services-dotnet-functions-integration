@@ -1,4 +1,7 @@
 /*
+
+Azure Media Services REST API v2 Function
+ 
 This function declares the asset files in the AMS asset based on the blobs in the asset container.
 
 Input:

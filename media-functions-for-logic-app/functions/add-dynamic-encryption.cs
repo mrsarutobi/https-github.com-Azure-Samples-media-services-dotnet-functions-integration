@@ -1,4 +1,6 @@
 /*
+Azure Media Services REST API v2 Function
+
 This function add dynamic encryption to the asset or program. It attached the 
 
 Input:

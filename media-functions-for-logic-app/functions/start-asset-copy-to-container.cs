@@ -1,4 +1,7 @@
 ﻿/*
+
+Azure Media Services REST API v2 Function
+ 
 This function copy the asset files to a specific azure storage container.
 
 Input:

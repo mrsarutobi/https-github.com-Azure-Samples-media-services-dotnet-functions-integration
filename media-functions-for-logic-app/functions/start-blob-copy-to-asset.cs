@@ -1,4 +1,7 @@
 ﻿/*
+
+Azure Media Services REST API v2 Function
+ 
 This function copy a file (blob) or several blobs to a new asset previously created.
 
 Input:

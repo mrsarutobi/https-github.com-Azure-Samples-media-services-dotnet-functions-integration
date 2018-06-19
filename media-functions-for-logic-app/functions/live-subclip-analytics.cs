@@ -1,4 +1,7 @@
 /*
+
+Azure Media Services REST API v2 Function
+ 
 This function submits a job to process a live stream with media analytics.
 The first task is a subclipping task that createq a MP4 file, then media analytics are processed on this asset.
 

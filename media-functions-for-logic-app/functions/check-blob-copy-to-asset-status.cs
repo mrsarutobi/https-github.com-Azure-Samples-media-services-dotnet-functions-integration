@@ -1,4 +1,7 @@
 ﻿/*
+
+Azure Media Services REST API v2 Function
+ 
 This function monitor the copy of files (blobs) to a new asset previously created.
 
 Input:
