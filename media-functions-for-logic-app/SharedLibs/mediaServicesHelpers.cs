@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace media_functions_for_logic_app
 {
@@ -442,6 +443,38 @@ namespace media_functions_for_logic_app
         public static string ReturnNewRUName(ReservedUnitType reservedUnitType)
         {
             return "S" + ((int)reservedUnitType + 1);
+        }
+
+
+        public static string GetErrorMessage(Exception e)
+        {
+            string s = "";
+
+            while (e != null)
+            {
+                s = e.Message;
+                e = e.InnerException;
+            }
+            return ParseXml(s);
+        }
+
+        public static string ParseXml(string strXml)
+        {
+            try
+            {
+                var message = XDocument
+                    .Parse(strXml)
+                    .Descendants()
+                    .Where(d => d.Name.LocalName == "message")
+                    .Select(d => d.Value)
+                    .SingleOrDefault();
+
+                return message;
+            }
+            catch
+            {
+                return strXml;
+            }
         }
     }
 

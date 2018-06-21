@@ -156,7 +156,7 @@ namespace media_functions_for_logic_app
                     }
                     asset = program.Asset;
                 }
-            
+
                 log.Info($"Using asset Id : {asset.Id}");
 
                 ckaPolicy = _context.ContentKeyAuthorizationPolicies.Where(p => p.Id == contentKeyAuthorizationPolicyId).Single();
@@ -212,10 +212,11 @@ namespace media_functions_for_logic_app
                 contentKey = contentKey.UpdateAsync().Result;
                 asset.DeliveryPolicies.Add(adPolicy);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                log.Info($"ERROR: Exception {e}");
-                return req.CreateResponse(HttpStatusCode.BadRequest);
+                string message = ex.Message + ((ex.InnerException != null) ? Environment.NewLine + MediaServicesHelper.GetErrorMessage(ex) : "");
+                log.Info($"ERROR: Exception {message}");
+                return req.CreateResponse(HttpStatusCode.InternalServerError, new { error = message });
             }
 
             return req.CreateResponse(HttpStatusCode.OK, new
