@@ -5,8 +5,10 @@ This function add dynamic encryption to the asset or program. It attached the
 
 Input:
 {
-    "assetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", Id of the source asset
+    "assetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", Id of the source asset (or you pass programId, or the values channelName and programName)
     "programId" : "nb:pgid:UUID:5d547b03-3b56-47ae-a479-88cddf21a7fa",  or program Id
+    "channelName", 
+    "programName",
     "contentKeyAuthorizationPolicyId": "nb:ckpid:UUID:68adb036-43b7-45e6-81bd-8cf32013c810", // Optional, Id of the ContentKeyAuthorizationPolicy object
     "assetDeliveryPolicyId": "nb:adpid:UUID:68adb036-43b7-45e6-81bd-8cf32013c810",           // Id of the AssetDeliveryPolicy object    
     "contentKeyType": "CommonEncryption",                                                    // Name of the ContentKeyType
@@ -22,6 +24,7 @@ Input:
 Output:
 {
    "contentKeyId": "nb:kid:UUID:489a97f4-9a31-4174-ac92-0c76e8dbdc06"      // Id of the ContentKey object
+   "assetId" : ""  // Id of the asset
 }
 */
 
@@ -53,12 +56,11 @@ namespace media_functions_for_logic_app
             dynamic data = JsonConvert.DeserializeObject(jsonContent);
 
             // Validate input objects
-            if (data.assetId == null)
-                return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass assetId in the input object" });
+            if (data.assetId == null && data.programId == null && data.channelName == null && data.programName == null)
+                return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass assetId or programID or channelName/programName in the input object" });
 
             if (data.contentKeyAuthorizationPolicyId == null)
                 return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass contentKeyAuthorizationPolicyId in the input object" });
-
 
             if (data.assetDeliveryPolicyId == null)
                 return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass assetId in the input object" });
@@ -66,8 +68,10 @@ namespace media_functions_for_logic_app
             if (data.contentKeyType == null)
                 return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Please pass contentKeyType in the input object" });
 
-
             string assetId = data.assetId;
+            string programId = data.programId;
+            string channelName = data.channelName;
+            string programName = data.programName;
             string contentKeyAuthorizationPolicyId = data.contentKeyAuthorizationPolicyId;
             string assetDeliveryPolicyId = data.assetDeliveryPolicyId;
             string contentKeyTypeName = data.contentKeyType;
@@ -104,12 +108,57 @@ namespace media_functions_for_logic_app
                 AzureAdTokenProvider tokenProvider = new AzureAdTokenProvider(tokenCredentials);
                 _context = new CloudMediaContext(amsCredentials.AmsRestApiEndpoint, tokenProvider);
 
-                // Get the Asset, ContentKeyAuthorizationPolicy, AssetDeliveryPolicy
-                asset = _context.Assets.Where(a => a.Id == assetId).FirstOrDefault();
-                if (asset == null)
+                // Let's get the asset
+                if (assetId != null)
                 {
-                    return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Asset not found" });
+                    // Get the Asset, ContentKeyAuthorizationPolicy, AssetDeliveryPolicy
+                    asset = _context.Assets.Where(a => a.Id == assetId).FirstOrDefault();
+                    if (asset == null)
+                    {
+                        return req.CreateResponse(HttpStatusCode.BadRequest, new { error = "Asset not found" });
+                    }
+
                 }
+                else if (programId != null)
+                {
+                    var program = _context.Programs.Where(p => p.Id == programId).FirstOrDefault();
+                    if (program == null)
+                    {
+                        log.Info("Program not found");
+                        return req.CreateResponse(HttpStatusCode.BadRequest, new
+                        {
+                            error = "Program not found"
+                        });
+                    }
+                    asset = program.Asset;
+                }
+                else // with channelName and programName
+                {
+                    // find the Channel, Program and Asset
+                    var channel = _context.Channels.Where(c => c.Name == channelName).FirstOrDefault();
+                    if (channel == null)
+                    {
+                        log.Info("Channel not found");
+                        return req.CreateResponse(HttpStatusCode.BadRequest, new
+                        {
+                            error = "Channel not found"
+                        });
+                    }
+
+                    var program = channel.Programs.Where(p => p.Name == programName).FirstOrDefault();
+                    if (program == null)
+                    {
+                        log.Info("Program not found");
+                        return req.CreateResponse(HttpStatusCode.BadRequest, new
+                        {
+                            error = "Program not found"
+                        });
+                    }
+                    asset = program.Asset;
+                }
+            
+                log.Info($"Using asset Id : {asset.Id}");
+
                 ckaPolicy = _context.ContentKeyAuthorizationPolicies.Where(p => p.Id == contentKeyAuthorizationPolicyId).Single();
                 if (ckaPolicy == null)
                 {
@@ -171,7 +220,8 @@ namespace media_functions_for_logic_app
 
             return req.CreateResponse(HttpStatusCode.OK, new
             {
-                contentKeyId = contentKey.Id
+                contentKeyId = contentKey.Id,
+                assetId = asset.Id
             });
 
         }
