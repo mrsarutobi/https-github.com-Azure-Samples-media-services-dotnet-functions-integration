@@ -61,7 +61,7 @@ namespace media_functions_for_logic_app
                 try
                 {
                     dataJson = data.insights;
-
+                    log.Info((string)timeOffset);
                     var tsoffset = TimeSpan.Parse((string)timeOffset);
 
                     StringBuilder sb = new StringBuilder();
