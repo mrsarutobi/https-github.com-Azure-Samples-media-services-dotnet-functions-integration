@@ -35,25 +35,6 @@ namespace media_functions_for_logic_app
 {
     public static class add_offset_to_insights
     {
-        private const string Quote = "\"";
-
-        /// <summary>
-        /// Escaped quote in comma separated value string lists.
-        /// </summary>
-        private const string EscapedQuote = "\"\"";
-
-        /// <summary>
-        /// Characters required to be quoted for comma separated value string lists.
-        /// </summary>
-        private static char[] charactersRequiredToBeQuoted = { ',', '\"' };
-
-        /// <summary>
-        /// Regular expression to split comma separated value string lists.
-        /// </summary>
-        private static Regex splitterRegex = new Regex(@",(?=(?:[^""]*""[^""]*"")*(?![^""]*""))");
-
-
-
         [FunctionName("add-offset-to-insights")]
         public static async Task<object> Run([HttpTrigger(WebHookType = "genericJson")]HttpRequestMessage req, TraceWriter log)
         {
@@ -71,7 +52,6 @@ namespace media_functions_for_logic_app
 
                 if (jsonInsights == null || timeOffset == null)
                 {
-
                     return req.CreateResponse(HttpStatusCode.BadRequest, new
                     {
                         error = "Please pass the json insights and time offset in the input object"
@@ -85,8 +65,8 @@ namespace media_functions_for_logic_app
                     StringBuilder sb = new StringBuilder();
 
                     dynamic dataJson = JsonConvert.DeserializeObject(jsonInsights);
-
-                    var lines = Regex.Split(jsonInsights, "\r\n|\r|\n");
+                    var dindent = JsonConvert.SerializeObject(dataJson, Formatting.Indented);
+                    var lines = Regex.Split(dindent, "\r\n|\r|\n");
 
                     foreach (var line in lines)
                     {
