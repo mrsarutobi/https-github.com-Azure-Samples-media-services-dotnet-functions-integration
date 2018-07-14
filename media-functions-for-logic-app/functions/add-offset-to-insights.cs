@@ -48,7 +48,7 @@ namespace media_functions_for_logic_app
                 dynamic dataJson;// = data.insights;
                 string timeOffset = data.timeOffset;
 
-                string[] stringTimes = new string[] { "adjustedStart", "adjustedEnd", "start", "end" };
+                string[] stringTimes = new string[] { "\"adjustedStart\": ", "\"adjustedEnd\": ", "\"start\": ", "\"end\": " };
 
                 if (data.insights == null || data.timeOffset == null)
                 {
@@ -61,7 +61,6 @@ namespace media_functions_for_logic_app
                 try
                 {
                     dataJson = data.insights;
-                    log.Info((string)timeOffset);
                     var tsoffset = TimeSpan.Parse((string)timeOffset);
 
                     StringBuilder sb = new StringBuilder();
@@ -77,12 +76,10 @@ namespace media_functions_for_logic_app
                         {
                             if (line.IndexOf(s) >= 0)
                             {
-                                int pos = line.IndexOf(s) + s.Length + 4;
+                                int pos = line.IndexOf(s) + s.Length + 1;
                                 int pos2 = line.IndexOf('"', pos);
-                                log.Info(line.Substring(pos, pos2 - pos));
                                 TimeSpan timeToProcess = TimeSpan.Parse(line.Substring(pos, pos2 - pos));
                                 lineCopy = line.Substring(0, pos) + (timeToProcess + tsoffset).ToString(@"d\.hh\:mm\:ss\.fff") + line.Substring(pos2);
-
                                 break;
                             }
                         }
