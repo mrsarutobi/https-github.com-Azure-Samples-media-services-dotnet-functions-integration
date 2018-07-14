@@ -6,7 +6,7 @@ This function adds time offset to video indexer insights.
 
 Input:
 {
-    "insights" : "", // Mandatory, video indexer json
+    "insights" : [], // Mandatory, video indexer json
     "timeOffset" :"00:01:00", // offset to add (used for live analytics)
  }
 
@@ -45,12 +45,12 @@ namespace media_functions_for_logic_app
                 dynamic data = JsonConvert.DeserializeObject(jsonContent);
 
                 // Init variables
-                string jsonInsights = data.insights;
+                dynamic dataJson;// = data.insights;
                 string timeOffset = data.timeOffset;
 
                 string[] stringTimes = new string[] { "adjustedStart", "adjustedEnd", "start", "end" };
 
-                if (jsonInsights == null || timeOffset == null)
+                if (data.insights == null || data.timeOffset == null)
                 {
                     return req.CreateResponse(HttpStatusCode.BadRequest, new
                     {
@@ -60,11 +60,13 @@ namespace media_functions_for_logic_app
 
                 try
                 {
+                    dataJson = data.insights;
+
                     var tsoffset = TimeSpan.Parse((string)timeOffset);
 
                     StringBuilder sb = new StringBuilder();
 
-                    dynamic dataJson = JsonConvert.DeserializeObject(jsonInsights);
+                    //dynamic dataJson = JsonConvert.DeserializeObject(jsonInsights);
                     var dindent = JsonConvert.SerializeObject(dataJson, Formatting.Indented);
                     var lines = Regex.Split(dindent, "\r\n|\r|\n");
 
@@ -86,7 +88,7 @@ namespace media_functions_for_logic_app
                         sb.AppendLine(lineCopy);
                     }
 
-                    jsonInsights = sb.ToString();
+                    dataJson = JsonConvert.DeserializeObject(sb.ToString());
                 }
                 catch (Exception ex)
                 {
@@ -100,7 +102,7 @@ namespace media_functions_for_logic_app
                 log.Info($"");
                 return req.CreateResponse(HttpStatusCode.OK, new
                 {
-                    jsonOffset = jsonInsights
+                    jsonOffset = dataJson
                 });
             }
         }
