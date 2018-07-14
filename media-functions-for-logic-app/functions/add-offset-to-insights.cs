@@ -1,0 +1,128 @@
+/*
+
+Azure Media Services REST API v2 Function
+ 
+This function adds time offset to video indexer insights.
+
+Input:
+{
+    "insights" : "", // Mandatory, video indexer json
+    "timeOffset" :"00:01:00", // offset to add (used for live analytics)
+ }
+
+Output:
+{
+    "jsonOffset : ""  // the full json document with offset
+ }
+*/
+
+
+using System;
+using System.Net;
+using System.Net.Http;
+using Newtonsoft.Json;
+using Microsoft.WindowsAzure.MediaServices.Client;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs;
+using System.Xml.Linq;
+using Microsoft.Azure.WebJobs.Host;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
+namespace media_functions_for_logic_app
+{
+    public static class add_offset_to_insights
+    {
+        private const string Quote = "\"";
+
+        /// <summary>
+        /// Escaped quote in comma separated value string lists.
+        /// </summary>
+        private const string EscapedQuote = "\"\"";
+
+        /// <summary>
+        /// Characters required to be quoted for comma separated value string lists.
+        /// </summary>
+        private static char[] charactersRequiredToBeQuoted = { ',', '\"' };
+
+        /// <summary>
+        /// Regular expression to split comma separated value string lists.
+        /// </summary>
+        private static Regex splitterRegex = new Regex(@",(?=(?:[^""]*""[^""]*"")*(?![^""]*""))");
+
+
+
+        [FunctionName("add-offset-to-insights")]
+        public static async Task<object> Run([HttpTrigger(WebHookType = "genericJson")]HttpRequestMessage req, TraceWriter log)
+        {
+            {
+                log.Info($"Webhook was triggered!");
+
+                string jsonContent = await req.Content.ReadAsStringAsync();
+                dynamic data = JsonConvert.DeserializeObject(jsonContent);
+
+                // Init variables
+                string jsonInsights = data.insights;
+                string timeOffset = data.timeOffset;
+
+                string[] stringTimes = new string[] { "adjustedStart", "adjustedEnd", "start", "end" };
+
+                if (jsonInsights == null || timeOffset == null)
+                {
+
+                    return req.CreateResponse(HttpStatusCode.BadRequest, new
+                    {
+                        error = "Please pass the json insights and time offset in the input object"
+                    });
+                }
+
+                try
+                {
+                    var tsoffset = TimeSpan.Parse((string)timeOffset);
+
+                    StringBuilder sb = new StringBuilder();
+
+                    dynamic dataJson = JsonConvert.DeserializeObject(jsonInsights);
+
+                    var lines = Regex.Split(jsonInsights, "\r\n|\r|\n");
+
+                    foreach (var line in lines)
+                    {
+                        string lineCopy = line;
+                        foreach (var s in stringTimes) // for each time properties
+                        {
+                            if (line.IndexOf(s) >= 0)
+                            {
+                                int pos = line.IndexOf(s) + s.Length + 4;
+                                int pos2 = line.IndexOf('"', pos);
+                                TimeSpan timeToProcess = TimeSpan.Parse(line.Substring(pos, pos2 - pos));
+                                lineCopy = line.Substring(0, pos) + (timeToProcess + tsoffset).ToString(@"d\.hh\:mm\:ss\.fff") + line.Substring(pos2);
+
+                                break;
+                            }
+                        }
+                        sb.AppendLine(lineCopy);
+                    }
+
+                    jsonInsights = sb.ToString();
+                }
+                catch (Exception ex)
+                {
+                    log.Info($"Exception {ex}");
+                    return req.CreateResponse(HttpStatusCode.InternalServerError, new
+                    {
+                        Error = ex.ToString()
+                    });
+                }
+
+                log.Info($"");
+                return req.CreateResponse(HttpStatusCode.OK, new
+                {
+                    jsonOffset = jsonInsights
+                });
+            }
+        }
+    }
+}
