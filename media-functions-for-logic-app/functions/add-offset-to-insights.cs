@@ -79,6 +79,7 @@ namespace media_functions_for_logic_app
                             {
                                 int pos = line.IndexOf(s) + s.Length + 4;
                                 int pos2 = line.IndexOf('"', pos);
+                                log.Info(line.Substring(pos, pos2 - pos));
                                 TimeSpan timeToProcess = TimeSpan.Parse(line.Substring(pos, pos2 - pos));
                                 lineCopy = line.Substring(0, pos) + (timeToProcess + tsoffset).ToString(@"d\.hh\:mm\:ss\.fff") + line.Substring(pos2);
 
