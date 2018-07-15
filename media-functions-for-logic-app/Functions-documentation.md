@@ -20,6 +20,24 @@ Output:
 
 ```
 
+## add-offset-to-insights
+
+This function adds time offset to video indexer insights JSON data.
+
+Input:
+{
+    "insights" : [], // Mandatory, video indexer json
+    "timeOffset" :"00:01:00", // offset to add (used for live analytics)
+ }
+
+Output:
+{
+    "jsonOffset : []  // the full json document with offset
+ }
+
+```
+
+
 ## check-blob-copy-to-asset-status
 
 This function monitor the copy of files (blobs) to a new asset previously created.
