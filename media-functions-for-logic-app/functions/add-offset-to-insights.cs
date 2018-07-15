@@ -1,6 +1,4 @@
 /*
-
-Azure Media Services REST API v2 Function
  
 This function adds time offset to video indexer insights.
 
