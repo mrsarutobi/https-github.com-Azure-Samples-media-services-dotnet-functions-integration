@@ -1,8 +1,8 @@
 swagger: '2.0'
 info:
-  title: media-service-functionsqgqpvnruqdbza.azurewebsites.net
+  title: amsfunctions.azurewebsites.net
   version: 1.0.0
-host: media-service-functionsqgqpvnruqdbza.azurewebsites.net
+host: amsfunctions.azurewebsites.net
 basePath: /
 schemes:
   - https
@@ -42,7 +42,7 @@ paths:
                 x-ms-visibility: important
               convertTtml:
                 description: Convert the document from ttml to vtt and create another vtt file in the asset
-                type: bool
+                type: boolean
                 x-ms-summary: Convert from ttml to vtt
                 x-ms-visibility: optional
       description: >-
