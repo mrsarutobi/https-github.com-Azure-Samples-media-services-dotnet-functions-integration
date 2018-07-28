@@ -393,19 +393,6 @@ namespace media_functions_for_logic_app
 
                 log.Info($"Adding media analytics tasks");
 
-                /*
-                        // Media Analytics
-                        OutputIndex1 = JobHelpers.AddTask(job, subclipasset, (string)data.indexV1Language, "Azure Media Indexer", "IndexerV1.xml", "English", ref taskindex);
-                        OutputIndex2 = JobHelpers.AddTask(job, subclipasset, (string)data.indexV2Language, "Azure Media Indexer 2 Preview", "IndexerV2.json", "EnUs", ref taskindex);
-                        OutputOCR = JobHelpers.AddTask(job, subclipasset, (string)data.ocrLanguage, "Azure Media OCR", "OCR.json", "AutoDetect", ref taskindex);
-                        OutputFaceDetection = JobHelpers.AddTask(job, subclipasset, (string)data.faceDetectionMode, "Azure Media Face Detector", "FaceDetection.json", "PerFaceEmotion", ref taskindex);
-                        OutputFaceRedaction = JobHelpers.AddTask(job, subclipasset, (string)data.faceRedactionMode, "Azure Media Redactor", "FaceRedaction.json", "combined", ref taskindex, priority - 1);
-                        OutputMotion = JobHelpers.AddTask(job, subclipasset, (string)data.motionDetectionLevel, "Azure Media Motion Detector", "MotionDetection.json", "medium", ref taskindex, priority - 1);
-                        OutputSummarization = JobHelpers.AddTask(job, subclipasset, (string)data.summarizationDuration, "Azure Media Video Thumbnails", "Summarization.json", "0.0", ref taskindex);
-                        OutputHyperlapse = JobHelpers.AddTask(job, subclipasset, (string)data.hyperlapseSpeed, "Azure Media Hyperlapse", "Hyperlapse.json", "8", ref taskindex);
-                        OutputMesThumbnails = JobHelpers.AddTask(job, subclipasset, (string)data.mesThumbnailsStart, "Media Encoder Standard", "MesThumbnails.json", "{Best}", ref taskindex);
-                */
-
                 //new
                 OutputIndex1 = JobHelpers.AddTask(execContext, _context, job, subclipasset, (data.indexV1 == null) ? (string)data.indexV1Language : ((string)data.indexV1.language ?? "English"), "Azure Media Indexer", "IndexerV1.xml", "English", ref taskindex, specifiedStorageAccountName: JobHelpers.OutputStorageFromParam(data.indexV1));
                 OutputIndex2 = JobHelpers.AddTask(execContext, _context, job, subclipasset, (data.indexV2 == null) ? (string)data.indexV2Language : ((string)data.indexV2.language ?? "EnUs"), "Azure Media Indexer 2 Preview", "IndexerV2.json", "EnUs", ref taskindex, specifiedStorageAccountName: JobHelpers.OutputStorageFromParam(data.indexV2));

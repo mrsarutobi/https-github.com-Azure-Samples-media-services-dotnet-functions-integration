@@ -46,7 +46,7 @@ namespace media_functions_for_logic_app
                 dynamic dataJson;// = data.insights;
                 string timeOffset = data.timeOffset;
 
-                string[] stringTimes = new string[] { "\"adjustedStart\": ", "\"adjustedEnd\": ", "\"start\": ", "\"end\": " };
+                string[] stringTimes = new string[] { "\"adjustedStart\": ", "\"adjustedEnd\": ", "\"startTime\": ", "\"endTime\": ", "\"start\": ", "\"end\": " };
 
                 if (data.insights == null || data.timeOffset == null)
                 {
