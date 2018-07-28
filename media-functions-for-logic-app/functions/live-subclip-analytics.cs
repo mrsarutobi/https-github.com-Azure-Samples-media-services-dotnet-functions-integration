@@ -295,7 +295,7 @@ namespace media_functions_for_logic_app
 
                 // Table storage to store and real the last timestamp processed
                 // Retrieve the storage account from the connection string.
-                CloudStorageAccount storageAccount = new CloudStorageAccount(new StorageCredentials(amsCredentials.StorageAccountName  , amsCredentials.StorageAccountKey), true);
+                CloudStorageAccount storageAccount = new CloudStorageAccount(new StorageCredentials(amsCredentials.StorageAccountName, amsCredentials.StorageAccountKey), true);
 
                 // Create the table client.
                 CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
@@ -317,7 +317,11 @@ namespace media_functions_for_logic_app
                 var lastendtimeInTable = ManifestHelpers.RetrieveLastEndTime(table, programid);
 
                 // Get the manifest data (timestamps)
-                var assetmanifestdata = ManifestHelpers.GetManifestTimingData( _context, asset, log);
+                var assetmanifestdata = ManifestHelpers.GetManifestTimingData(_context, asset, log);
+                if (assetmanifestdata.Error)
+                {
+                    return req.CreateResponse(HttpStatusCode.InternalServerError, new { error = "Data cannot be read from program manifest." });
+                }
 
                 log.Info("Timestamps: " + string.Join(",", assetmanifestdata.TimestampList.Select(n => n.ToString()).ToArray()));
 
@@ -355,6 +359,10 @@ namespace media_functions_for_logic_app
 
                 duration = livetime - starttime;
                 log.Info($"Value duration: {duration}");
+                if (duration == new TimeSpan(0)) // Duration is zero, this may happen sometimes !
+                {
+                    return req.CreateResponse(HttpStatusCode.InternalServerError, new { error = "Stopping. Duration of subclip is zero." });
+                }
 
                 // D:\home\site\wwwroot\Presets\LiveSubclip.json
                 string ConfigurationSubclip = File.ReadAllText(Path.Combine(System.IO.Directory.GetParent(execContext.FunctionDirectory).FullName, "presets", "LiveSubclip.json")).Replace("0:00:00.000000", starttime.Subtract(TimeSpan.FromMilliseconds(100)).ToString()).Replace("0:00:30.000000", duration.Add(TimeSpan.FromMilliseconds(200)).ToString());
@@ -389,7 +397,7 @@ namespace media_functions_for_logic_app
                 // Add an output asset to contain the results of the job. 
                 // This output is specified as AssetCreationOptions.None, which 
                 // means the output asset is not encrypted. 
-                var subclipasset = taskEncoding.OutputAssets.AddNew(asset.Name + " subclipped " + triggerStart,JobHelpers.OutputStorageFromParam(data.mesSubclip), AssetCreationOptions.None);
+                var subclipasset = taskEncoding.OutputAssets.AddNew(asset.Name + " subclipped " + triggerStart, JobHelpers.OutputStorageFromParam(data.mesSubclip), AssetCreationOptions.None);
 
                 log.Info($"Adding media analytics tasks");
 
@@ -414,7 +422,7 @@ namespace media_functions_for_logic_app
                 log.Info("Job Submitted");
 
                 id++;
-               ManifestHelpers.UpdateLastEndTime(table, starttime + duration, programid, id, program.State);
+                ManifestHelpers.UpdateLastEndTime(table, starttime + duration, programid, id, program.State);
 
                 log.Info($"Output MES index {OutputMES}");
 
