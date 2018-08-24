@@ -1,0 +1,623 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "logicAppName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Name of the Logic App."
+      }
+    },
+    "logicAppLocation": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "allowedValues": [
+        "[resourceGroup().location]",
+        "eastasia",
+        "southeastasia",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "westus",
+        "northcentralus",
+        "southcentralus",
+        "northeurope",
+        "westeurope",
+        "japanwest",
+        "japaneast",
+        "brazilsouth",
+        "australiaeast",
+        "australiasoutheast",
+        "southindia",
+        "centralindia",
+        "westindia",
+        "canadacentral",
+        "canadaeast",
+        "uksouth",
+        "ukwest",
+        "westcentralus",
+        "westus2"
+      ],
+      "metadata": {
+        "description": "Location of the Logic App."
+      }
+    },
+    "functionsAppName": {
+      "type": "string",
+      "defaultValue": "",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Name of the functions app already deployed."
+      }
+    },
+    "functionsAppResourceGroup": {
+      "type": "string",
+      "defaultValue": "",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Name of resource group used by the functions app already deployed."
+      }
+    },
+    "videoindexer-v2_1_Connection_Name": {
+      "type": "string",
+      "defaultValue": "videoindexer-v2"
+    },
+    "videoindexer-v2_1_Connection_DisplayName": {
+      "type": "string",
+      "defaultValue": "vine"
+    },
+    "videoindexer-v2_1_api_key": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The API Key for this api"
+      }
+    },
+    "documentdb_1_Connection_Name": {
+      "type": "string",
+      "defaultValue": "documentdb-2"
+    },
+    "documentdb_1_Connection_DisplayName": {
+      "type": "string",
+      "defaultValue": "test"
+    },
+    "documentdb_1_databaseAccount": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the account without 'documents.azure.com' part"
+      },
+      "defaultValue": "analyticscosmos"
+    },
+    "documentdb_1_accessKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Primary or Secondary Key"
+      }
+    }
+  },
+  "variables": {
+    "logicappstep1name": "[concat(parameters('logicAppName'),'-step1')]",
+    "logicappstep2name": "[concat(parameters('logicAppName'),'-step2')]"
+  },
+  "resources": [
+    {
+      "name": "[variables('logicappstep1name')]",
+      "type": "Microsoft.Logic/workflows",
+      "location": "[parameters('logicAppLocation')]",
+      "tags": {
+        "displayName": "LogicApp"
+      },
+      "apiVersion": "2016-06-01",
+      "properties": {
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "actions": {
+            "live-subclip-analytics": {
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "channelName": "Channel1",
+                  "intervalSec": "60",
+                  "programName": "Program1"
+                },
+                "function": {
+                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/live-subclip-analytics')]"
+                }
+              },
+              "runAfter": {}
+            },
+            "Get_Account_Access_Token": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['videoindexer-v2']['connectionId']"
+                  }
+                },
+                "method": "get",
+                "path": "/auth/@{encodeURIComponent('')}/Accounts/@{encodeURIComponent('')}/AccessToken",
+                "queries": {
+                  "allowEdit": true
+                }
+              },
+              "runAfter": {
+                "live-subclip-analytics": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Until": {
+              "type": "Until",
+              "expression": "@equals(body('check-job-status')['isRunning'], string(False))",
+              "limit": {
+                "count": 600,
+                "timeout": "PT1H"
+              },
+              "actions": {
+                "check-job-status": {
+                  "type": "Function",
+                  "inputs": {
+                    "body": {
+                      "extendedInfo": true,
+                      "jobId": "@{body('live-subclip-analytics')['jobId']}",
+                      "noWait": true
+                    },
+                    "function": {
+                      "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/check-job-status')]"
+                    }
+                  },
+                  "runAfter": {}
+                },
+                "Delay": {
+                  "type": "Wait",
+                  "inputs": {
+                    "interval": {
+                      "count": 5,
+                      "unit": "Second"
+                    }
+                  },
+                  "runAfter": {
+                    "check-job-status": [
+                      "Succeeded"
+                    ]
+                  }
+                }
+              },
+              "runAfter": {
+                "Get_Account_Access_Token": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Condition": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@body('check-job-status')['isSuccessful']",
+                      "True"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "list-asset-files": {
+                  "type": "Function",
+                  "inputs": {
+                    "body": {
+                      "assetId": "@{body('live-subclip-analytics')['subclip']['assetId']}",
+                      "endsWith": ".mp4"
+                    },
+                    "function": {
+                      "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/list-asset-files')]"
+                    }
+                  },
+                  "runAfter": {}
+                },
+                "publish-asset": {
+                  "type": "Function",
+                  "inputs": {
+                    "body": {
+                      "assetId": "@{body('live-subclip-analytics')['subclip']['assetId']}"
+                    },
+                    "function": {
+                      "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/publish-asset')]"
+                    }
+                  },
+                  "runAfter": {
+                    "list-asset-files": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Upload_video_and_index": {
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['videoindexer-v2']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/@{encodeURIComponent('')}/Accounts/@{encodeURIComponent('')}/Videos",
+                    "queries": {
+                      "accessToken": "@body('Get_Account_Access_Token')",
+                      "name": "@{body('live-subclip-analytics')['triggerStart']}_@{body('live-subclip-analytics')['channelName']}_@{body('live-subclip-analytics')['programName']}",
+                      "videoUrl": "@{body('publish-asset')['pathUrl']}@{first(body('list-asset-files')['assetFiles'])}",
+                       "callbackUrl":  "[listCallbackURL(concat(resourceId('Microsoft.Logic/workflows/', variables('logicappstep2name')), '/triggers/manual'), '2016-06-01').value]",
+                      "language": "English",
+                      "indexingPreset": "Default",
+                      "streamingPreset": "NoStreaming",
+                      "privacy": "Private"
+                    },
+                    "body": {
+                      "$content-type": "multipart/form-data",
+                      "$multipart": [
+                        {
+                          "headers": {
+                            "Content-Disposition": "form-data; name=\"body\""
+                          },
+                          "body": ""
+                        }
+                      ]
+                    }
+                  },
+                  "runAfter": {
+                    "publish-asset": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Create_or_update_document": {
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['documentdb']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "body": {
+                      "channelname": "@{body('live-subclip-analytics')['channelName']}",
+                      "date": "@{formatDateTime(utcNow(),'d')}",
+                      "id": "@{body('Upload_video_and_index')?['id']}",
+                      "jobEndTime": "@{body('check-job-status')['endTime']}",
+                      "jobId": "@{body('live-subclip-analytics')['jobId']}",
+                      "jobRunningDuration": "@{body('check-job-status')['runningDuration']}",
+                      "jobStartTime": "@{body('check-job-status')['startTime']}",
+                      "jobextendedinfo": "@json(body('check-job-status')['extendedInfo'])",
+                      "name": "@{body('live-subclip-analytics')['triggerStart']}-@{body('live-subclip-analytics')['channelName']}-@{body('live-subclip-analytics')['programName']}",
+                      "programUrl": "@{body('live-subclip-analytics')['programUrl']}",
+                      "programname": "@{body('live-subclip-analytics')['programName']}",
+                      "subclipduration": "@{body('live-subclip-analytics')['subclip']['duration']}",
+                      "subclipstart": "@{body('live-subclip-analytics')['subclip']['start']}",
+                      "triggerStart": "@{body('live-subclip-analytics')['triggerStart']}",
+                      "subclipAssetId": "@{body('live-subclip-analytics')['subclip']['assetId']}"
+                    },
+                    "path": "/dbs/@{encodeURIComponent('vidb')}/colls/@{encodeURIComponent('vicol')}/docs"
+                  },
+                  "runAfter": {
+                    "Upload_video_and_index": [
+                      "Succeeded"
+                    ]
+                  }
+                }
+              },
+              "runAfter": {
+                "Until": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Create_or_update_document_Error": {
+                    "type": "ApiConnection",
+                    "inputs": {
+                      "host": {
+                        "connection": {
+                          "name": "@parameters('$connections')['documentdb']['connectionId']"
+                        }
+                      },
+                      "method": "post",
+                      "body": {
+                        "channelname": "@{body('live-subclip-analytics')['channelName']}",
+                        "date": "@{formatDateTime(utcNow(),'d')}",
+                        "id": "error-@{body('live-subclip-analytics')['triggerStart']}-@{body('live-subclip-analytics')['channelName']}-@{body('live-subclip-analytics')['programName']}",
+                        "jobEndTime": "@{body('check-job-status')['endTime']}",
+                        "jobErrorText": "@{body('check-job-status')['errorText']}",
+                        "jobId": "@{body('live-subclip-analytics')['jobId']}",
+                        "jobRunningDuration": "@{body('check-job-status')['runningDuration']}",
+                        "jobStartTime": "@{body('check-job-status')['startTime']}",
+                        "jobextendedinfo": "@json(body('check-job-status')['extendedInfo'])",
+                        "programUrl": "@{body('live-subclip-analytics')['programUrl']}",
+                        "programname": "@{body('live-subclip-analytics')['programName']}",
+                        "subclipduration": "@{body('live-subclip-analytics')['subclip']['duration']}",
+                        "subclipstart": "@{body('live-subclip-analytics')['subclip']['start']}",
+                        "triggerStart": "@{body('live-subclip-analytics')['triggerStart']}",
+                        "subclipAssetId": "@{body('live-subclip-analytics')['subclip']['assetId']}"
+                      },
+                      "path": "/dbs/@{encodeURIComponent('vidb')}/colls/@{encodeURIComponent('vicol')}/docs"
+                    },
+                    "runAfter": {}
+                  },
+                  "Terminate": {
+                    "type": "Terminate",
+                    "inputs": {
+                      "runStatus": "Failed",
+                      "runError": {
+                        "message": "Task failed."
+                      }
+                    },
+                    "runAfter": {
+                      "Create_or_update_document_Error": [
+                        "Succeeded"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            }
+          },
+          "triggers": {
+            "Recurrence": {
+              "type": "Recurrence",
+              "recurrence": {
+                "frequency": "Second",
+                "interval": 60
+              }
+            }
+          },
+          "contentVersion": "1.0.0.0",
+          "outputs": {}
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "videoindexer-v2": {
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'videoindexer-v2')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('videoindexer-v2_1_Connection_Name'))]",
+                "connectionName": "[parameters('videoindexer-v2_1_Connection_Name')]"
+              },
+              "documentdb": {
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'documentdb')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('documentdb_1_Connection_Name'))]",
+                "connectionName": "[parameters('documentdb_1_Connection_Name')]"
+              }
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/connections', parameters('videoindexer-v2_1_Connection_Name'))]",
+        "[resourceId('Microsoft.Web/connections', parameters('documentdb_1_Connection_Name'))]",
+        "[resourceId('Microsoft.Logic/workflows', variables('logicappstep2name'))]"
+      ]
+    },
+    {
+      "name": "[variables('logicappstep2name')]",
+      "type": "Microsoft.Logic/workflows",
+      "location": "[parameters('logicAppLocation')]",
+      "tags": {
+        "displayName": "LogicApp"
+      },
+      "apiVersion": "2016-06-01",
+      "properties": {
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "actions": {
+            "Get_Account_Access_Token": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['videoindexer-v2']['connectionId']"
+                  }
+                },
+                "method": "get",
+                "path": "/auth/@{encodeURIComponent('')}/Accounts/@{encodeURIComponent('')}/AccessToken",
+                "queries": {
+                  "allowEdit": true
+                }
+              },
+              "runAfter": {}
+            },
+            "Get_Video_Index": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['videoindexer-v2']['connectionId']"
+                  }
+                },
+                "method": "get",
+                "path": "/@{encodeURIComponent('')}/Accounts/@{encodeURIComponent('')}/Videos/@{encodeURIComponent(triggerOutputs()['queries']['id'])}/Index",
+                "queries": {
+                  "accessToken": "@body('Get_Account_Access_Token')",
+                  "language": "English"
+                }
+              },
+              "runAfter": {
+                "Get_Account_Access_Token": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Get_a_document": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['documentdb']['connectionId']"
+                  }
+                },
+                "method": "get",
+                "path": "/dbs/@{encodeURIComponent('vidb')}/colls/@{encodeURIComponent('vicol')}/docs/@{encodeURIComponent(triggerOutputs()['queries']['id'])}"
+              },
+              "runAfter": {
+                "Get_Video_Index": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "add-offset-to-insights": {
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "insights": "@body('Get_Video_Index')?['videos']",
+                  "timeOffset": "@{body('Get_a_document')['subclipstart']}"
+                },
+                "function": {
+                              "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/add-offset-to-insights')]"
+            
+                }
+              },
+              "runAfter": {
+                "Get_a_document": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Create_or_update_document": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['documentdb']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "body": {
+                  "id": "@{triggerOutputs()['queries']['id']}-insights",
+                  "insights": "@body('add-offset-to-insights')['jsonOffset']",
+                  "name": "@{body('Get_a_document')['name']}-insights"
+                },
+                "path": "/dbs/@{encodeURIComponent('vidb')}/colls/@{encodeURIComponent('vicol')}/docs"
+              },
+              "runAfter": {
+                "add-offset-to-insights": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Delete_Video": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['videoindexer-v2']['connectionId']"
+                  }
+                },
+                "method": "delete",
+                "path": "/@{encodeURIComponent('')}/Accounts/@{encodeURIComponent('')}/Videos/@{encodeURIComponent(body('Get_Video_Index')?['id'])}",
+                "queries": {
+                  "accessToken": "@body('Get_Account_Access_Token')"
+                }
+              },
+              "runAfter": {
+                "Create_or_update_document": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "delete-entity": {
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "assetId": "@{body('Get_a_document')['subclipAssetId']}"
+                },
+                "function": {
+                   "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/delete-entity')]"
+        
+                }
+              },
+              "runAfter": {
+                "Delete_Video": [
+                  "Succeeded"
+                ]
+              }
+            }
+          },
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            }
+          },
+          "triggers": {
+            "manual": {
+              "type": "Request",
+              "kind": "Http",
+              "inputs": {
+                "schema": {}
+              }
+            }
+          },
+          "contentVersion": "1.0.0.0",
+          "outputs": {}
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "videoindexer-v2": {
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'videoindexer-v2')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('videoindexer-v2_1_Connection_Name'))]",
+                "connectionName": "[parameters('videoindexer-v2_1_Connection_Name')]"
+              },
+              "documentdb": {
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'documentdb')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('documentdb_1_Connection_Name'))]",
+                "connectionName": "[parameters('documentdb_1_Connection_Name')]"
+              }
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/connections', parameters('videoindexer-v2_1_Connection_Name'))]",
+        "[resourceId('Microsoft.Web/connections', parameters('documentdb_1_Connection_Name'))]"
+      ]
+    },
+    {
+      "type": "MICROSOFT.WEB/CONNECTIONS",
+      "apiVersion": "2016-06-01",
+      "name": "[parameters('videoindexer-v2_1_Connection_Name')]",
+      "location": "[parameters('logicAppLocation')]",
+      "properties": {
+        "api": {
+          "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'videoindexer-v2')]"
+        },
+        "displayName": "[parameters('videoindexer-v2_1_Connection_DisplayName')]",
+        "parameterValues": {
+          "api_key": "[parameters('videoindexer-v2_1_api_key')]"
+        }
+      }
+    },
+    {
+      "type": "MICROSOFT.WEB/CONNECTIONS",
+      "apiVersion": "2016-06-01",
+      "name": "[parameters('documentdb_1_Connection_Name')]",
+      "location": "[parameters('logicAppLocation')]",
+      "properties": {
+        "api": {
+          "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'documentdb')]"
+        },
+        "displayName": "[parameters('documentdb_1_Connection_DisplayName')]",
+        "parameterValues": {
+          "databaseAccount": "[parameters('documentdb_1_databaseAccount')]",
+          "accessKey": "[parameters('documentdb_1_accessKey')]"
+        }
+      }
+    }
+  ],
+  "outputs": {}
+}

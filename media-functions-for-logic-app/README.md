@@ -161,5 +161,50 @@ Example of [semaphore file](encodedasset0.json) that must be created and uploade
 ]
 ```
 
+## Sixth Logic App : Live analytics processing with Video Indexer
+
+This template creates two Logic apps which process a live program (from a live channel in Azure Media Services) with Video Indexer v2. What it does :
+
+**First Logic app (step 1)**
+* it runs every 60 seconds
+* subclips the last minute
+* sends this subclip asset to Video Indexer, which runs in a Media Services Account (recommended)
+
+![Screen capture](images/logicapp6-live1.png?raw=true)
+
+**First Logic app (step 2)**
+
+* called by Video Indexer when indexing is complete (using a callback url)
+* gets the insights, update the timestamps
+* sends this data to a Cosmos database
+* delete the Video Indexer video and the subclip asset
+
+![Screen capture](images/logicapp6-live2.png?raw=true)
+
+### Prerequirements
+
+- Follow the "Prerequisites for all Logic Apps deployments" at the top of this page (step 1 to 4) 
+- Create a Cosmos database and a collection
+- Deploy Video Indexer to a new or existing Media Services Account (button "Connect" to Azure in Video Indexer portal). It can be the same or a different Media Services account. It is recommended to choose the same Media Services account than the one used by the functions (and the live steam).
+- Subscribe to Video Indexer API
+- Create a channnel "Channel1" and program "Program1" in the Media Services account used by the functions. Start them. Connect a live encoder (for example, Wirecast) and push the live stream to the channel. If you want to use another name for the channel and program, then you will have to edit the step 1 logic app to reflect the new names.
+- Setup 10 S3 media reserved units in the Media Services account(s)
+- Deploy the two logic apps using this template:
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp6-livevideoindexer-deploy.json" target="_blank">
+    <img src="http://azuredeploy.net/deploybutton.png"/>
+</a>
+
+Once deploymnent, fix the errors in the logic apps designer:
+- Video Indexer componentd in both logic apps (select the location and subscription in all Video Indexer connectors)
+
+Notes
+
+* You can to customize the channel name, program name and language of the audio. To do so, change the parameters in the live-subclip-analytics function call and in video indexer upload component in the step1 logic app.
+
+![Screen capture](images/logicapp6-live-param1.png?raw=true)
+
+![Screen capture](images/logicapp6-live-param2.png?raw=true)
+
 ## Functions documentation
 This [page](Functions-documentation.md) lists the functions available and describes the input and output parameters.
