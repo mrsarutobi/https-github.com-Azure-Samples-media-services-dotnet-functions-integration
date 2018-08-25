@@ -163,7 +163,7 @@ Example of [semaphore file](encodedasset0.json) that must be created and uploade
 
 ## Sixth Logic App : Live analytics processing with Video Indexer
 
-This template creates two Logic apps which process a live program (from a live channel in Azure Media Services) with Video Indexer v2. What it does :
+This template creates two Logic apps which process a live program (from a live channel in Azure Media Services) with Video Indexer v2. The workflow does the following :
 
 **First Logic app (step 1)**
 * it runs every 60 seconds
@@ -177,7 +177,7 @@ This template creates two Logic apps which process a live program (from a live c
 * called by Video Indexer when indexing is complete (using a callback url)
 * gets the insights, update the timestamps
 * sends this data to a Cosmos database
-* delete the Video Indexer video and the subclip asset
+* deletes the Video Indexer video and the subclip asset
 
 ![Screen capture](images/logicapp6-live2.png?raw=true)
 
@@ -201,7 +201,8 @@ Once deploymnent, fix the errors in the logic apps designer:
 
 Notes
 
-* You can to customize the channel name, program name and language of the audio. To do so, change the parameters in the live-subclip-analytics function call and in video indexer upload component in the step1 logic app.
+* You can to customize the channel name, program name and language of the audio. To do so, change the parameters in the live-subclip-analytics function call and  video indexer upload component from the step1 logic app.
+* to increase the performance, it is recommended to limit the resolution of the live stream. This will speed up the processing of Video Indexer. For example, start testing by sending a SD resolution stream (example: 854x480)  
 
 ![Screen capture](images/logicapp6-live-param1.png?raw=true)
 

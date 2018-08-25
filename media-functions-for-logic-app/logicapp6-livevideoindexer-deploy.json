@@ -138,7 +138,7 @@
                   }
                 },
                 "method": "get",
-                "path": "/auth/@{encodeURIComponent('')}/Accounts/@{encodeURIComponent('')}/AccessToken",
+                "path": "/auth//Accounts//AccessToken",
                 "queries": {
                   "allowEdit": true
                 }
@@ -243,12 +243,12 @@
                       }
                     },
                     "method": "post",
-                    "path": "/@{encodeURIComponent('')}/Accounts/@{encodeURIComponent('')}/Videos",
+                    "path": "//Accounts//Videos",
                     "queries": {
                       "accessToken": "@body('Get_Account_Access_Token')",
                       "name": "@{body('live-subclip-analytics')['triggerStart']}_@{body('live-subclip-analytics')['channelName']}_@{body('live-subclip-analytics')['programName']}",
                       "videoUrl": "@{body('publish-asset')['pathUrl']}@{first(body('list-asset-files')['assetFiles'])}",
-                       "callbackUrl":  "[listCallbackURL(concat(resourceId('Microsoft.Logic/workflows/', variables('logicappstep2name')), '/triggers/manual'), '2016-06-01').value]",
+                      "callbackUrl": "[listCallbackURL(concat(resourceId('Microsoft.Logic/workflows/', variables('logicappstep2name')), '/triggers/manual'), '2016-06-01').value]",
                       "language": "English",
                       "indexingPreset": "Default",
                       "streamingPreset": "NoStreaming",
@@ -424,7 +424,7 @@
                   }
                 },
                 "method": "get",
-                "path": "/auth/@{encodeURIComponent('')}/Accounts/@{encodeURIComponent('')}/AccessToken",
+                "path": "/auth//Accounts//AccessToken",
                 "queries": {
                   "allowEdit": true
                 }
@@ -440,7 +440,7 @@
                   }
                 },
                 "method": "get",
-                "path": "/@{encodeURIComponent('')}/Accounts/@{encodeURIComponent('')}/Videos/@{encodeURIComponent(triggerOutputs()['queries']['id'])}/Index",
+                "path": "//Accounts//Videos/@{encodeURIComponent(triggerOutputs()['queries']['id'])}/Index",
                 "queries": {
                   "accessToken": "@body('Get_Account_Access_Token')",
                   "language": "English"
@@ -477,8 +477,7 @@
                   "timeOffset": "@{body('Get_a_document')['subclipstart']}"
                 },
                 "function": {
-                              "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/add-offset-to-insights')]"
-            
+                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/add-offset-to-insights')]"
                 }
               },
               "runAfter": {
@@ -518,7 +517,7 @@
                   }
                 },
                 "method": "delete",
-                "path": "/@{encodeURIComponent('')}/Accounts/@{encodeURIComponent('')}/Videos/@{encodeURIComponent(body('Get_Video_Index')?['id'])}",
+                "path": "//Accounts//Videos/@{encodeURIComponent(body('Get_Video_Index')?['id'])}",
                 "queries": {
                   "accessToken": "@body('Get_Account_Access_Token')"
                 }
@@ -536,8 +535,7 @@
                   "assetId": "@{body('Get_a_document')['subclipAssetId']}"
                 },
                 "function": {
-                   "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/delete-entity')]"
-        
+                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/delete-entity')]"
                 }
               },
               "runAfter": {
