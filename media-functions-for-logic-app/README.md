@@ -165,14 +165,14 @@ Example of [semaphore file](encodedasset0.json) that must be created and uploade
 
 This template creates two Logic apps which process a live program (from a live channel in Azure Media Services) with Video Indexer v2. The workflow does the following :
 
-**First Logic app (step 1)**
+**Step 1 Logic app**
 * it runs every 60 seconds
 * subclips the last minute
 * sends this subclip asset to Video Indexer, which runs in a Media Services Account (recommended)
 
 ![Screen capture](images/logicapp6-live1.png?raw=true)
 
-**First Logic app (step 2)**
+**Step 2 Logic app**
 
 * called by Video Indexer when indexing is complete (using a callback url)
 * gets the insights, update the timestamps
@@ -191,18 +191,20 @@ This template creates two Logic apps which process a live program (from a live c
 - Setup 10 S3 media reserved units in the Media Services account(s)
 - Deploy the two logic apps using this template:
 
+Click the button to deploy the template in your subscription:
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp6-livevideoindexer-deploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
-Once deploymnent, fix the errors in the logic apps designer:
-- Video Indexer components in both logic apps (select the location and subscription in all Video Indexer connectors)
+Once deployed, fix the errors in both logic apps (go to designer):
+- Video Indexer components (select the location and subscription in all Video Indexer connectors)
 - Check the Cosmos DB components and connection
 
 Notes
 
 * You can to customize the channel name, program name and language of the audio. To do so, change the parameters in the live-subclip-analytics function call and  video indexer upload component from the step1 logic app.
-* to increase the performance, it is recommended to limit the resolution of the live stream. This will speed up the processing of Video Indexer. For example, start testing by sending a SD resolution stream (example: 854x480)  
+* to increase the performance, it is recommended to limit the resolution of the live stream. This will speed up the processing of Video Indexer. For example, start testing by sending a SD resolution stream (example: 854x480)
+* monitor the job queue(s) and allocate the right number of S3 media reserved units  
 
 ![Screen capture](images/logicapp6-live-param1.png?raw=true)
 
