@@ -137,21 +137,25 @@ namespace media_functions_for_logic_app
 
                 var aflist = asset.AssetFiles.ToList().Select(af => af.Name);
 
-                foreach (CloudBlockBlob blob in blobs)
+                foreach (var blob in blobs)
                 {
-                    if (aflist.Contains(blob.Name))
+                    if (blob.GetType() == typeof(CloudBlockBlob))
                     {
-                        var assetFile = asset.AssetFiles.Where(af => af.Name == blob.Name).FirstOrDefault();
-                        assetFile.ContentFileSize = blob.Properties.Length;
-                        assetFile.Update();
-                        log.Info($"Asset file updated : {assetFile.Name}");
-                    }
-                    else
-                    {
-                        var assetFile = asset.AssetFiles.Create(blob.Name);
-                        assetFile.ContentFileSize = blob.Properties.Length;
-                        assetFile.Update();
-                        log.Info($"Asset file created : {assetFile.Name}");
+                        var cblob = (CloudBlockBlob)blob;
+                        if (aflist.Contains(cblob.Name))
+                        {
+                            var assetFile = asset.AssetFiles.Where(af => af.Name == cblob.Name).FirstOrDefault();
+                            assetFile.ContentFileSize = cblob.Properties.Length;
+                            assetFile.Update();
+                            log.Info($"Asset file updated : {assetFile.Name}");
+                        }
+                        else
+                        {
+                            var assetFile = asset.AssetFiles.Create(cblob.Name);
+                            assetFile.ContentFileSize = cblob.Properties.Length;
+                            assetFile.Update();
+                            log.Info($"Asset file created : {assetFile.Name}");
+                        }
                     }
                 }
 
