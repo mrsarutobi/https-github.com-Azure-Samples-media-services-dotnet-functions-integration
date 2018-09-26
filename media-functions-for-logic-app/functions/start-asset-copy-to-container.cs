@@ -10,6 +10,7 @@ Input:
     "targetStorageAccountName" : "",
     "targetStorageAccountKey": "",
     "targetContainer" : "",
+    "targetPath" : "testing/folder1/", // optional, copy files to blobs using the targetPath
     "startsWith" : "video", //optional, copy only files that start with name video
     "endsWith" : ".mp4", //optional, copy only files that end with .mp4
 }
@@ -121,10 +122,12 @@ namespace media_functions_for_logic_app
 
                 var files = asset.AssetFiles.ToList().Where(f => ((string.IsNullOrEmpty(endsWith) || f.Name.EndsWith(endsWith)) && (string.IsNullOrEmpty(startsWith) || f.Name.StartsWith(startsWith))));
 
+                string path = data.targetPath != null ? data.targetPath : string.Empty; // if user wants to use folder(s) for the output blob(s)
+
                 foreach (var file in files)
                 {
                     CloudBlob sourceBlob = sourceBlobContainer.GetBlockBlobReference(file.Name);
-                    CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(file.Name);
+                    CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(path + file.Name);
                     CopyBlobHelpers.CopyBlobAsync(sourceBlob, destinationBlob);
                     log.Info($"Start copy of file : {file.Name}");
                 }
