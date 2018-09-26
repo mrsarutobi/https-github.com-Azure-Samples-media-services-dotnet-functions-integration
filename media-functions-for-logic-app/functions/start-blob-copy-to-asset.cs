@@ -13,6 +13,7 @@ Input:
     "sourceStorageAccountKey": "",
     "sourceContainer" : "",
     "wait" : true // optional. Set this parameter if you want the function to wait up to 15s if the fileName blob is missing. Otherwise it does not wait. I applies to fileName, not for fileNames 
+    "flattenPath" : true // optional. Set this parameter if you want the function to remove the path from the source blob when doing the copy, to avoid creating the folders in the target asset container
 }
 
 Output:
@@ -33,6 +34,7 @@ using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs;
 using System.Net.Http;
 using System.Linq;
+using System.IO;
 
 namespace media_functions_for_logic_app
 {
@@ -146,6 +148,10 @@ namespace media_functions_for_logic_app
 
                     if (sourceBlob.Exists())
                     {
+                        if (data.flattenPath != null && (bool)data.flattenPath)
+                        {
+                            fileName = Path.GetFileName(fileName);
+                        }
                         CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(fileName);
 
                         if (destinationBlobContainer.CreateIfNotExists())
@@ -172,6 +178,10 @@ namespace media_functions_for_logic_app
                         CloudBlob sourceBlob = sourceBlobContainer.GetBlockBlobReference(fileName);
                         if (sourceBlob.Exists())
                         {
+                            if (data.flattenPath != null && (bool)data.flattenPath)
+                            {
+                                fileName = Path.GetFileName(fileName);
+                            }
                             CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference(fileName);
 
                             if (destinationBlobContainer.CreateIfNotExists())
