@@ -16,11 +16,11 @@ namespace media_functions_for_logic_app.functions
     {
         [FunctionName("query-cosmosdb-insights")]
         public static async Task<HttpResponseMessage> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "query-cosmosdb-insights/{starttime}")]HttpRequestMessage req,
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "query-cosmosdb-insights/{dbname}/{colname}/{starttime}")]HttpRequestMessage req,
             string starttime,
             [DocumentDB(
-                databaseName: "vidb",
-                collectionName: "vicol",
+                databaseName: "{dbname}",
+                collectionName: "{colname}",
                 ConnectionStringSetting = "CosmosDBConnectionString",
                 SqlQuery = "SELECT TOP 1 * from c WHERE c.insights[0].insights.transcript[0].instances[0].adjustedStart <= {starttime} ORDER BY c.insights[0].insights.transcript[0].instances[0].adjustedStart DESC")] IEnumerable<dynamic> results,
             TraceWriter log
