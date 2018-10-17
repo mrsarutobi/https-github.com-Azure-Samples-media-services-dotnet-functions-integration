@@ -84,7 +84,7 @@ namespace media_functions_for_logic_app
                 foreach (var dest in destBlobList)
                 {
                     var destBlob = dest as CloudBlob;
-                    if (destBlob.CopyState.Status == CopyStatus.Aborted || destBlob.CopyState.Status == CopyStatus.Failed)
+                    if (destBlob.CopyState.Status == CopyStatus.Aborted || destBlob.CopyState.Status == CopyStatus.Failed || destBlob.CopyState.Status == CopyStatus.Invalid)
                     {
                         // Log the copy status description for diagnostics and restart copy
                         destBlob.StartCopyAsync(destBlob.CopyState.Source);
