@@ -16,7 +16,7 @@ namespace media_functions_for_logic_app.functions
     {
         [FunctionName("query-cosmosdb-insights")]
         public static async Task<HttpResponseMessage> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "query-cosmosdb-insights/{dbname}/{colname}/{starttime}")]HttpRequestMessage req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "query-cosmosdb-insights/{dbname}/{colname}/{starttime}")]HttpRequestMessage req,
             string starttime,
             [DocumentDB(
                 databaseName: "{dbname}",
