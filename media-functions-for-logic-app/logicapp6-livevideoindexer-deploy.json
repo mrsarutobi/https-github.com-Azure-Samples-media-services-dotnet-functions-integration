@@ -70,7 +70,7 @@
       "type": "string",
       "defaultValue": "vine"
     },
-    "videoindexer-v2_1_api_key": {
+    "VideoIndexerV2ApiKey": {
       "type": "securestring",
       "metadata": {
         "description": "The API Key for this api"
@@ -84,14 +84,14 @@
       "type": "string",
       "defaultValue": "test"
     },
-    "documentdb_1_databaseAccount": {
+    "CosmosDatabaseAccount": {
       "type": "string",
       "metadata": {
         "description": "Name of the account without 'documents.azure.com' part"
       },
       "defaultValue": "analyticscosmos"
     },
-    "documentdb_1_accessKey": {
+    "CosmosDatabaseAccessKey": {
       "type": "securestring",
       "metadata": {
         "description": "Primary or Secondary Key"
@@ -114,173 +114,33 @@
       "properties": {
         "definition": {
           "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            }
+          },
+          "triggers": {
+            "Recurrence": {
+              "recurrence": {
+                "frequency": "Second",
+                "interval": 60
+              },
+              "type": "Recurrence"
+            }
+          },
           "actions": {
-            "live-subclip-analytics": {
-              "type": "Function",
-              "inputs": {
-                "body": {
-                  "channelName": "Channel1",
-                  "intervalSec": "60",
-                  "programName": "Program1"
-                },
-                "function": {
-                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/live-subclip-analytics')]"
-                }
-              },
-              "runAfter": {}
-            },
-            "Get_Account_Access_Token": {
-              "type": "ApiConnection",
-              "inputs": {
-                "host": {
-                  "connection": {
-                    "name": "@parameters('$connections')['videoindexer-v2']['connectionId']"
-                  }
-                },
-                "method": "get",
-                "path": "/auth//Accounts//AccessToken",
-                "queries": {
-                  "allowEdit": true
-                }
-              },
-              "runAfter": {
-                "live-subclip-analytics": [
-                  "Succeeded"
-                ]
-              }
-            },
-            "Until": {
-              "type": "Until",
-              "expression": "@equals(body('check-job-status')['isRunning'], string(False))",
-              "limit": {
-                "count": 600,
-                "timeout": "PT1H"
-              },
-              "actions": {
-                "check-job-status": {
-                  "type": "Function",
-                  "inputs": {
-                    "body": {
-                      "extendedInfo": true,
-                      "jobId": "@{body('live-subclip-analytics')['jobId']}",
-                      "noWait": true
-                    },
-                    "function": {
-                      "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/check-job-status')]"
-                    }
-                  },
-                  "runAfter": {}
-                },
-                "Delay": {
-                  "type": "Wait",
-                  "inputs": {
-                    "interval": {
-                      "count": 5,
-                      "unit": "Second"
-                    }
-                  },
-                  "runAfter": {
-                    "check-job-status": [
-                      "Succeeded"
-                    ]
-                  }
-                }
-              },
-              "runAfter": {
-                "Get_Account_Access_Token": [
-                  "Succeeded"
-                ]
-              }
-            },
             "Condition": {
-              "type": "If",
-              "expression": {
-                "and": [
-                  {
-                    "equals": [
-                      "@body('check-job-status')['isSuccessful']",
-                      "True"
-                    ]
-                  }
-                ]
-              },
               "actions": {
-                "list-asset-files": {
-                  "type": "Function",
-                  "inputs": {
-                    "body": {
-                      "assetId": "@{body('live-subclip-analytics')['subclip']['assetId']}",
-                      "endsWith": ".mp4"
-                    },
-                    "function": {
-                      "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/list-asset-files')]"
-                    }
-                  },
-                  "runAfter": {}
-                },
-                "publish-asset": {
-                  "type": "Function",
-                  "inputs": {
-                    "body": {
-                      "assetId": "@{body('live-subclip-analytics')['subclip']['assetId']}"
-                    },
-                    "function": {
-                      "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/publish-asset')]"
-                    }
-                  },
-                  "runAfter": {
-                    "list-asset-files": [
-                      "Succeeded"
-                    ]
-                  }
-                },
-                "Upload_video_and_index": {
-                  "type": "ApiConnection",
-                  "inputs": {
-                    "host": {
-                      "connection": {
-                        "name": "@parameters('$connections')['videoindexer-v2']['connectionId']"
-                      }
-                    },
-                    "method": "post",
-                    "path": "//Accounts//Videos",
-                    "queries": {
-                      "accessToken": "@body('Get_Account_Access_Token')",
-                      "name": "@{body('live-subclip-analytics')['triggerStart']}_@{body('live-subclip-analytics')['channelName']}_@{body('live-subclip-analytics')['programName']}",
-                      "videoUrl": "@{body('publish-asset')['pathUrl']}@{first(body('list-asset-files')['assetFiles'])}",
-                      "callbackUrl": "[listCallbackURL(concat(resourceId('Microsoft.Logic/workflows/', variables('logicappstep2name')), '/triggers/manual'), '2016-06-01').value]",
-                      "language": "English",
-                      "indexingPreset": "Default",
-                      "streamingPreset": "NoStreaming",
-                      "privacy": "Private"
-                    },
-                    "body": {
-                      "$content-type": "multipart/form-data",
-                      "$multipart": [
-                        {
-                          "headers": {
-                            "Content-Disposition": "form-data; name=\"body\""
-                          },
-                          "body": ""
-                        }
-                      ]
-                    }
-                  },
-                  "runAfter": {
-                    "publish-asset": [
-                      "Succeeded"
-                    ]
-                  }
-                },
                 "Create_or_update_document": {
+                  "runAfter": {
+                    "Upload_video_and_index": [
+                      "Succeeded"
+                    ]
+                  },
                   "type": "ApiConnection",
                   "inputs": {
-                    "host": {
-                      "connection": {
-                        "name": "@parameters('$connections')['documentdb']['connectionId']"
-                      }
-                    },
-                    "method": "post",
                     "body": {
                       "channelname": "@{body('live-subclip-analytics')['channelName']}",
                       "date": "@{formatDateTime(utcNow(),'d')}",
@@ -293,17 +153,69 @@
                       "name": "@{body('live-subclip-analytics')['triggerStart']}-@{body('live-subclip-analytics')['channelName']}-@{body('live-subclip-analytics')['programName']}",
                       "programUrl": "@{body('live-subclip-analytics')['programUrl']}",
                       "programname": "@{body('live-subclip-analytics')['programName']}",
+                      "subclipAssetId": "@{body('live-subclip-analytics')['subclip']['assetId']}",
                       "subclipduration": "@{body('live-subclip-analytics')['subclip']['duration']}",
                       "subclipstart": "@{body('live-subclip-analytics')['subclip']['start']}",
-                      "triggerStart": "@{body('live-subclip-analytics')['triggerStart']}",
-                      "subclipAssetId": "@{body('live-subclip-analytics')['subclip']['assetId']}"
+                      "triggerStart": "@{body('live-subclip-analytics')['triggerStart']}"
                     },
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['documentdb']['connectionId']"
+                      }
+                    },
+                    "method": "post",
                     "path": "/dbs/@{encodeURIComponent('vidb')}/colls/@{encodeURIComponent('vicol')}/docs"
-                  },
+                  }
+                },
+                "Upload_video_and_index": {
                   "runAfter": {
-                    "Upload_video_and_index": [
+                    "prepare-asset-for-vi": [
                       "Succeeded"
                     ]
+                  },
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "body": {
+                      "$content-type": "multipart/form-data",
+                      "$multipart": [
+                        {
+                          "body": "",
+                          "headers": {
+                            "Content-Disposition": "form-data; name=\"body\""
+                          }
+                        }
+                      ]
+                    },
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['videoindexer-v2']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/@{encodeURIComponent('northeurope')}/Accounts/@{encodeURIComponent('9fb2ac56-9ced-46f8-8777-ddeb21c3666c')}/Videos",
+                    "queries": {
+                      "accessToken": "@body('Get_Account_Access_Token')",
+                      "assetId": "@substring(body('live-subclip-analytics')['subclip']['assetId'],12,36)",
+                      "name": "@{body('live-subclip-analytics')['triggerStart']}_@{body('live-subclip-analytics')['channelName']}_@{body('live-subclip-analytics')['programName']}",
+                      "callbackUrl": "[listCallbackURL(concat(resourceId('Microsoft.Logic/workflows/', variables('logicappstep2name')), '/triggers/manual'), '2016-06-01').value]",
+                      "fileName": "@{body('prepare-asset-for-vi')['mp4FileName']}",
+                      "language": "English",
+                      "indexingPreset": "Default",
+                      "streamingPreset": "NoStreaming",
+                      "privacy": "Private"
+                    }
+                  }
+                },
+                "prepare-asset-for-vi": {
+                  "runAfter": {},
+                  "type": "Function",
+                  "inputs": {
+                    "body": {
+                      "assetId": "@{body('live-subclip-analytics')['subclip']['assetId']}"
+                    },
+                    "function": {
+                      "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/prepare-asset-for-vi')]"
+                    }
                   }
                 }
               },
@@ -315,14 +227,9 @@
               "else": {
                 "actions": {
                   "Create_or_update_document_Error": {
+                    "runAfter": {},
                     "type": "ApiConnection",
                     "inputs": {
-                      "host": {
-                        "connection": {
-                          "name": "@parameters('$connections')['documentdb']['connectionId']"
-                        }
-                      },
-                      "method": "post",
                       "body": {
                         "channelname": "@{body('live-subclip-analytics')['channelName']}",
                         "date": "@{formatDateTime(utcNow(),'d')}",
@@ -335,49 +242,126 @@
                         "jobextendedinfo": "@json(body('check-job-status')['extendedInfo'])",
                         "programUrl": "@{body('live-subclip-analytics')['programUrl']}",
                         "programname": "@{body('live-subclip-analytics')['programName']}",
+                        "subclipAssetId": "@{body('live-subclip-analytics')['subclip']['assetId']}",
                         "subclipduration": "@{body('live-subclip-analytics')['subclip']['duration']}",
                         "subclipstart": "@{body('live-subclip-analytics')['subclip']['start']}",
-                        "triggerStart": "@{body('live-subclip-analytics')['triggerStart']}",
-                        "subclipAssetId": "@{body('live-subclip-analytics')['subclip']['assetId']}"
+                        "triggerStart": "@{body('live-subclip-analytics')['triggerStart']}"
                       },
+                      "host": {
+                        "connection": {
+                          "name": "@parameters('$connections')['documentdb']['connectionId']"
+                        }
+                      },
+                      "method": "post",
                       "path": "/dbs/@{encodeURIComponent('vidb')}/colls/@{encodeURIComponent('vicol')}/docs"
-                    },
-                    "runAfter": {}
+                    }
                   },
                   "Terminate": {
-                    "type": "Terminate",
-                    "inputs": {
-                      "runStatus": "Failed",
-                      "runError": {
-                        "message": "Task failed."
-                      }
-                    },
                     "runAfter": {
                       "Create_or_update_document_Error": [
                         "Succeeded"
                       ]
+                    },
+                    "type": "Terminate",
+                    "inputs": {
+                      "runError": {
+                        "message": "Task failed."
+                      },
+                      "runStatus": "Failed"
                     }
                   }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@body('check-job-status')['isSuccessful']",
+                      "True"
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
+            },
+            "Get_Account_Access_Token": {
+              "runAfter": {
+                "live-subclip-analytics": [
+                  "Succeeded"
+                ]
+              },
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['videoindexer-v2']['connectionId']"
+                  }
+                },
+                "method": "get",
+                "path": "/auth//Accounts//AccessToken",
+                "queries": {
+                  "allowEdit": true
+                }
+              }
+            },
+            "Until": {
+              "actions": {
+                "Delay": {
+                  "runAfter": {
+                    "check-job-status": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Wait",
+                  "inputs": {
+                    "interval": {
+                      "count": 5,
+                      "unit": "Second"
+                    }
+                  }
+                },
+                "check-job-status": {
+                  "runAfter": {},
+                  "type": "Function",
+                  "inputs": {
+                    "body": {
+                      "extendedInfo": true,
+                      "jobId": "@{body('live-subclip-analytics')['jobId']}",
+                      "noWait": true
+                    },
+                    "function": {
+                      "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/check-job-status')]"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Get_Account_Access_Token": [
+                  "Succeeded"
+                ]
+              },
+              "expression": "@equals(body('check-job-status')['isRunning'], string(False))",
+              "limit": {
+                "count": 600,
+                "timeout": "PT1H"
+              },
+              "type": "Until"
+            },
+            "live-subclip-analytics": {
+              "runAfter": {},
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "channelName": "Channel1",
+                  "intervalSec": "60",
+                  "programName": "Program1"
+                },
+                "function": {
+                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/live-subclip-analytics')]"
                 }
               }
             }
           },
-          "parameters": {
-            "$connections": {
-              "defaultValue": {},
-              "type": "Object"
-            }
-          },
-          "triggers": {
-            "Recurrence": {
-              "type": "Recurrence",
-              "recurrence": {
-                "frequency": "Second",
-                "interval": 60
-              }
-            }
-          },
-          "contentVersion": "1.0.0.0",
           "outputs": {}
         },
         "parameters": {
@@ -596,7 +580,7 @@
         },
         "displayName": "[parameters('videoindexer-v2_1_Connection_DisplayName')]",
         "parameterValues": {
-          "api_key": "[parameters('videoindexer-v2_1_api_key')]"
+          "api_key": "[parameters('VideoIndexerV2ApiKey')]"
         }
       }
     },
@@ -611,8 +595,8 @@
         },
         "displayName": "[parameters('documentdb_1_Connection_DisplayName')]",
         "parameterValues": {
-          "databaseAccount": "[parameters('documentdb_1_databaseAccount')]",
-          "accessKey": "[parameters('documentdb_1_accessKey')]"
+          "databaseAccount": "[parameters('CosmosDatabaseAccount')]",
+          "accessKey": "[parameters('CosmosDatabaseAccessKey')]"
         }
       }
     }

@@ -185,7 +185,7 @@ This template creates two Logic apps which process a live program (from a live c
 
 - Follow the "Prerequisites for all Logic Apps deployments" at the top of this page (step 1 to 4) 
 - Create a Cosmos database and a collection (by default, the template is configured to use a database named "vidb" and a collection named "vicol")
-- Deploy Video Indexer to a new or existing Media Services Account (button "Connect" to Azure in Video Indexer portal). It can be the same or a different Media Services account. It is recommended to choose the same Media Services account than the one used by the functions (and the live steam).
+- Deploy Video Indexer to an existing Media Services Account (button "Connect" to Azure in Video Indexer portal). It should be the same Media Services account than the one used by the functions (and the live steam).
 - Subscribe to Video Indexer API
 - Create a channnel "Channel1" and program "Program1" in the Media Services account used by the functions. Start them. Connect a live encoder (for example, Wirecast) and push the live stream to the channel. If you want to use another name for the channel and program, then you will have to edit the step 1 logic app to reflect the new names.
 - Setup 10 S3 media reserved units in the Media Services account(s)
