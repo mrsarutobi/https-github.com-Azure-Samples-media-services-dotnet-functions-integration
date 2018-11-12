@@ -82,8 +82,6 @@ namespace media_functions_for_logic_app
                     file.Delete();
                     log.Info($"Deleted file: {file.Name}");
                 }
-
-                asset.Update();
             }
             catch (Exception ex)
             {
