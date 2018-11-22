@@ -7,7 +7,8 @@ This function creates an empty asset.
 Input:
 {
     "assetName" : "the name of the asset",
-    "assetStorage" :"amsstore01" // optional. Name of attached storage where to create the asset 
+    "assetStorage" :"amsstore01" // optional. Name of attached storage where to create the asset
+    "alternateId" : "data" //optional. Set data in alternate id
 }
 
 Output:
@@ -80,6 +81,12 @@ namespace media_functions_for_logic_app
                 newAsset = _context.Assets.Create(assetName, (string)data.assetStorage, AssetCreationOptions.None);
 
                 log.Info("new asset created.");
+
+                if (data.alternateId != null)
+                {
+                    newAsset.AlternateId = (string)data.alternateId;
+                    newAsset.Update();
+                }
 
             }
             catch (Exception ex)
