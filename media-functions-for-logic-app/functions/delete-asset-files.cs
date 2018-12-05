@@ -7,8 +7,8 @@ This function deletes the files from a specific asset.
 Input:
 {
     "assetId" : "the Id of the asset",
-    "startsWith" : "video", //optional, copy only files that start with name video
-    "endsWith" : ".mp4", //optional, copy only files that end with .mp4
+    "startsWith" : "video", //optional, delete only files that start with name video
+    "endsWith" : ".mp4", //optional, delete only files that end with .mp4
 }
 Output:
 {

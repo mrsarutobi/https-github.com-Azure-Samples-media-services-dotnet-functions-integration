@@ -2,44 +2,38 @@
 
 Azure Media Services REST API v2 Function
  
-This function creates an empty asset.
+This function set properties for the asset.
 
 Input:
 {
-    "assetName" : "the name of the asset",
-    "assetStorage" :"amsstore01" // optional. Name of attached storage where to create the asset
-    "alternateId" : "data" //optional. Set data in alternate id
+    "assetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", // Mandatory, Id of the source asset
+    "alternateId" : "my cms id", //optional, to set the alternate id field
 }
 
 Output:
 {
-    "assetId" : "the Id of the asset created",
-    "containerPath" : "the url to the storage container of the asset"
 }
-
 */
-
 
 using System;
 using System.Net;
 using System.Net.Http;
 using Newtonsoft.Json;
 using Microsoft.WindowsAzure.MediaServices.Client;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 
-
 namespace media_functions_for_logic_app
 {
-    public static class create_empty_asset
+    public static class set_asset_property
     {
         // Field for service context.
         private static CloudMediaContext _context = null;
 
-        [FunctionName("create-empty-asset")]
-        public static async Task<object> Run([HttpTrigger(WebHookType = "genericJson")]HttpRequestMessage req, TraceWriter log)
-
+        [FunctionName("set-asset-property")]
+        public static async Task<object> Run([HttpTrigger(WebHookType = "genericJson")]HttpRequestMessage req, TraceWriter log, Microsoft.Azure.WebJobs.ExecutionContext execContext)
         {
             log.Info($"Webhook was triggered!");
 
@@ -48,47 +42,56 @@ namespace media_functions_for_logic_app
 
             log.Info(jsonContent);
 
-            if (data.assetName == null)
+            string startsWith = data.startsWith;
+            string endsWith = data.endsWith;
+            IAsset asset = null;
+
+            if (data.assetId == null)
             {
                 // for test
-                // data.Path = "/input/WP_20121015_081924Z.mp4";
-
+                // data.assetId = "nb:cid:UUID:c0d770b4-1a69-43c4-a4e6-bc60d20ab0b2";
                 return req.CreateResponse(HttpStatusCode.BadRequest, new
                 {
-                    error = "Please pass assetName in the input object"
+                    error = "Please pass asset ID in the input object (assetId)"
                 });
             }
-
-            string assetName = data.assetName;
 
             MediaServicesCredentials amsCredentials = new MediaServicesCredentials();
             log.Info($"Using Azure Media Service Rest API Endpoint : {amsCredentials.AmsRestApiEndpoint}");
 
-            IAsset newAsset = null;
-
             try
             {
                 AzureAdTokenCredentials tokenCredentials = new AzureAdTokenCredentials(amsCredentials.AmsAadTenantDomain,
-                                             new AzureAdClientSymmetricKey(amsCredentials.AmsClientId, amsCredentials.AmsClientSecret),
-                                             AzureEnvironments.AzureCloudEnvironment);
+                                                      new AzureAdClientSymmetricKey(amsCredentials.AmsClientId, amsCredentials.AmsClientSecret),
+                                                      AzureEnvironments.AzureCloudEnvironment);
 
                 AzureAdTokenProvider tokenProvider = new AzureAdTokenProvider(tokenCredentials);
 
                 _context = new CloudMediaContext(amsCredentials.AmsRestApiEndpoint, tokenProvider);
 
-                log.Info("Context object created.");
+                // Get the asset
+                string assetid = data.assetId;
+                asset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
 
-                newAsset = _context.Assets.Create(assetName, (string)data.assetStorage, AssetCreationOptions.None);
+                if (asset == null)
+                {
+                    log.Info($"Asset not found {assetid}");
 
-                log.Info("new asset created.");
+                    return req.CreateResponse(HttpStatusCode.BadRequest, new
+                    {
+                        error = "Asset not found"
+                    });
+                }
 
+                // set alternate id
                 if (data.alternateId != null)
                 {
-                    newAsset.AlternateId = (string)data.alternateId;
-                    newAsset.Update();
+                    asset.AlternateId = (string)data.alternateId;
+                    asset.Update();
                 }
 
             }
+
             catch (Exception ex)
             {
                 string message = ex.Message + ((ex.InnerException != null) ? Environment.NewLine + MediaServicesHelper.GetErrorMessage(ex) : "");
@@ -97,18 +100,10 @@ namespace media_functions_for_logic_app
             }
 
 
-            log.Info("asset Id: " + newAsset.Id);
-            log.Info("container Path: " + newAsset.Uri.Segments[1]);
-
+            log.Info($"");
             return req.CreateResponse(HttpStatusCode.OK, new
             {
-                containerPath = newAsset.Uri.Segments[1],
-                assetId = newAsset.Id
             });
         }
     }
 }
-
-
-
-
