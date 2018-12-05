@@ -1,3 +1,18 @@
+/*
+
+Azure Media Services REST API v2 Function
+ 
+This function gets Video Indexer insights from Cosmos DB
+
+POST:
+https://{subdomain}.azurewebsites.net/api/query-cosmosdb-insights/{dbname/{colname}/{starttime}
+- dbname: Name of the database (f.e. "vidb")
+- colname: Name of the collection (f.e. "vicol")
+- starttime: Time when insight was generated (f.e. "2.23:03:48")
+
+Returns one single JSON with Video Indexer insights for the specified time
+*/
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
