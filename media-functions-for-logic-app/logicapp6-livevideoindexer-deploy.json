@@ -480,6 +480,7 @@
                 },
                 "method": "post",
                 "body": {
+                  "accessToken": "@body('Get_Account_Access_Token')",
                   "id": "@{triggerOutputs()['queries']['id']}-insights",
                   "insights": "@body('add-offset-to-insights')['jsonOffset']",
                   "name": "@{body('Get_a_document')['name']}-insights"
@@ -488,26 +489,6 @@
               },
               "runAfter": {
                 "add-offset-to-insights": [
-                  "Succeeded"
-                ]
-              }
-            },
-            "Delete_Video": {
-              "type": "ApiConnection",
-              "inputs": {
-                "host": {
-                  "connection": {
-                    "name": "@parameters('$connections')['videoindexer-v2']['connectionId']"
-                  }
-                },
-                "method": "delete",
-                "path": "//Accounts//Videos/@{encodeURIComponent(body('Get_Video_Index')?['id'])}",
-                "queries": {
-                  "accessToken": "@body('Get_Account_Access_Token')"
-                }
-              },
-              "runAfter": {
-                "Create_or_update_document": [
                   "Succeeded"
                 ]
               }
@@ -523,7 +504,7 @@
                 }
               },
               "runAfter": {
-                "Delete_Video": [
+                "Create_or_update_document": [
                   "Succeeded"
                 ]
               }

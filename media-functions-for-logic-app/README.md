@@ -163,52 +163,10 @@ Example of [semaphore file](encodedasset0.json) that must be created and uploade
 
 ## Sixth Logic App : Live analytics processing with Video Indexer
 
-This template creates two Logic apps which process a live program (from a live channel in Azure Media Services) with Video Indexer v2. The workflow does the following :
+This [page](LiveMediaAnalytics.md) presents the live video analytics which uses Video Indexer to process a live stream.
 
-**Step 1 Logic app**
-* it runs every 60 seconds
-* subclips the last minute
-* sends this subclip asset to Video Indexer, which runs in a Media Services Account (recommended)
+[![Test Player](images/live-media-analytics-player1.png?raw=true)](LiveMediaAnalytics.md)
 
-![Screen capture](images/logicapp6-live1.png?raw=true)
-
-**Step 2 Logic app**
-
-* called by Video Indexer when indexing is complete (using a callback url)
-* gets the insights, update the timestamps
-* sends this data to a Cosmos database
-* deletes the Video Indexer video and the subclip asset
-
-![Screen capture](images/logicapp6-live2.png?raw=true)
-
-### Prerequirements
-
-- Follow the "Prerequisites for all Logic Apps deployments" at the top of this page (step 1 to 4) 
-- Create a Cosmos database and a collection (by default, the template is configured to use a database named "vidb" and a collection named "vicol")
-- Deploy Video Indexer to an existing Media Services Account (button "Connect" to Azure in Video Indexer portal). It should be the same Media Services account than the one used by the functions (and the live steam).
-- Subscribe to Video Indexer API
-- Create a channnel "Channel1" and program "Program1" in the Media Services account used by the functions. Start them. Connect a live encoder (for example, Wirecast) and push the live stream to the channel. If you want to use another name for the channel and program, then you will have to edit the step 1 logic app to reflect the new names.
-- Setup 10 S3 media reserved units in the Media Services account(s)
-- Deploy the two logic apps using this template:
-
-Click the button to deploy the template in your subscription:
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp6-livevideoindexer-deploy.json" target="_blank">
-    <img src="http://azuredeploy.net/deploybutton.png"/>
-</a>
-
-Once deployed, fix the errors in both logic apps (go to designer):
-- Video Indexer components (select the location and subscription in all Video Indexer connectors)
-- Check the Cosmos DB components and connection
-
-Notes
-
-* You can to customize the channel name, program name and language of the audio. To do so, change the parameters in the live-subclip-analytics function call and  video indexer upload component from the step1 logic app.
-* to increase the performance, it is recommended to limit the resolution of the live stream. This will speed up the processing of Video Indexer. For example, start testing by sending a SD resolution stream (example: 854x480)
-* monitor the job queue(s) and allocate the right number of S3 media reserved units  
-
-![Screen capture](images/logicapp6-live-param1.png?raw=true)
-
-![Screen capture](images/logicapp6-live-param2.png?raw=true)
 
 ## Functions documentation
 This [page](Functions-documentation.md) lists the functions available and describes the input and output parameters.

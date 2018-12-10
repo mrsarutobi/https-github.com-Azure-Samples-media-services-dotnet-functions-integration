@@ -55,11 +55,6 @@ Input:
         "duration" : "0.0",                 // Optional (0.0 is the default)
         "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
-    "hyperlapse" :             // Optional but required to do Motion Detection
-    {
-        "speed" : "8", // Optional (8 is the default)
-        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
     "videoAnnotation" :             // Optional but required to do Video Annotator
     {
         "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
@@ -81,7 +76,6 @@ Input:
     "faceRedactionMode" : "analyze",            // Optional, but required for face redaction
     "motionDetectionLevel" : "medium",          // Optional
     "summarizationDuration" : "0.0",            // Optional. 0.0 for automatic
-    "hyperlapseSpeed" : "8"                     // Optional
     "mesThumbnailsStart" : "{Best}",            // Optional. Add a task to generate thumbnails
 }
 
@@ -129,11 +123,6 @@ Output:
             taskId : ""
         },
         "summarization" :
-        {
-            assetId : "",
-            taskId : ""
-        },
-        "hyperlapse" :
         {
             assetId : "",
             taskId : ""
@@ -199,7 +188,6 @@ namespace media_functions_for_logic_app
             int OutputFaceRedaction = -1;
             int OutputMotion = -1;
             int OutputSummarization = -1;
-            int OutputHyperlapse = -1;
             int OutputMesThumbnails = -1;
             int OutputVideoAnnotation = -1;
             int OutputContentModeration = -1;
@@ -415,9 +403,6 @@ namespace media_functions_for_logic_app
                 // MES Thumbnails
                 OutputMesThumbnails = JobHelpers.AddTask(execContext, _context, job, subclipasset, (data.mesThumbnails != null) ? ((string)data.mesThumbnails.Start ?? "{Best}") : null, "Media Encoder Standard", "MesThumbnails.json", "{Best}", ref taskindex, specifiedStorageAccountName: JobHelpers.OutputStorageFromParam(data.mesThumbnails));
 
-                // Hyperlapse
-                OutputHyperlapse = JobHelpers.AddTask(execContext, _context, job, subclipasset, (data.hyperlapse == null) ? (string)data.hyperlapseSpeed : ((string)data.hyperlapse.speed ?? "8"), "Azure Media Hyperlapse", "Hyperlapse.json", "8", ref taskindex, specifiedStorageAccountName: JobHelpers.OutputStorageFromParam(data.hyperlapse));
-
                 job.Submit();
                 log.Info("Job Submitted");
 
@@ -526,11 +511,6 @@ namespace media_functions_for_logic_app
                 {
                     assetId = JobHelpers.ReturnId(job, OutputSummarization),
                     taskId = JobHelpers.ReturnTaskId(job, OutputSummarization)
-                },
-                hyperlapse = new
-                {
-                    assetId = JobHelpers.ReturnId(job, OutputHyperlapse),
-                    taskId = JobHelpers.ReturnTaskId(job, OutputHyperlapse)
                 },
                 videoAnnotation = new
                 {

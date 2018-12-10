@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Azure Media Player</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="//amp.azure.net/libs/amp/latest/skins/amp-default/azuremediaplayer.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B"
+        crossorigin="anonymous">
+    <script src="//amp.azure.net/libs/amp/latest/azuremediaplayer.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js" integrity="sha384-o+RDsa0aLu++PJvFqy8fFScvbHFLtbvScb8AjopnFD+iEQ7wo/CG0xlczd+2O/em"
+        crossorigin="anonymous"></script>
+    <script src="js/jspath.min.js"></script>
+    <style>
+        body {
+            text-align: center;
+            font-family: Segoe UI;
+            font-size: 18px;
+        }
+
+        .content {
+            max-width: 1024px;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Live Media Analytics</h1>
+    <div class="content">
+        <video id="azuremediaplayer" class="azuremediaplayer amp-default-skin amp-big-play-centered" controls autoplay
+            width="1024" height="576" poster="" data-setup='{}' tabindex="0">
+            <source src="//hostname.streaming.media.azure.net/00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000.ism/manifest"
+                type="application/vnd.ms-sstr+xml" />
+            <p class="amp-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser
+                that supports HTML5 video</p>
+        </video>
+        <p id="subtitlesArea"></p>
+        <p id="facesArea"></p>
+        <p id="keywordsArea"></p>
+        <p id="topicsArea"></p>
+    </div>
+    <script>
+        var videoindexerregion = "northeurope";
+        var functionquerycosmosdbinsights = 'https://livemedia.azurewebsites.net/api/query-cosmosdb-insights/vidb/vicol/';
+        var offset = 480;
+        var analytics = {};
+        var subtitle = "";
+        var endSecond = 0;
+
+        String.prototype.toDDHHMMSS = function () {
+            var sec_num = parseInt(this, 10);
+            var days = Math.floor(sec_num / (24 * 60 * 60));
+            var hours = Math.floor((sec_num - (days * (24 * 60 * 60))) / 3600);
+            var minutes = Math.floor((sec_num - (days * (24 * 60 * 60)) - (hours * 3600)) / 60);
+            var seconds = sec_num - (days * (24 * 60 * 60)) - (hours * 3600) - (minutes * 60);
+
+            if (hours < 10) { hours = "0" + hours; }
+            if (minutes < 10) { minutes = "0" + minutes; }
+            if (seconds < 10) { seconds = "0" + seconds; }
+            return days + '.' + hours + ':' + minutes + ':' + seconds;
+        }
+
+        String.prototype.toSeconds = function () {
+            var dateparts = this.split('.');
+            var days = dateparts[0];
+            var timeparts = dateparts[1].split(":");
+            var hours = timeparts[0];
+            var minutes = timeparts[1];
+            var seconds = timeparts[2];
+            var totalseconds = parseInt((days * 24 * 60 * 60), 10) + parseInt((hours * 60 * 60), 10) + parseInt((minutes * 60), 10) + parseInt(seconds, 10);
+            return totalseconds;
+        }
+
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                analytics = JSON.parse(xhttp.responseText);
+            };
+        };
+
+        function parseAnalytics() {
+            currentTotalSeconds = Math.floor(azuremediaplayer.player.currentMediaTime());
+            var accountId = analytics.insights[0].accountId;
+            var videoId = analytics.insights[0].id;
+
+            subtitle = "";
+            keywordsArray = [];
+            topicsArray = [];
+            facesArray = [];
+            endSecond = 0;
+
+            // Subtitles
+            transcript = analytics.insights[0].insights.transcript;
+            if (typeof transcript != 'undefined') {
+                for (var i = 0; i < transcript.length; i++) {
+                    startSeconds = (transcript[i].instances[0].adjustedStart).toSeconds();
+                    endSeconds = (transcript[i].instances[0].adjustedEnd).toSeconds();
+                    if (startSeconds <= currentTotalSeconds && endSeconds >= currentTotalSeconds) {
+                        subtitle = transcript[i].text;
+                    };
+                }
+                subtitlesArea.innerText = subtitle;
+            }
+
+            // Keywords
+            keywords = analytics.insights[0].insights.keywords;
+            if (typeof keywords != 'undefined') {
+                for (var i = 0; i < keywords.length; i++) {
+                    for (var j = 0; j < keywords[i].instances.length; j++) {
+                        startSeconds = (keywords[i].instances[j].adjustedStart).toSeconds();
+                        endSeconds = (keywords[i].instances[j].adjustedEnd).toSeconds();
+                        if (startSeconds <= currentTotalSeconds && endSeconds >= currentTotalSeconds) {
+                            keywordsArray.push(keywords[i].text);
+                        };
+                    }
+                }
+                keywordsArea.innerText = "Keywords: " + keywordsArray.toString().split(',').join("\n");
+            }
+
+            // Topics
+            topics = analytics.insights[0].insights.topics;
+            if (typeof topics != 'undefined') {
+                for (var i = 0; i < topics.length; i++) {
+                    for (var j = 0; j < topics[i].instances.length; j++) {
+                        startSeconds = (topics[i].instances[j].adjustedStart).toSeconds();
+                        endSeconds = (topics[i].instances[j].adjustedEnd).toSeconds();
+                        if (startSeconds <= currentTotalSeconds && endSeconds >= currentTotalSeconds) {
+                            topicsArray.push(topics[i].referenceId);
+                        };
+                    }
+                }
+                topicsArea.innerText = "Topics: " + topicsArray.toString().split(',').join("\n");
+            }
+
+            // Faces
+            faces = analytics.insights[0].insights.faces;
+            if (typeof faces != 'undefined') {
+                // Get each individual face
+                for (var i = 0; i < faces.length; i++) {
+                    for (var j = 0; j < faces[i].instances.length; j++) {
+                        startSeconds = (faces[i].instances[j].adjustedStart).toSeconds();
+                        endSeconds = (faces[i].instances[j].adjustedEnd).toSeconds();
+                        if (startSeconds <= currentTotalSeconds && endSeconds >= currentTotalSeconds) {
+                            var url = "<img src='https://api.videoindexer.ai/" + videoindexerregion + "/Accounts/" + accountId + "/Videos/" + videoId + "/Thumbnails/" + faces[i].thumbnails[0].id + "?accessToken=" + analytics.accessToken + "' height=100 /><br />" + faces[i].name + "||";
+                            facesArray.push(url);
+                        };
+                    }
+                }
+                facesArea.innerHTML = "<ul class='list-inline'><li class='list-inline-item'>" + facesArray.toString().split("||").join("</li><li class='list-inline-item'>") + "</li></ul>";
+            }
+
+            // Reload analytics?
+            firstSecond = transcript[0].instances[0].adjustedStart.toSeconds()
+            lastSecond = transcript[transcript.length - 1].instances[0].adjustedEnd.toSeconds();
+
+            if (currentTotalSeconds < firstSecond || currentTotalSeconds > lastSecond)
+                loadAnalytics();
+        };
+
+        function loadAnalytics() {
+            currenttime = (azuremediaplayer.player.currentMediaTime()).toString().toDDHHMMSS();
+            var url = functionquerycosmosdbinsights + currenttime;
+            xhttp.open("GET", url, true);
+            xhttp.send();
+        };
+
+        function initSubtitles() {
+            azuremediaplayer.player.currentTime(azuremediaplayer.player.currentTime() - offset);
+            loadAnalytics();
+            setInterval(function () {
+                parseAnalytics();
+            }, 500);
+        };
+
+        (function (mediaPlayer) {
+            "use strict";
+
+            mediaPlayer.plugin('contentTitle', function (options) {
+                var player = this;
+                var overlay = document.getElementById('overlay');
+                var overlayText = document.getElementById('overlayText');
+                var bOverlayHidden = "false";
+                var log = console.log.bind(console);
+                var p = player.mediaPlayer;
+                var res = player.videoWidth + " x " + player.videoHeight;
+                var widthHeight = player.options_.width + " x " + player.options_.height;
+
+                player.ready(function () {
+                    setTimeout(initSubtitles, 5000);
+                    log("player ready");
+                });
+
+            });
+        }(window.amp));
+    </script>
+</body>
+
+</html>
