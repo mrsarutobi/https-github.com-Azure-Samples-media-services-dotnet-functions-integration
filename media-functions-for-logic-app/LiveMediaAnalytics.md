@@ -82,9 +82,12 @@ Once deployed, fix the errors in both logic apps (go to designer):
 - Check the Cosmos DB components and connection
 
 ### 10. Setup the test player
-Edit the hmtl player to customize it
-- with your custom live program/output URL,
-- with your custom URL of the Azure function **query-cosmosdb-insights**.
+A sample html player is [provided here](LiveMediaAnalyticsPlayer.html).
+You need to download it, edit it and publish it on a web server.
+Editing must be done to change the following links:
+- update the media player source url to use your custom live program URL (search for '<source src='),
+- specify the URL of the Azure function **query-cosmosdb-insights** ('var functionquerycosmosdbinsights =')
+- specify the location of the Video Indexer ('var videoindexerregion = ')
 
 Make sure that you add * to the CORS configuration of the Azure function deployment.
 
