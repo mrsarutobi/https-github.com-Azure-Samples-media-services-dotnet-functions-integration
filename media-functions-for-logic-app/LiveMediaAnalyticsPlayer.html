@@ -150,7 +150,7 @@
                         startSeconds = (faces[i].instances[j].adjustedStart).toSeconds();
                         endSeconds = (faces[i].instances[j].adjustedEnd).toSeconds();
                         if (startSeconds <= currentTotalSeconds && endSeconds >= currentTotalSeconds) {
-                            var url = "<img src='https://api.videoindexer.ai/" + videoindexerregion + "/Accounts/" + accountId + "/Videos/" + videoId + "/Thumbnails/" + faces[i].thumbnails[0].id + "?accessToken=" + analytics.accessToken + "' height=100 /><br />" + faces[i].name + "||";
+                            var url = "<img src='https://api.videoindexer.ai/" + videoindexerregion + "/Accounts/" + accountId + "/Videos/" + videoId + "/Thumbnails/" + faces[i].thumbnails[0].id + "' height=100 /><br />" + faces[i].name + "||";
                             facesArray.push(url);
                         };
                     }

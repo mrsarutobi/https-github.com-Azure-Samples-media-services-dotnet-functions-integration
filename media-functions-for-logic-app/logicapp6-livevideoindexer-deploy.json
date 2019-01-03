@@ -158,6 +158,9 @@
                       "subclipstart": "@{body('live-subclip-analytics')['subclip']['start']}",
                       "triggerStart": "@{body('live-subclip-analytics')['triggerStart']}"
                     },
+                    "headers": {
+                      "x-ms-documentdb-partitionkey": "@{formatDateTime(utcNow(),'d')}"
+                    },
                     "host": {
                       "connection": {
                         "name": "@parameters('$connections')['documentdb']['connectionId']"
@@ -192,7 +195,7 @@
                       }
                     },
                     "method": "post",
-                    "path": "/@{encodeURIComponent('northeurope')}/Accounts/@{encodeURIComponent('9fb2ac56-9ced-46f8-8777-ddeb21c3666c')}/Videos",
+                    "path": "/@{encodeURIComponent('')}/Accounts/@{encodeURIComponent('')}/Videos",
                     "queries": {
                       "accessToken": "@body('Get_Account_Access_Token')",
                       "assetId": "@substring(body('live-subclip-analytics')['subclip']['assetId'],12,36)",
@@ -202,7 +205,7 @@
                       "language": "English",
                       "indexingPreset": "Default",
                       "streamingPreset": "NoStreaming",
-                      "privacy": "Private"
+                      "privacy": "Public"
                     }
                   }
                 },
@@ -246,6 +249,9 @@
                         "subclipduration": "@{body('live-subclip-analytics')['subclip']['duration']}",
                         "subclipstart": "@{body('live-subclip-analytics')['subclip']['start']}",
                         "triggerStart": "@{body('live-subclip-analytics')['triggerStart']}"
+                      },
+                      "headers": {
+                        "x-ms-documentdb-partitionkey": "@{formatDateTime(utcNow(),'d')}"
                       },
                       "host": {
                         "connection": {
@@ -439,6 +445,9 @@
             "Get_a_document": {
               "type": "ApiConnection",
               "inputs": {
+                "headers": {
+                  "x-ms-documentdb-partitionkey": "@{formatDateTime(utcNow(),'d')}"
+              },
                 "host": {
                   "connection": {
                     "name": "@parameters('$connections')['documentdb']['connectionId']"
@@ -480,10 +489,13 @@
                 },
                 "method": "post",
                 "body": {
-                  "accessToken": "@body('Get_Account_Access_Token')",
                   "id": "@{triggerOutputs()['queries']['id']}-insights",
                   "insights": "@body('add-offset-to-insights')['jsonOffset']",
-                  "name": "@{body('Get_a_document')['name']}-insights"
+                  "name": "@{body('Get_a_document')['name']}-insights",
+                  "date": "@{formatDateTime(utcNow(),'d')}"
+                },
+                "headers": {
+                  "x-ms-documentdb-partitionkey": "@{formatDateTime(utcNow(),'d')}"
                 },
                 "path": "/dbs/@{encodeURIComponent('vidb')}/colls/@{encodeURIComponent('vicol')}/docs"
               },
