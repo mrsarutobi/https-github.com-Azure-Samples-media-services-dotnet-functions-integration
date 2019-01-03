@@ -60,14 +60,14 @@ Use the "Connect" button to Azure in Video Indexer portal. It should be the same
 ### 6. Subscribe to Video Indexer API
 
 ### 7. Create a Cosmos database and collection
-By default, the template is configured to use a database named "vidb" and a collection named "vicol".
-Create a settings 'CosmosDBConnectionString' in the Azure functions app settings and store in it the Cosmos DB Connection string.
-Use "/date" as the partition key for the collection.
+By default, the template is configured to use a database named "vidb" and a collection named "vicol". So please create such database and collection. Use "/date" as the partition key for the collection.
+Create a settings 'CosmosDBConnectionString' in the Azure functions app settings and store in it the Cosmos DB Connection string. It is used by the function to retrieve the insights and pass them to the player.
 
 ### 8. AMS configuration and operations
+Use AMS v2 (API, Azure portal or AMSE for v2).
 Create a channnel "Channel1" and program "Program1" in the Media Services account used by the functions. Start them. Connect a live encoder (for example, Wirecast) and push the live stream to the channel. If you want to use another name for the channel and program, then you will have to edit the step 1 logic app to reflect the new names.
 
-Setup 10 S3 media reserved units in the Media Services account.
+Important : setup 10 S3 media reserved units in the Media Services account.
 
 ### 9. Logic apps deployment
 Deploy the two logic apps using this template:
