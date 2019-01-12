@@ -67,7 +67,7 @@ To edit the code, you have a few options:
 * Visual Studio 2017
 
     To use VS 2017, you need to install the following:
-    * [Visual Studi 2017 15.5 or later](https://www.visualstudio.com/vs/)
+    * [Visual Studio 2017 15.5 or later](https://www.visualstudio.com/vs/)
     * [Azure Functions Tools for Visual Studio](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs)
         * Azure Functions Tools is included in the Azure development workload
         * Make sure you include the Azure development workload in your Visual Studio 2017 installation.
