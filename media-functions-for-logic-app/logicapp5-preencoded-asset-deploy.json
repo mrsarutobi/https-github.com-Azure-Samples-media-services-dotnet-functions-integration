@@ -278,7 +278,7 @@
                 }
               }
             },
-            "generate-ism-manifest": {
+            "generate-manifest": {
               "runAfter": {
                 "sync-asset": [
                   "Succeeded"
@@ -290,13 +290,13 @@
                   "assetId": "@{body('create-empty-asset')['assetId']}"
                 },
                 "function": {
-                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/',variables('trimfunctionsAppName'),'/functions/generate-ism-manifest')]"
+                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/',variables('trimfunctionsAppName'),'/functions/generate-manifest')]"
                 }
               }
             },
             "publish-asset": {
               "runAfter": {
-                "generate-ism-manifest": [
+                "generate-manifest": [
                   "Succeeded"
                 ]
               },
