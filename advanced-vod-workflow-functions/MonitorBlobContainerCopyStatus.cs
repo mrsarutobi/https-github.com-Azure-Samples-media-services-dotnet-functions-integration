@@ -111,7 +111,7 @@ namespace advanced_vod_functions
                     if (destBlob.CopyState.Status == CopyStatus.Aborted || destBlob.CopyState.Status == CopyStatus.Failed)
                     {
                         // Log the copy status description for diagnostics and restart copy
-                        destBlob.StartCopyAsync(destBlob.CopyState.Source);
+                        await destBlob.StartCopyAsync(destBlob.CopyState.Source);
                         copyStatus = false;
                     }
                     else if (destBlob.CopyState.Status == CopyStatus.Pending)

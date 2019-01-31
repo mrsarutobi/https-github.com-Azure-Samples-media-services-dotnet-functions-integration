@@ -118,7 +118,7 @@ namespace advanced_vod_functions.SharedLibs
 
         public static CloudBlockBlob WriteContentToBlob(IAsset asset, CloudBlobContainer dstContainer, string dstBlobName, string blobContent)
         {
-            string uri = null;
+            //string uri = null;
             CloudBlockBlob blob = null;
 
             try
