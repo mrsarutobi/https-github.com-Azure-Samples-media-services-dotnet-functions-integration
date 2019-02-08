@@ -46,7 +46,7 @@ namespace media_functions_for_logic_app
         // Field for service context.
         private static CloudMediaContext _context = null;
 
-        [FunctionName("generate-manifest")]
+        [FunctionName("generate-ism-manifest")]
         public static async Task<object> Run([HttpTrigger(WebHookType = "genericJson")]HttpRequestMessage req, TraceWriter log, Microsoft.Azure.WebJobs.ExecutionContext execContext)
         {
             log.Info($"Webhook was triggered!");
