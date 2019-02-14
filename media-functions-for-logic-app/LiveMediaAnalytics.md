@@ -1,4 +1,4 @@
-# Live media analytics with Video Indexer
+# Near real time media analytics with Video Indexer
 
 Use Video Indexer to process a live stream and display the data in a test player !
 

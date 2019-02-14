@@ -161,9 +161,9 @@ Example of [semaphore file](encodedasset0.json) that must be created and uploade
 ]
 ```
 
-## Sixth Logic App : Live analytics processing with Video Indexer
+## Sixth Logic App : Near real time analytics processing with Video Indexer
 
-This [page](LiveMediaAnalytics.md) presents the live video analytics which uses Video Indexer to process a live stream.
+This [page](LiveMediaAnalytics.md) presents a near real time video analytics solution which relies on Video Indexer to process a live stream.
 
 [![Test Player](images/live-media-analytics-player1.png?raw=true)](LiveMediaAnalytics.md)
 
