@@ -1,4 +1,4 @@
-# Near real time media analytics with Video Indexer
+# Live stream analysis using Video Indexer
 
 Use Video Indexer to process a live stream and display the data in a test player !
 
@@ -82,7 +82,7 @@ Once deployed, fix the errors in both logic apps (go to designer):
 - Check the Cosmos DB components and connection
 
 ### 10. Setup the test player
-A sample html player is [provided here](LiveMediaAnalyticsPlayer.html).
+A sample html player is [provided here](LiveStreamAnalysisPlayer.html).
 You need to download it, edit it and publish it on a web server.
 Editing must be done to change the following links:
 - update the media player source url to use your custom live program URL (search for '<source src='),
