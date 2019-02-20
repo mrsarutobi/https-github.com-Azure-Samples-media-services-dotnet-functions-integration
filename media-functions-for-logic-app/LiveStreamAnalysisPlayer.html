@@ -46,8 +46,18 @@
         </video>
         <p id="subtitlesArea"></p>
         <p id="facesArea"></p>
-        <p id="keywordsArea"></p>
-        <p id="topicsArea"></p>
+        <p id="topicsArea">
+            <H5>Topics</H5>
+            <div id="topicsContent"></div>
+        </p>
+        <p id="labelsArea">
+            <H5>Labels</H5>
+            <div id="labelsContent"></div>
+        </p>
+        <p id="keywordsArea">
+            <H5>Keywords</H5>
+            <div id="keywordsContent"></div>
+        </p>
     </div>
     <script>
         var videoindexerregion = "northeurope";
@@ -96,6 +106,7 @@
             subtitle = "";
             keywordsArray = [];
             topicsArray = [];
+            labelsArray = [];
             facesArray = [];
             endSecond = 0;
 
@@ -124,7 +135,13 @@
                         };
                     }
                 }
-                keywordsArea.innerText = "Keywords: " + keywordsArray.toString().split(',').join("\n");
+                var keywordsContent = document.querySelector("#keywordsContent");
+                var keywordsHTML = "";
+                for (let index = 0; index < keywordsArray.length; index++) {
+                    keywordsHTML += `<span class="capsule">${keywordsArray[index]}</span>`;
+                    
+                }
+                keywordsContent.innerHTML =  keywordsHTML;
             }
 
             // Topics
@@ -139,11 +156,40 @@
                         };
                     }
                 }
-                topicsArea.innerText = "Topics: " + topicsArray.toString().split(',').join("\n");
+                var topicsContent = document.querySelector("#topicsContent");
+                var topicsHTML = "";
+                for (let index = 0; index < topicsArray.length; index++) {
+                    topicsHTML += `<span class="capsule">${topicsArray[index]}</span>`;
+                    
+                }
+                topicsContent.innerHTML =  topicsHTML;
+            }
+
+            // Labels
+            labels = analytics.insights[0].insights.labels;
+            if (typeof labels != 'undefined') {
+                for (var i = 0; i < labels.length; i++) {
+                    for (var j = 0; j < labels[i].instances.length; j++) {
+                        startSeconds = (labels[i].instances[j].adjustedStart).toSeconds();
+                        endSeconds = (labels[i].instances[j].adjustedEnd).toSeconds();
+                        if (startSeconds <= currentTotalSeconds && endSeconds >= currentTotalSeconds) {
+                            labelsArray.push(labels[i].name);
+                        };
+                    }
+                }
+                var labelsContent = document.querySelector("#labelsContent");
+                var labelsHTML = "";
+                for (let index = 0; index < labelsArray.length; index++) {
+                    labelsHTML += `<span class="capsule">${labelsArray[index]}</span>`;
+                    
+                }
+                labelsContent.innerHTML =  labelsHTML;
             }
 
             // Faces
             faces = analytics.insights[0].insights.faces;
+            var facesLinesHTML = ``;
+            var facesIds = [];
             if (typeof faces != 'undefined') {
                 // Get each individual face
                 for (var i = 0; i < faces.length; i++) {
@@ -151,12 +197,22 @@
                         startSeconds = (faces[i].instances[j].adjustedStart).toSeconds();
                         endSeconds = (faces[i].instances[j].adjustedEnd).toSeconds();
                         if (startSeconds <= currentTotalSeconds && endSeconds >= currentTotalSeconds) {
-                            var url = "<img src='https://api.videoindexer.ai/" + videoindexerregion + "/Accounts/" + accountId + "/Videos/" + videoId + "/Thumbnails/" + faces[i].thumbnails[0].id + "' height=100 /><br />" + faces[i].name + "||";
-                            facesArray.push(url);
+                            var source = `https://api.videoindexer.ai/${videoindexerregion}/Accounts/${accountId}/Videos/${videoId}/Thumbnails/${faces[i].thumbnails[0].id}`;
+                            var name = faces[i].name;
+                            if(facesIds.indexOf(faces[i].id)===-1) {
+                                facesIds.push(faces[i].id);
+                                facesLinesHTML += `
+                                    <li class="list-inline-item">
+                                        <div class="image-facevi" style="background-size:cover;background:url(${source})no-repeat;"></div>
+                                        <div class="face-name">${name}</div>
+                                    </li>
+                                    `;
+                            }
                         };
                     }
                 }
-                facesArea.innerHTML = "<ul class='list-inline'><li class='list-inline-item'>" + facesArray.toString().split("||").join("</li><li class='list-inline-item'>") + "</li></ul>";
+
+                facesArea.innerHTML = `<ul class="list-inline">${facesLinesHTML}</ul>`;
             }
 
             // Reload analytics?

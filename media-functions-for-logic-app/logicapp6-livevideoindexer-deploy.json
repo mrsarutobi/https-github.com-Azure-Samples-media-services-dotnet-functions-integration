@@ -360,7 +360,8 @@
                 "body": {
                   "channelName": "Channel1",
                   "intervalSec": "60",
-                  "programName": "Program1"
+                  "programName": "Program1",
+                  "priority": 60
                 },
                 "function": {
                   "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/', parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/', parameters('functionsAppName'),'/functions/live-subclip-analytics')]"

@@ -121,7 +121,15 @@
 .content {
   text-align: center;
 }
-
+.image-facevi {
+  background-position:center!important;
+  width:100px;
+  height:100px;
+  display: inline-block;
+  background-size: cover!important;
+  background-color: grey;
+  border-radius:50%;
+}
 
 html, body {
   margin: 0;
@@ -137,6 +145,9 @@ body h1 {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+#facesArea {
+  min-height: 150px;
+}
 #facesArea img {
   border-radius: 50%;
   width: 100px;
@@ -148,7 +159,25 @@ body h1 {
   padding: 10px;
 }
 
-p#keywordsArea,#topicsArea {
-  background: #eee;
+#keywordsContent,#topicsContent {
   padding: 10px;
+}
+
+#keywordsContent span.capsule,
+#topicsContent span.capsule,
+#labelsContent span.capsule {
+  padding: 5px 10px;
+  background: #eeeeee;
+  border-radius: 25px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  display: inline-block;
+}
+
+ul .list-inline-item {
+  display: inline-block;
+}
+
+.face-name {
+  font-size: 14px;
 }
