@@ -52,7 +52,7 @@ Note : if you never provided your GitHub account in the Azure portal before, the
 By default, the template is configured to use a database named "vidb" and a collection named "vicol". So please create such database and collection. Use "/date" as the partition key for the collection.
 Create a settings 'CosmosDBConnectionString' in the Azure functions app settings and store in it the Cosmos DB Connection string. It is used by the function to retrieve the insights and pass them to the player.
 
-### 5. AMS configuration and operations
+### 5. Configure live streaming with AMS
 You should use AMS v2 because subclipping is not yet available in AMS v3. You can use the REST API, SDKs, Azure portal or [AMSE for v2](http://aka.ms/amse).
 
 Make sure that the AMS streaming endpoint is started.
@@ -66,7 +66,7 @@ Create a channnel "Channel1" and program "Program1" (with an ArchiveWindow of mi
 
 Important : setup 10 S3 media reserved units in the Media Services account.
 
-### 6. Logic apps deployment
+### 6. Deploy the logic apps
 Deploy the two logic apps using this template:
 
 Click the button to deploy the template in your subscription:
