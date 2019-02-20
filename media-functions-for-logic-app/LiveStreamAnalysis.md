@@ -26,23 +26,17 @@ The Logic apps workflow does the following :
 
 ## Step by step configuration
 
-### 1. Create an Azure Media Services account
+### 1. Create a Video Indexer and AMS accounts
+Use the "Connect" button to Azure in Video Indexer portal to create a Video Indexer account ([more info](https://docs.microsoft.com/en-us/azure/media-services/video-indexer/connect-to-azure#connect-to-azure)).
+You can install VI into a new or existing AMS account.
 
-Create a Media Services account in your subscription if don't have it already.
+Go to the [Video Indexer Developer Portal](https://api-portal.videoindexer.ai/products/authorization), sign in, and retrieve the Subscription Primary Key.
 
 ### 2. Create a Service Principal
 
-Create a Service Principal and save the password. It will be needed in step #4. To do so, go to the API tab in the account ([follow this article](https://docs.microsoft.com/en-us/azure/media-services/media-services-portal-get-started-with-aad#service-principal-authentication))
+In the Azure portal or AZ CLI, create a Service Principal attached to the AMS account previously created. Save the password too. It will be needed in step #3. To do it within the portal, go to the API tab in the account ([follow this article](https://docs.microsoft.com/en-us/azure/media-services/media-services-portal-get-started-with-aad#service-principal-authentication))
 
-### 3. Make sure the AMS streaming endpoint is started
-
-To enable streaming, go to the Azure portal, select the Azure Media Services account which has been created, and start the default streaming endpoint.
-
-![Screen capture](images/start-se-1.png?raw=true)
-
-![Screen capture](images/start-se-2.png?raw=true)
-
-### 4. Deploy the Azure functions
+### 3. Deploy the Azure functions
 If not already done : fork the repo, deploy Azure Functions and select the **"media-functions-for-logic-app"** Project (IMPORTANT!)
 
 Follow the guidelines in the [git tutorial](1-CONTRIBUTION-GUIDE/git-tutorial.md) for details on how to fork the project and use Git properly with this project.
@@ -54,22 +48,25 @@ Note : if you never provided your GitHub account in the Azure portal before, the
 </a>
 
 
-### 5. Deploy Video Indexer to run in your AMS account
-Use the "Connect" button to Azure in Video Indexer portal. It should be the same Media Services account than the one used by the functions (and the live steam).
-
-### 6. Subscribe to Video Indexer API
-
-### 7. Create a Cosmos database and collection
+### 4. Create a Cosmos database and collection
 By default, the template is configured to use a database named "vidb" and a collection named "vicol". So please create such database and collection. Use "/date" as the partition key for the collection.
 Create a settings 'CosmosDBConnectionString' in the Azure functions app settings and store in it the Cosmos DB Connection string. It is used by the function to retrieve the insights and pass them to the player.
 
-### 8. AMS configuration and operations
-Use AMS v2 (API, Azure portal or AMSE for v2).
-Create a channnel "Channel1" and program "Program1" in the Media Services account used by the functions. Start them. Connect a live encoder (for example, Wirecast) and push the live stream to the channel. If you want to use another name for the channel and program, then you will have to edit the step 1 logic app to reflect the new names.
+### 5. AMS configuration and operations
+You should use AMS v2 because subclipping is not yet available in AMS v3. You can use the REST API, SDKs, Azure portal or [AMSE for v2](http://aka.ms/amse).
+
+Make sure that the AMS streaming endpoint is started.
+To do so, go to the Azure portal or AMSE, select the Azure Media Services account which has been created in step #1, and start the default streaming endpoint.
+
+![Screen capture](images/start-se-1.png?raw=true)
+
+![Screen capture](images/start-se-2.png?raw=true)
+
+Create a channnel "Channel1" and program "Program1" (with an ArchiveWindow of minimum 20 min) in the Media Services account used by the functions. Start them. Connect a live encoder (for example, [Wirecast](https://www.telestream.net/wirecast/)) and push the live RTMP stream to the channel. If you want to use another name for the channel and program, then you will have to edit the step 1 logic app to reflect the new names.
 
 Important : setup 10 S3 media reserved units in the Media Services account.
 
-### 9. Logic apps deployment
+### 6. Logic apps deployment
 Deploy the two logic apps using this template:
 
 Click the button to deploy the template in your subscription:
@@ -81,7 +78,7 @@ Once deployed, fix the errors in both logic apps (go to designer):
 - Video Indexer components (select the location and subscription in all Video Indexer connectors)
 - Check the Cosmos DB components and connection
 
-### 10. Setup the test player
+### 7. Setup the test player
 A sample html player is [provided here](LiveStreamAnalysisPlayer.html).
 You need to download it, edit it and publish it on a web server.
 Editing must be done to change the following links:
