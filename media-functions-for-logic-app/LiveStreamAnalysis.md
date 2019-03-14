@@ -64,7 +64,7 @@ To do so, go to the Azure portal or AMSE, select the Azure Media Services accoun
 
 Create a channnel "Channel1" and program "Program1" (with an ArchiveWindow of minimum 20 min) in the Media Services account used by the functions. Start them. Connect a live encoder (for example, [Wirecast](https://www.telestream.net/wirecast/)) and push the live RTMP stream to the channel. If you want to use another name for the channel and program, then you will have to edit the step 1 logic app to reflect the new names.
 
-Important : setup 10 S3 media reserved units in the Media Services account.
+Important : setup 10 S3 media reserved units in the Media Services account if you process a SD stream. A higher resolution stream may require more S3 units. You can create a new support request in the Azure portal to require more S3 units, as the default limit is 10.
 
 ### 6. Deploy the logic apps
 Deploy the two logic apps using this template:
@@ -79,8 +79,8 @@ Once deployed, fix the errors in both logic apps (go to designer):
 - Check the Cosmos DB components and connection
 
 ### 7. Setup the test player
-A sample html player is [provided here](LiveStreamAnalysisPlayer.html).
-You need to download it, edit it and publish it on a web server.
+A sample html player is [provided here](liveanalysisplayer).
+You need to download the two files, edit the html file and publish them on a web server.
 Editing must be done to change the following links:
 - update the media player source url to use your custom live program URL (search for '<source src='),
 - specify the URL of the Azure function **query-cosmosdb-insights** ('var functionquerycosmosdbinsights =')
