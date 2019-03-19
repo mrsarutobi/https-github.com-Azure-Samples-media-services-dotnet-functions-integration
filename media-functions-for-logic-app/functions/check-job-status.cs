@@ -176,7 +176,7 @@ namespace media_functions_for_logic_app
             {
                 dynamic stats = new JObject();
                 stats.mediaUnitNumber = _context.EncodingReservedUnits.FirstOrDefault().CurrentReservedUnits;
-                stats.mediaUnitSize = ReturnMediaReservedUnitName(_context.EncodingReservedUnits.FirstOrDefault().ReservedUnitType); ;
+                stats.mediaUnitSize = JobHelpers.ReturnMediaReservedUnitName(_context.EncodingReservedUnits.FirstOrDefault().ReservedUnitType); ;
                 stats.otherJobsProcessing = _context.Jobs.Where(j => j.State == JobState.Processing).Count();
                 stats.otherJobsScheduled = _context.Jobs.Where(j => j.State == JobState.Scheduled).Count();
                 stats.otherJobsQueue = _context.Jobs.Where(j => j.State == JobState.Queued).Count();
@@ -211,23 +211,7 @@ namespace media_functions_for_logic_app
             }
         }
 
-        // Return the new name of Media Reserved Unit
-        public static string ReturnMediaReservedUnitName(ReservedUnitType unitType)
-        {
-            switch (unitType)
-            {
-                case ReservedUnitType.Basic:
-                default:
-                    return "S1";
-
-                case ReservedUnitType.Standard:
-                    return "S2";
-
-                case ReservedUnitType.Premium:
-                    return "S3";
-
-            }
-        }
+     
     }
 }
 

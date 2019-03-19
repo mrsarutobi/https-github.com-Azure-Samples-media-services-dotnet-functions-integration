@@ -8,6 +8,7 @@ Input:
 {
     "ruCount" : "+1", // can be a number like "1", or a number with + or - to increase or decrease the number. Example :  "+2" or "-3"
     "ruSpeed" : "S1"  // can be "S1", "S2" or "S3"
+    "extendedInfo" : true
 }
 
 Output:
@@ -15,7 +16,10 @@ Output:
     "success" : "True", // return if operation is a success or not
     "maxRu" : 10,       // number of max units
     "newRuCount" : 3,   // new count of units
-    "newRuSpeed" : "S2" // new speed of units
+    "newRuSpeed" : "S2", // new speed of units
+    "jobsProcessing" = 2, // if "extendedInfo" : true in input
+    "jobsScheduled" = 1, // if "extendedInfo" : true in input
+    "jobsQueue" = 1 // if "extendedInfo" : true in input
 }
 
 */
@@ -199,18 +203,28 @@ namespace media_functions_for_logic_app
             log.Info("New current speed of media RU  : " + MediaServicesHelper.ReturnNewRUName(EncResUnit.ReservedUnitType));
             log.Info("New current count of media RU : " + EncResUnit.CurrentReservedUnits);
 
-            return req.CreateResponse(HttpStatusCode.OK, new
+            if (data.extentedInfo != null && (bool)data.extentedInfo)
             {
-                success = (!Error).ToString(),
-                maxRu = EncResUnit.MaxReservableUnits,
-                newRuCount = EncResUnit.CurrentReservedUnits,
-                newRuSpeed = MediaServicesHelper.ReturnNewRUName(EncResUnit.ReservedUnitType)
-            });
+                return req.CreateResponse(HttpStatusCode.OK, new
+                {
+                    success = (!Error).ToString(),
+                    maxRu = EncResUnit.MaxReservableUnits,
+                    newRuCount = EncResUnit.CurrentReservedUnits,
+                    newRuSpeed = MediaServicesHelper.ReturnNewRUName(EncResUnit.ReservedUnitType),
+                    jobsProcessing = _context.Jobs.Where(j => j.State == JobState.Processing).Count(),
+                    jobsScheduled = _context.Jobs.Where(j => j.State == JobState.Scheduled).Count(),
+                    jobsQueue = _context.Jobs.Where(j => j.State == JobState.Queued).Count()
+                });
+            }
+            else
+
+                return req.CreateResponse(HttpStatusCode.OK, new
+                {
+                    success = (!Error).ToString(),
+                    maxRu = EncResUnit.MaxReservableUnits,
+                    newRuCount = EncResUnit.CurrentReservedUnits,
+                    newRuSpeed = MediaServicesHelper.ReturnNewRUName(EncResUnit.ReservedUnitType)
+                });
         }
     }
 }
-
-
-
-
-

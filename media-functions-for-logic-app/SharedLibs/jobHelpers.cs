@@ -26,6 +26,24 @@ namespace media_functions_for_logic_app
 {
     public class JobHelpers
     {
+        // Return the new name of Media Reserved Unit
+        public static string ReturnMediaReservedUnitName(ReservedUnitType unitType)
+        {
+            switch (unitType)
+            {
+                case ReservedUnitType.Basic:
+                default:
+                    return "S1";
+
+                case ReservedUnitType.Standard:
+                    return "S2";
+
+                case ReservedUnitType.Premium:
+                    return "S3";
+
+            }
+        }
+
         public static int AddTask(Microsoft.Azure.WebJobs.ExecutionContext execContext, CloudMediaContext context, IJob job, IAsset sourceAsset, string value, string processor, string presetfilename, string stringtoreplace, ref int taskindex, int priority = 10, string specifiedStorageAccountName = null)
         {
             if (value != null)
