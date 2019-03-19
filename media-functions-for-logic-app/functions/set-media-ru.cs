@@ -52,15 +52,6 @@ namespace media_functions_for_logic_app
 
             log.Info(jsonContent);
 
-            if (data.ruCount == null && data.ruSpeed == null)
-            {
-                return req.CreateResponse(HttpStatusCode.BadRequest, new
-                {
-                    error = "Please pass ruCount and ruSpeed in the input object"
-                });
-            }
-
-
             int targetNbRU = -1;
             int? nbunits = null;
             bool relative = false;
