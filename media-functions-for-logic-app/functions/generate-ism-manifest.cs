@@ -2,7 +2,7 @@
 
 Azure Media Services REST API v2 Function
  
-This function generates a manifest (.ism) from the MP4/M4A files in the asset. It makes this file primary.
+This function generates a server-side manifest (.ism) from the MP4/M4A files in the asset. It makes this file primary.
 This manifest is needed to stream MP4 file(s) with Azure Media Services.
 
 Caution : such assets are not guaranteed to work with Dynamic Packaging.
