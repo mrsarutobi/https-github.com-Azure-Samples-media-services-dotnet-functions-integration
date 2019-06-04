@@ -8,6 +8,7 @@ Input:
 {
     "assetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", // Mandatory, Id of the source asset
     "preferredSE" : "default" // Optional, name of Streaming Endpoint if a specific Streaming Endpoint should be used for the URL outputs
+    "locatorId" : "bde256b9-67a6-4876-acc6-5505c7a2a3c6" // Optional, the locator Id to use
 }
 
 Output:
@@ -35,6 +36,8 @@ namespace media_functions_for_logic_app
 {
     public static class publish_asset
     {
+        public const string LocatorIdPrefix = "nb:lid:UUID:";
+
         // Field for service context.
         private static CloudMediaContext _context = null;
 
@@ -51,8 +54,6 @@ namespace media_functions_for_logic_app
 
                 if (data.assetId == null)
                 {
-                    // for test
-                    // data.assetId = "nb:cid:UUID:c0d770b4-1a69-43c4-a4e6-bc60d20ab0b2";
                     return req.CreateResponse(HttpStatusCode.BadRequest, new
                     {
                         error = "Please pass asset ID in the input object (assetId)"
@@ -77,7 +78,6 @@ namespace media_functions_for_logic_app
 
                     _context = new CloudMediaContext(amsCredentials.AmsRestApiEndpoint, tokenProvider);
 
-
                     // Get the asset
                     string assetid = data.assetId;
                     var outputAsset = _context.Assets.Where(a => a.Id == assetid).FirstOrDefault();
@@ -92,9 +92,15 @@ namespace media_functions_for_logic_app
                         });
                     }
 
+                    string locatorId = data.locatorId;
+                    if (locatorId != null && !locatorId.StartsWith(LocatorIdPrefix))
+                    {
+                        locatorId = LocatorIdPrefix + locatorId;
+                    }
+
                     // publish with a streaming locator (100 years)
                     IAccessPolicy readPolicy2 = _context.AccessPolicies.Create("readPolicy", TimeSpan.FromDays(365 * 100), AccessPermissions.Read);
-                    ILocator outputLocator2 = _context.Locators.CreateLocator(LocatorType.OnDemandOrigin, outputAsset, readPolicy2);
+                    ILocator outputLocator2 = _context.Locators.CreateLocator(locatorId, LocatorType.OnDemandOrigin, outputAsset, readPolicy2, null);
 
                     var publishurlsmooth = MediaServicesHelper.GetValidOnDemandURI(_context, outputAsset, preferredSE);
                     var publishurlpath = MediaServicesHelper.GetValidOnDemandPath(_context, outputAsset, preferredSE);
