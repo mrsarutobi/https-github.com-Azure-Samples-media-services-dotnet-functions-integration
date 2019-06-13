@@ -2,7 +2,7 @@
 
 Azure Media Services REST API v2 Function
  
-This function stops a program.
+This function starts a program.
 
 Input:
 {
@@ -13,7 +13,7 @@ Input:
 Output:
 {
     "success" : true,
-    "state" : "Stopped"
+    "state" : "Running"
 }
 
 */
@@ -31,12 +31,12 @@ using System.Linq;
 
 namespace media_functions_for_logic_app
 {
-    public static class stop_program
+    public static class start_program
     {
         // Field for service context.
         private static CloudMediaContext _context = null;
 
-        [FunctionName("stop-program")]
+        [FunctionName("start-program")]
         public static async Task<object> Run([HttpTrigger(WebHookType = "genericJson")]HttpRequestMessage req, TraceWriter log)
 
         {
@@ -100,9 +100,9 @@ namespace media_functions_for_logic_app
 
                 }
 
-                log.Info("Stoping program...");
-                program.Stop();
-                log.Info("Program stopped.");
+                log.Info("Starting program...");
+                program.Start();
+                log.Info("Program started.");
                 
             }
             catch (Exception ex)
