@@ -13,7 +13,8 @@ Input:
 Output:
 {
     "success" : true,
-    "state" : "Stopped"
+    "state" : "Stopped",
+    "assetId" : "the asset id of the asset"
 }
 
 */
@@ -64,6 +65,7 @@ namespace media_functions_for_logic_app
             string channelName = data.channelName;
             string programName = data.programName;
             IProgram program = null;
+            string assetId = null;
 
             MediaServicesCredentials amsCredentials = new MediaServicesCredentials();
             log.Info($"Using Azure Media Service Rest API Endpoint : {amsCredentials.AmsRestApiEndpoint}");
@@ -103,6 +105,7 @@ namespace media_functions_for_logic_app
                 log.Info("Stoping program...");
                 program.Stop();
                 log.Info("Program stopped.");
+                assetId = program.AssetId;
                 
             }
             catch (Exception ex)
@@ -115,7 +118,8 @@ namespace media_functions_for_logic_app
             return req.CreateResponse(HttpStatusCode.OK, new
             {
                 success = true,
-                state = program.State.ToString()
+                state = program.State.ToString(),
+                assetId
             });
         }
     }

@@ -2,23 +2,21 @@
   "Version": 1.0,
   "Sources": [
     {
-      "StartTime": "00:00:00.000000",
-      "Duration": "00:00:30.000000",
       "Streams": [
         {
           "Type": "AudioStream",
-          "Value": "TopBitrate"
+          "Value": "*"
         },
         {
           "Type": "VideoStream",
-          "Value": "TopBitrate"
+          "Value": "*"
         }
       ]
     }
   ],
   "Outputs": [
     {
-      "FileName": "ArchiveTopBitrate_{Basename}.mp4",
+      "FileName": "Archive_{Basename}.mp4",
       "Format": {
         "Type": "MP4Format"
       }
