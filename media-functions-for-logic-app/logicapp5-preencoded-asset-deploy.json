@@ -31,7 +31,7 @@
         "description": "Storage account where videos must be copied to trigger the workflow."
       }
     }
-   },
+  },
   "variables": {
     "logicAppLocation": "[resourceGroup().location]",
     "trimlogicAppName": "[trim(parameters('logicAppName'))]",
@@ -274,7 +274,7 @@
                   "json": "@{body('Get_blob_content')}"
                 },
                 "function": {
-                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/',variables('trimfunctionsAppName'),'/functions/create-empty-asset')]",
+                  "id": "[concat('/subscriptions/',subscription().subscriptionId,'/resourceGroups/',parameters('functionsAppResourceGroup'),'/providers/Microsoft.Web/sites/',variables('trimfunctionsAppName'),'/functions/create-empty-asset')]"
                 }
               }
             },
