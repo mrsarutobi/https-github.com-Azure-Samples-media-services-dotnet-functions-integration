@@ -92,10 +92,9 @@ namespace media_functions_for_logic_app
 
         public static string OutputStorageFromParam(dynamic objParam)
         {
-            return (objParam != null) ? (string)objParam.outputStorage : null;
+            string storage = (objParam != null) ? (string)objParam.outputStorage : null;
+            return string.IsNullOrWhiteSpace(storage) ? null : storage;
         }
     }
-   
-
 }
 
