@@ -1,4 +1,9 @@
 ---
+topic: sample
+languages:
+  - csharp
+products: azure-media-services
+azureDeploy: https://raw.githubusercontent.com/Azure-Samples/media-services-dotnet-functions-integration/master/azuredeploy.json
 services: media-services,functions
 platforms: dotnet
 author: johndeu
@@ -7,7 +12,7 @@ author: johndeu
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
-# Media Services: Integrating Azure Media Services with Azure Functions and Logic Apps
+# Media Services: Integrating Azure Media Services v2 with Azure Functions and Logic Apps
 This project contains examples of using Azure Functions with Azure Media Services.
 
 The project includes several folders of sample Azure Functions for use with Azure Media Services that show workflows related
