@@ -8,9 +8,6 @@ products:
 - azure-media-services
 azureDeploy: https://raw.githubusercontent.com/Azure-Samples/media-services-dotnet-functions-integration/master/azuredeploy.json
 ---
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fazuredeploy.json" target="_blank">
-    <img src="http://azuredeploy.net/deploybutton.png"/>
-</a>
 
 # Integrating Azure Media Services v2 with Azure Functions and Logic Apps
 This project contains examples of using Azure Functions with Azure Media Services.
@@ -41,6 +38,7 @@ While we do our best to help out in a timely basis, we don't have any promise ar
 
 
 ## Contributions and Best Practices
+
 Ideas and contributions are always welcome. We are trying to build a community around creating unique Media workflows that combine
 the power of Azure Media Services with Azure Functions and Logic Apps. 
 
@@ -80,6 +78,10 @@ To edit the code, you have a few options:
     You can develop pre-compiled functions in this platform. See [this article](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs) for more detailed information.
 
 ## How to run the sample
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fazuredeploy.json" target="_blank">
+    <img src="http://azuredeploy.net/deploybutton.png"/>
+</a>
 
 To run the samples:
 + Make sure that you have a Media Services Account created, and configure a Service Principal to access it ([Follow this article](https://docs.microsoft.com/en-us/azure/media-services/media-services-portal-get-started-with-aad#service-principal-authentication))
