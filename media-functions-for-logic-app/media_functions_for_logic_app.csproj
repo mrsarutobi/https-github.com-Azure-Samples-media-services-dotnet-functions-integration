@@ -56,6 +56,9 @@
     <None Update="Presets\LiveSubclip.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Presets\LiveSubclipTop.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Presets\Manifest.ism">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
