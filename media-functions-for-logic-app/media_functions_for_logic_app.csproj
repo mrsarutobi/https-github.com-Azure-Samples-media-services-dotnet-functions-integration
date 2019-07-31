@@ -4,7 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DocumentDB" Version="1.2.0" />
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.24" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.29" />
     <PackageReference Include="windowsazure.mediaservices" Version="4.2.0" />
     <PackageReference Include="windowsazure.mediaservices.extensions" Version="4.2.0" />
   </ItemGroup>
