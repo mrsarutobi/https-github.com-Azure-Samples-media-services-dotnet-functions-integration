@@ -1,0 +1,33 @@
+{
+  "Version": 1.0,
+  "Sources": [
+    {
+      "Streams": [
+        {
+          "Type": "AudioStream",
+          "Value": "TopBitrate"
+        },
+        {
+          "Type": "VideoStream",
+          "Value": "TopBitrate"
+        }
+      ]
+    }
+  ],
+  "Outputs": [
+    {
+      "FileName": "ArchiveTopBitrate_{Basename}.mp4",
+      "Format": {
+        "Type": "MP4Format"
+      }
+    }
+  ],
+  "Codecs": [
+    {
+      "Type": "CopyVideo"
+    },
+    {
+      "Type": "CopyAudio"
+    }
+  ]
+}
