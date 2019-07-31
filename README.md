@@ -1,13 +1,13 @@
 ---
-topic: sample
+page_type: sample
 languages:
-  - csharp
-products: azure-media-services
+- csharp
+products:
+- azure
+- azure-functions
+- azure-media-services
 azureDeploy: https://raw.githubusercontent.com/Azure-Samples/media-services-dotnet-functions-integration/master/azuredeploy.json
 ---
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fazuredeploy.json" target="_blank">
-    <img src="http://azuredeploy.net/deploybutton.png"/>
-</a>
 
 # Integrating Azure Media Services v2 with Azure Functions and Logic Apps
 This project contains examples of using Azure Functions with Azure Media Services.
@@ -38,6 +38,7 @@ While we do our best to help out in a timely basis, we don't have any promise ar
 
 
 ## Contributions and Best Practices
+
 Ideas and contributions are always welcome. We are trying to build a community around creating unique Media workflows that combine
 the power of Azure Media Services with Azure Functions and Logic Apps. 
 
@@ -77,6 +78,10 @@ To edit the code, you have a few options:
     You can develop pre-compiled functions in this platform. See [this article](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs) for more detailed information.
 
 ## How to run the sample
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fazuredeploy.json" target="_blank">
+    <img src="http://azuredeploy.net/deploybutton.png"/>
+</a>
 
 To run the samples:
 + Make sure that you have a Media Services Account created, and configure a Service Principal to access it ([Follow this article](https://docs.microsoft.com/en-us/azure/media-services/media-services-portal-get-started-with-aad#service-principal-authentication))
@@ -125,8 +130,9 @@ deployed with the azuredeploy.json template.
   The output container name can be modifed in run.csx by changing the value of the static string _outputContainerName.
   It's set to "output" by default.
 
-# 100 Basic Encoding
-## EncodeBlob_SingleOut_Function
+## 100 Basic Encoding
+
+### EncodeBlob_SingleOut_Function
 The EncodeBlob_SingleOut_Function demonstrates how to use an Output binding and the "InOut" direction binding to 
 allow the Azure functions framework to create the output blob for you automatically. 
 
@@ -165,7 +171,7 @@ output storage account set in the function.json binding.
     outputBlob.Properties.ContentType = "video/mp4";
     outputBlob.SetProperties();
 
-## EncodeBlob_Notify_Webhook_Function
+### EncodeBlob_Notify_Webhook_Function
 
 This function demonstrates how to use WebHooks to listen to a basic encoding job's progress.  
 The function works in combination with the Notification_Webhook_Function, which acts as that "callback" for the Job status
@@ -195,13 +201,13 @@ You can monitor the callbacks in the Notification_Webhook_Function logs while th
 a new media file into the container specified in the binding's input path. 
 
 
-## EncodeBlob_MultiOut_Function
+### EncodeBlob_MultiOut_Function
 
 This function can call a Logic App at the end.
 Specify the call back Url in **LogicAppCallbackUrl** in your function's Application Settings.
 
 
-## EncodeBlob_MultiOut_MultiFilesInput_Function (Multiple files / single asset Function)
+### EncodeBlob_MultiOut_MultiFilesInput_Function (Multiple files / single asset Function)
 This function will upload several files into a single asset.
 A json file must be uploaded to the blob container withh the referenced files.
 
@@ -217,8 +223,8 @@ The format of the json file is:
       }
     ]
 
-# Aspera Ingest
-## 103-aspera-ingest
+## Aspera Ingest
+### 103-aspera-ingest
 
 This function provides a template that you can use to deploy an entire solution for ingesting and encoding using the Aspera On Demand high speed ingest services on Azure.
 
@@ -234,8 +240,8 @@ Use the Deploy to Azure button to launch the template that will install the foll
 
 See the [Read Me for 103-aspera-ingest](/103-aspera-ingest/README.md) for more details. 
 
-# Media Services Functions for Logic Apps
-## media-functions-for-logic-app
+## Media Services Functions for Logic Apps
+### media-functions-for-logic-app
 Functions : add-textfile-to-asset, check-blob-copy-to-asset-status, check-blob-copy-to-container-status, check-job-status, check-task-status, create-empty-asset, delete-asset-files, delete-entity, generate-ism-manifest, list-asset-files, live-subclip-analytics, publish-asset, return-analytics, return-subtitles, set-media-ru, start-asset-copy-to-container, start-blob-copy-to-asset, submit-job, sync-asset.
 These functions are designed to be called by a Logic App.
 
@@ -245,13 +251,13 @@ Five logic apps samples are available as ARM templates in [media-functions-for-l
 
 In order to practice the deployment of Azure functions for Media Services and the deployment of a Logic App advanced workflow, a detailed hands-on guide was written. You can find the document [here](/media-functions-for-logic-app/Lab).
 
-## 201-logic-app-workflow-1
+### 201-logic-app-workflow-1
 This set of functions shows how to build a complex workflow using Logic Apps and Azure Functions.
 For details on setting up the Logic App and using these functions please refer to the 
 documentation page [201-logic-app-workflow-1](201-logic-app-workflow-1/README.md)
 
-### License
-This sample project is licensed under [the MIT License](LICENSE.txt)
+## License
+This sample project is licensed under [the MIT License](https://github.com/Azure-Samples/media-services-dotnet-functions-integration/blob/master/LICENSE).
 
 ## To-DO and Roadmap
 - [ ] The Azure Queue notification function is not yet complete
