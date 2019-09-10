@@ -54,10 +54,17 @@ namespace media_functions_for_logic_app
             string blobPrefix = null;
             bool useFlatBlobListing = true;
 
-            var blobList = sourceBlobContainer.ListBlobsSegmentedAsync(blobPrefix, useFlatBlobListing, BlobListingDetails.None, null, null, null, null).Result;
+            List<IListBlobItem> blobList = new List<IListBlobItem>();
+            BlobContinuationToken continuationToken = null;
+            do
+            {
+                var responseList = await sourceBlobContainer.ListBlobsSegmentedAsync(blobPrefix, useFlatBlobListing, BlobListingDetails.None, null, continuationToken, null, null);
+                continuationToken = responseList.ContinuationToken;
+                blobList.AddRange(responseList.Results);
+            }
+            while (continuationToken != null);
 
-            //var blobList = sourceBlobContainer.ListBlobs(blobPrefix, useFlatBlobListing, BlobListingDetails.None);
-            foreach (var sourceBlob in blobList.Results)
+            foreach (var sourceBlob in blobList)
             {
                 log.Info("Source blob : " + (sourceBlob as CloudBlob).Uri.ToString());
                 CloudBlob destinationBlob = destinationBlobContainer.GetBlockBlobReference((sourceBlob as CloudBlob).Name);
@@ -83,22 +90,29 @@ namespace media_functions_for_logic_app
             await destinationBlob.StartCopyAsync(new Uri(sourceBlob.Uri.AbsoluteUri + signature));
         }
 
-        static public CopyStatus MonitorBlobContainer(CloudBlobContainer destinationBlobContainer)
+        static public async Task<CopyStatus> MonitorBlobContainer(CloudBlobContainer destinationBlobContainer)
         {
             string blobPrefix = null;
             bool useFlatBlobListing = true;
-            //var destBlobList = destinationBlobContainer.ListBlobs(blobPrefix, useFlatBlobListing, BlobListingDetails.Copy);
-            var destBlobList = destinationBlobContainer.ListBlobsSegmentedAsync(blobPrefix, useFlatBlobListing, BlobListingDetails.Copy, null, null, null, null).Result;
 
+            List<IListBlobItem> destBlobList = new List<IListBlobItem>();
+            BlobContinuationToken continuationToken = null;
+            do
+            {
+                var responseList = await destinationBlobContainer.ListBlobsSegmentedAsync(blobPrefix, useFlatBlobListing, BlobListingDetails.Copy, null, continuationToken, null, null);
+                continuationToken = responseList.ContinuationToken;
+                destBlobList.AddRange(responseList.Results);
+            }
+            while (continuationToken != null);
 
             CopyStatus copyStatus = CopyStatus.Success;
-            foreach (var dest in destBlobList.Results)
+            foreach (var dest in destBlobList)
             {
                 var destBlob = dest as CloudBlob;
                 if (destBlob.CopyState.Status == CopyStatus.Aborted || destBlob.CopyState.Status == CopyStatus.Failed)
                 {
                     // Log the copy status description for diagnostics and restart copy
-                    destBlob.StartCopyAsync(destBlob.CopyState.Source);
+                    await destBlob.StartCopyAsync(destBlob.CopyState.Source);
                     copyStatus = CopyStatus.Pending;
                 }
                 else if (destBlob.CopyState.Status == CopyStatus.Pending)
@@ -116,9 +130,17 @@ namespace media_functions_for_logic_app
         {
             try
             {
-                var sourceBlobList = sourceContainer.ListBlobsSegmentedAsync(String.Empty, true, BlobListingDetails.None, null, null, null, null).Result;
+                List<IListBlobItem> sourceBlobList = new List<IListBlobItem>();
+                BlobContinuationToken continuationToken = null;
+                do
+                {
+                    var responseList = await sourceContainer.ListBlobsSegmentedAsync(String.Empty, true, BlobListingDetails.None, null, continuationToken, null, null);
+                    continuationToken = responseList.ContinuationToken;
+                    sourceBlobList.AddRange(responseList.Results);
+                }
+                while (continuationToken != null);
 
-                foreach (var blob in sourceBlobList.Results)
+                foreach (var blob in sourceBlobList)
                 {
                     log.Info($"Blob URI: {blob.Uri}");
                     if (blob is CloudBlockBlob)
@@ -131,7 +153,6 @@ namespace media_functions_for_logic_app
                         {
                             await targetBlob.UploadFromStreamAsync(stream);
                         }
-
                         log.Info($"Copied: {sourceBlob.Name}");
                     }
                 }
@@ -142,15 +163,23 @@ namespace media_functions_for_logic_app
             }
         }
 
-        public static CloudBlockBlob GetOutputBlob(CloudBlobContainer sourceContainer, string filter, TraceWriter log)
+        public static async Task<CloudBlockBlob> GetOutputBlob(CloudBlobContainer sourceContainer, string filter, TraceWriter log)
         {
             CloudBlockBlob outputBlob = null;
 
             try
             {
-                var sourceBlobList = sourceContainer.ListBlobsSegmentedAsync(filter, true, BlobListingDetails.None, null, null, null, null).Result;
+                List<IListBlobItem> sourceBlobList = new List<IListBlobItem>();
+                BlobContinuationToken continuationToken = null;
+                do
+                {
+                    var responseList = await sourceContainer.ListBlobsSegmentedAsync(filter, true, BlobListingDetails.None, null, continuationToken, null, null);
+                    continuationToken = responseList.ContinuationToken;
+                    sourceBlobList.AddRange(responseList.Results);
+                }
+                while (continuationToken != null);
 
-                foreach (var blob in sourceBlobList.Results)
+                foreach (var blob in sourceBlobList)
                 {
                     log.Info($"Blob URI: {blob.Uri}");
                     if (blob is CloudBlockBlob)
