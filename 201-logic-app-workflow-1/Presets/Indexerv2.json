@@ -4,7 +4,6 @@
     {
       "Options": {
         "Formats": [
-          "Sami",
           "WebVtt",
           "TTML"
         ],
