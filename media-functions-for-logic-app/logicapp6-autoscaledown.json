@@ -1,0 +1,75 @@
+{
+  "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "actions": {
+          "Condition": {
+              "actions": {
+                  "set-media-ru_2": {
+                      "inputs": {
+                          "body": {
+                              "ruCount": "-1"
+                          },
+                          "function": {
+                              "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rgname/providers/Microsoft.Web/sites/functionsdeployed/functions/set-media-ru"
+                          }
+                      },
+                      "runAfter": {},
+                      "type": "Function"
+                  }
+              },
+              "expression": {
+                  "and": [
+                      {
+                          "greater": [
+                              "@body('set-media-ru')['newRuCount']",
+                              0
+                          ]
+                      },
+                      {
+                          "equals": [
+                              "@body('set-media-ru')['jobsQueue']",
+                              0
+                          ]
+                      },
+                      {
+                          "equals": [
+                              "@body('set-media-ru')['jobsProcessing']",
+                              0
+                          ]
+                      }
+                  ]
+              },
+              "runAfter": {
+                  "set-media-ru": [
+                      "Succeeded"
+                  ]
+              },
+              "type": "If"
+          },
+          "set-media-ru": {
+              "inputs": {
+                  "body": {
+                      "extentedInfo": true
+                  },
+                  "function": {
+                      "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rgname/providers/Microsoft.Web/sites/functionsdeployed/functions/set-media-ru"
+                  }
+              },
+              "runAfter": {},
+              "type": "Function"
+          }
+      },
+      "contentVersion": "1.0.0.0",
+      "outputs": {},
+      "parameters": {},
+      "triggers": {
+          "Recurrence": {
+              "recurrence": {
+                  "frequency": "Minute",
+                  "interval": 5
+              },
+              "type": "Recurrence"
+          }
+      }
+  }
+}

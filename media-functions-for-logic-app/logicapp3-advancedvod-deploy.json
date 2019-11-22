@@ -386,7 +386,7 @@
               "inputs": {
                 "body": {
                   "assetId": "@{body('create-empty-asset')['assetId']}",
-                  "indexV2": {"language": "EnUS"},
+                  "indexV1": { "language": "English" },
                   "mes" : {"preset": "H264 Multiple Bitrate 720p with thumbnail.json"},
                   "useEncoderOutputForAnalytics": true
                 },

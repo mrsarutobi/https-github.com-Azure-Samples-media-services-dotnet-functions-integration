@@ -260,46 +260,7 @@ Input:
     {
         "language" : "English", // Optional. Default is "English"
         "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "indexV2" :             // Optional but required to index audio with Media Indexer v2
-    {
-        "language" : "EnUs", // Optional. Default is EnUs
-        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "ocr" :             // Optional but required to do OCR
-    {
-        "language" : "AutoDetect", // Optional (Autodetect is the default)
-        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "faceDetection" :             // Optional but required to do Face Detection
-    {
-        "mode" : "PerFaceEmotion", // Optional (PerFaceEmotion is the default)
-        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "faceRedaction" :             // Optional but required to do Face Redaction
-    {
-        "mode" : "analyze"                  // Optional (analyze is the default)
-        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "motionDetection" :             // Optional but required to do Motion Detection
-    {
-        "level" : "medium",                 // Optional (medium is the default)
-        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "summarization" :                      // Optional but required to do summarization
-    {
-        "duration" : "0.0",                 // Optional (0.0 is the default)
-        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "hyperlapse" :             // Optional but required to do hyperlapse
-    {
-        "speed" : "8", // Optional (8 is the default)
-        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "videoAnnotation" :             // Optional but required to do Video Annotation
-    {
-        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
+    }
 
 
     // General job properties
@@ -307,13 +268,6 @@ Input:
  
     // For compatibility only with old workflows. Do not use anymore!
     "indexV1Language" : "English",  // Optional
-    "indexV2Language" : "EnUs",     // Optional
-    "ocrLanguage" : "AutoDetect" or "English",  // Optional
-    "faceDetectionMode" : "PerFaceEmotion,      // Optional
-    "faceRedactionMode" : "analyze",            // Optional, but required for face redaction
-    "motionDetectionLevel" : "medium",          // Optional
-    "summarizationDuration" : "0.0",            // Optional. 0.0 for automatic
-    "hyperlapseSpeed" : "8"                     // Optional
     "mesThumbnailsStart" : "{Best}",            // Optional. Add a task to generate thumbnails
 }
 
@@ -334,52 +288,6 @@ Output:
             taskId : "",
             language : ""
         },
-        "indexV2" :
-        {
-            assetId : "",
-            taskId : "",
-            language : ""
-        },
-        "ocr" :
-        {
-            assetId : "",
-            taskId : ""
-        },
-        "faceDetection" :
-        {
-            assetId : ""
-            taskId : ""
-        },
-        "faceRedaction" :
-        {
-            assetId : ""
-            taskId : ""
-        },
-        "motionDetection" :
-        {
-            assetId : "",
-            taskId : ""
-        },
-        "summarization" :
-        {
-            assetId : "",
-            taskId : ""
-        },
-        "hyperlapse" :
-        {
-            assetId : "",
-            taskId : ""
-        },
-         "mesThumbnails" :
-        {
-            assetId : "",
-            taskId : ""
-        },
-         "videoAnnotation" :
-        {
-            assetId : "",
-            taskId : ""
-        }
         "programId" = programid,
         "channelName" : "",
         "programName" : "",
@@ -407,25 +315,50 @@ This function submits a job wth encoding and/or analytics.
 Input:
 {
     "assetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", // Mandatory, Id of the source asset
-    "mesPreset" : "Adaptive Streaming",         // Optional but required to encode with Media Encoder Standard (MES). If mesPreset contains an extension "H264 Multiple Bitrate 720p with thumbnail.json" then it loads this file from ..\Presets
-    "workflowAssetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", // Optional, but required to encode the asset with Premium Workflow Encoder. Id for the workflow asset
-    "indexV1Language" : "English",              // Optional but required to index the asset with Indexer v1
-    "indexV2Language" : "EnUs",                 // Optional but required to index the asset with Indexer v2
-    "ocrLanguage" : "AutoDetect" or "English",  // Optional but required to do OCR
-    "faceDetectionMode" : "PerFaceEmotion,      // Optional but required to trigger face detection
-    "faceRedactionMode" : "analyze",            // Optional, but required for face redaction
-    "motionDetectionLevel" : "medium",          // Optional, required for motion detection
-    "summarizationDuration" : "0.0",            // Optional. Required to create video summarization. "0.0" for automatic
-    "hyperlapseSpeed" : "8",                    // Optional, required to hyperlapse the video
+    "mes" :                 // Optional but required to encode with Media Encoder Standard (MES)
+    {
+        "preset" : "Content Adaptive Multiple Bitrate MP4", // Optional but required to encode with Media Encoder Standard (MES). If MESPreset contains an extension "H264 Multiple Bitrate 720p with thumbnail.json" then it loads this file from ..\Presets
+        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
+    }
+    "mesThumbnails" :      // Optional but required to generate thumbnails with Media Encoder Standard (MES)
+    {
+        "start" : "{Best}",  // Optional. Start time/mode. Default is "{Best}"
+        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
+    }
+    "mepw" :                // Optional but required to encode with Premium Workflow Encoder
+    {
+        "workflowAssetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", // Required. Id for the workflow asset
+        "workflowConfig"  : "",                                                  // Optional. Premium Workflow Config for the task
+        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
+    },
+    "indexV1" :             // Optional but required to index audio with Media Indexer v1
+    {
+        "language" : "English", // Optional. Default is "English"
+        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
+    },
+
+    // General job properties
     "priority" : 10,                            // Optional, priority of the job
-    "useEncoderOutputForAnalytics" : true       // Optional, use generated asset by MES or Premium Workflow as a source for media analytics (except hyperlapse)
-    "jobName" : ""                              // Optional, job name
+    "useEncoderOutputForAnalytics" : true,      // Optional, use generated asset by MES or Premium Workflow as a source for media analytics
+    "jobName" : ""                              // Optional, job name  
+
+    // For compatibility only with old workflows. Do not use anymore!
+    "mesPreset" : "Adaptive Streaming",         // Optional but required to encode with Media Encoder Standard (MES). If MESPreset contains an extension "H264 Multiple Bitrate 720p with thumbnail.json" then it loads this file from ..\Presets
+    "workflowAssetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", // Optional, but required to encode the asset with Premium Workflow Encoder. Id for the workflow asset
+    "workflowConfig"  : ""                      // Optional. Premium Workflow Config for the task
+    "indexV1Language" : "English"               // Optional but required to index the asset with Indexer v1
 }
 
 Output:
 {
     "jobId" :  // job id
+    "otherJobsQueue" = 3 // number of jobs in the queue
     "mes" : // Output asset generated by MES (if mesPreset was specified)
+        {
+            assetId : "",
+            taskId : ""
+        },
+    "mesThumbnails" :// Output asset generated by MES
         {
             assetId : "",
             taskId : ""
@@ -440,42 +373,6 @@ Output:
             assetId : "",
             taskId : "",
             language : ""
-        },
-    "indexV2" : // Output asset generated by Indexer v2
-        {
-            assetId : "",
-            taskId : "",
-            language : ""
-        },
-    "ocr" : // Output asset generated by OCR
-        {
-            assetId : "",
-            taskId : ""
-        },
-    "faceDetection" : // Output asset generated by Face detection
-        {
-            assetId : ""
-            taskId : ""
-        },
-    "faceRedaction" : // Output asset generated by Face redaction
-        {
-            assetId : ""
-            taskId : ""
-        },
-     "motionDetection" : // Output asset generated by motion detection
-        {
-            assetId : "",
-            taskId : ""
-        },
-     "summarization" : // Output asset generated by video summarization
-        {
-            assetId : "",
-            taskId : ""
-        },
-     "hyperlapse" : // Output asset generated by Hyperlapse
-        {
-            assetId : "",
-            taskId : ""
         }
  }
 ```
@@ -504,81 +401,21 @@ his function returns media analytics from an asset.
 ```c#
 Input:
 {
-    "faceRedaction" : 
+    "mesThumbnails" : 
     {
-        "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains media analytics (face redaction)
-        "deleteAsset" : true, // Optional, delete the asset(s) once data has been read from it
-        "copyToContainer" : "jpgfaces" // Optional, to copy the faces (jpg files) to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
-        "copyToContainerAccountName" : "jhggjgghggkj" // storage account name. optional. if not provided, ams storage account is used
-        "copyToContainerAccountKey" "" // storage account key
-        },
-   "motionDetection" : 
-    {
-        "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains media analytics (motion detection)
-        "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
-    },
-     "ocr" : 
-    {
-        "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains media analytics (ocr)
-        "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
-    },
-   "videoAnnotation" : 
-    {
-        "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains the MES thumbnails
-        "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
-    },
-   "mesThumbnails" : 
-    {
-        "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Optional, Id of the source asset that contains media analytics (face redaction)
-        "deleteAsset" : true // Optional, delete the asset(s) once data has been read from it
+        "assetId" : "nb:cid:UUID:88432c30-cb4a-4496-88c2-b2a05ce9033b", // Id of the source asset 
+        "deleteAsset" : true, // Optional, delete the asset once data has been read from it
         "copyToContainer" : "thumbnails" // Optional, to copy the thumbnails (png files) to a specific container in the same storage account. Use lowercases as this is the container name and there are restrictions. Used as a prefix, as date is added at the end (yyyyMMdd)
         "copyToContainerAccountName" : "jhggjgghggkj" // storage account name. optional. if not provided, ams storage account is used
         "copyToContainerAccountKey" "" // storage account key
-     },
-
-     "timeOffset" :"00:01:00", // optional, offset to add to data from face redaction, ocr, video annotation (used for live analytics)
+     }
  }
 
 Output:
 {
-    "faceRedaction" :
+    "mesThumbnail":
         {
-        "json" : "",      // the json of the face redaction
-        "jsonOffset" : "",      // the json of the face redaction with offset
-        "jpgFaces":[
-                {
-                    "id" :24,
-                    "fileId": "nb:cid:UUID:a93464ae-cbd5-4e63-9459-a3e2cf869f0e",
-                    "fileName": "ArchiveTopBitrate_video_800000_thumb000024.jpg",
-                    "url" : "http://xpouyatdemo.streaming.mediaservices.windows.net/903f9261-d745-48aa-8dfe-ebcd6e6128d6/ArchiveTopBitrate_video_800000_thumb000024.jpg"
-                }
-                ]
-        "pathUrl" : "",     // the path to the asset if asset is published
-        },
-        "pngThumbnails":[
-                {
-                    "id" :24,
-                    "fileId": "nb:cid:UUID:a93464ae-cbd5-4e63-9459-a3e2cf869f0e",
-                    "fileName": "ArchiveTopBitrate_video_800000_thumb000024.jpg",
-                    "url" : "http://xpouyatdemo.streaming.mediaservices.windows.net/903f9261-d745-48aa-8dfe-ebcd6e6128d6/ArchiveTopBitrate_video_800000_thumb000024.jpg"
-                }
-                ]
-        "pathUrl" : "",     // the path to the asset if asset is published
-        },
-    "motionDetection":
-        {
-        "json" : "",      // the json of the face redaction
-        "jsonOffset" : ""      // the json of the face redaction with offset
-        },
-    "ocr":
-        {
-        "json" : "",      // the json of the Ocr
-        "jsonOffset" : ""      // the json of Ocr with offset
-        },
-    "videoAnnotation":
-        {
-        "json" : "",      // the json of the Video Annotator
-        "jsonOffset" : ""      // the json of Video Annotator with offset
+        "pngThumbnails" : "",      // the serialized list of thumbnails
         }
  }
 ```
@@ -696,45 +533,6 @@ Input:
         "language" : "English", // Optional. Default is "English"
         "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
     },
-    "indexV2" :             // Optional but required to index audio with Media Indexer v2
-    {
-        "language" : "EnUs", // Optional. Default is EnUs
-        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "ocr" :             // Optional but required to do OCR
-    {
-        "language" : "AutoDetect", // Optional (Autodetect is the default)
-        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "faceDetection" :             // Optional but required to do Face Detection
-    {
-        "mode" : "PerFaceEmotion", // Optional (PerFaceEmotion is the default)
-        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "faceRedaction" :             // Optional but required to do Face Redaction
-    {
-        "mode" : "analyze"                  // Optional (analyze is the default)
-        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-     "motionDetection" :             // Optional but required to do Motion Detection
-    {
-        "level" : "medium",                 // Optional (medium is the default)
-        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-     "summarization" :                      // Optional but required to do Motion Detection
-    {
-        "duration" : "0.0",                 // Optional (0.0 is the default)
-        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-     "hyperlapse" :             // Optional but required to do Motion Detection
-    {
-        "speed" : "8", // Optional (8 is the default)
-        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-     "videoAnnotation" :             // Optional but required to do Video Annotator
-    {
-        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
 
     // General job properties
     "priority" : 10,                            // Optional, priority of the job
@@ -745,14 +543,7 @@ Input:
     "mesPreset" : "Adaptive Streaming",         // Optional but required to encode with Media Encoder Standard (MES). If MESPreset contains an extension "H264 Multiple Bitrate 720p with thumbnail.json" then it loads this file from ..\Presets
     "workflowAssetId" : "nb:cid:UUID:2d0d78a2-685a-4b14-9cf0-9afb0bb5dbfc", // Optional, but required to encode the asset with Premium Workflow Encoder. Id for the workflow asset
     "workflowConfig"  : ""                      // Optional. Premium Workflow Config for the task
-    "indexV1Language" : "English",              // Optional but required to index the asset with Indexer v1
-    "indexV2Language" : "EnUs",                 // Optional but required to index the asset with Indexer v2
-    "ocrLanguage" : "AutoDetect" or "English",  // Optional but required to do OCR
-    "faceDetectionMode" : "PerFaceEmotion,      // Optional but required to trigger face detection
-    "faceRedactionMode" : "analyze",            // Optional, but required for face redaction
-    "motionDetectionLevel" : "medium",          // Optional, required for motion detection
-    "summarizationDuration" : "0.0",            // Optional. Required to create video summarization. "0.0" for automatic
-    "hyperlapseSpeed" : "8"                     // Optional, required to hyperlapse the video
+    "indexV1Language" : "English"               // Optional but required to index the asset with Indexer v1
 }
 
 Output:
@@ -779,47 +570,6 @@ Output:
             assetId : "",
             taskId : "",
             language : ""
-        },
-    "indexV2" : // Output asset generated by Indexer v2
-        {
-            assetId : "",
-            taskId : "",
-            language : ""
-        },
-    "ocr" : // Output asset generated by OCR
-        {
-            assetId : "",
-            taskId : ""
-        },
-    "faceDetection" : // Output asset generated by Face detection
-        {
-            assetId : ""
-            taskId : ""
-        },
-    "faceRedaction" : // Output asset generated by Face redaction
-        {
-            assetId : ""
-            taskId : ""
-        },
-     "motionDetection" : // Output asset generated by motion detection
-        {
-            assetId : "",
-            taskId : ""
-        },
-     "summarization" : // Output asset generated by video summarization
-        {
-            assetId : "",
-            taskId : ""
-        },
-     "hyperlapse" : // Output asset generated by Hyperlapse
-        {
-            assetId : "",
-            taskId : ""
-        },
-    "videoAnnotation" :// Output asset generated by Video Annotator
-        {
-            assetId : "",
-            taskId : ""
         }
  }
 ```

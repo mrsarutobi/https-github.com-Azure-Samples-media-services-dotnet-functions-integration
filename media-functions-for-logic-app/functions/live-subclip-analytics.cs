@@ -24,45 +24,7 @@ Input:
     {
         "language" : "English", // Optional. Default is "English"
         "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "indexV2" :             // Optional but required to index audio with Media Indexer v2
-    {
-        "language" : "EnUs", // Optional. Default is EnUs
-        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "ocr" :             // Optional but required to do OCR
-    {
-        "language" : "AutoDetect", // Optional (Autodetect is the default)
-        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "faceDetection" :             // Optional but required to do Face Detection
-    {
-        "mode" : "PerFaceEmotion", // Optional (PerFaceEmotion is the default)
-        "outputStorage" : "amsstorage01" // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "faceRedaction" :             // Optional but required to do Face Redaction
-    {
-        "mode" : "analyze"                  // Optional (analyze is the default)
-        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "motionDetection" :             // Optional but required to do Motion Detection
-    {
-        "level" : "medium",                 // Optional (medium is the default)
-        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "summarization" :                      // Optional but required to do Motion Detection
-    {
-        "duration" : "0.0",                 // Optional (0.0 is the default)
-        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "videoAnnotation" :             // Optional but required to do Video Annotator
-    {
-        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
-    "contentModeration" :                   // Optional but required to do Content Moderator
-    {
-        "outputStorage" : "amsstorage01"    // Optional. Storage account name where to put the output asset (attached to AMS account)
-    },
+    }
 
 
     // General job properties
@@ -70,12 +32,6 @@ Input:
  
     // For compatibility only with old workflows. Do not use anymore!
     "indexV1Language" : "English",  // Optional
-    "indexV2Language" : "EnUs",     // Optional
-    "ocrLanguage" : "AutoDetect" or "English",  // Optional
-    "faceDetectionMode" : "PerFaceEmotion,      // Optional
-    "faceRedactionMode" : "analyze",            // Optional, but required for face redaction
-    "motionDetectionLevel" : "medium",          // Optional
-    "summarizationDuration" : "0.0",            // Optional. 0.0 for automatic
     "mesThumbnailsStart" : "{Best}",            // Optional. Add a task to generate thumbnails
 }
 
@@ -95,52 +51,6 @@ Output:
             assetId : "",
             taskId : "",
             language : ""
-        },
-        "indexV2" :
-        {
-            assetId : "",
-            taskId : "",
-            language : ""
-        },
-        "ocr" :
-        {
-            assetId : "",
-            taskId : ""
-        },
-        "faceDetection" :
-        {
-            assetId : ""
-            taskId : ""
-        },
-        "faceRedaction" :
-        {
-            assetId : ""
-            taskId : ""
-        },
-        "motionDetection" :
-        {
-            assetId : "",
-            taskId : ""
-        },
-        "summarization" :
-        {
-            assetId : "",
-            taskId : ""
-        },
-        "mesThumbnails" :
-        {
-            assetId : "",
-            taskId : ""
-        },
-        "videoAnnotation" :
-        {
-            assetId : "",
-            taskId : ""
-        },
-        "contentModeration" :
-        {
-            assetId : "",
-            taskId : ""
         },
         "programId" = programid,
         "channelName" : "",
@@ -182,15 +92,7 @@ namespace media_functions_for_logic_app
             int OutputMES = -1;
             int OutputPremium = -1;
             int OutputIndex1 = -1;
-            int OutputIndex2 = -1;
-            int OutputOCR = -1;
-            int OutputFaceDetection = -1;
-            int OutputFaceRedaction = -1;
-            int OutputMotion = -1;
-            int OutputSummarization = -1;
             int OutputMesThumbnails = -1;
-            int OutputVideoAnnotation = -1;
-            int OutputContentModeration = -1;
 
             int id = 0;
             string programid = "";
@@ -391,14 +293,6 @@ namespace media_functions_for_logic_app
 
                 //new
                 OutputIndex1 = JobHelpers.AddTask(execContext, _context, job, subclipasset, (data.indexV1 == null) ? (string)data.indexV1Language : ((string)data.indexV1.language ?? "English"), "Azure Media Indexer", "IndexerV1.xml", "English", ref taskindex, specifiedStorageAccountName: JobHelpers.OutputStorageFromParam(data.indexV1));
-                OutputIndex2 = JobHelpers.AddTask(execContext, _context, job, subclipasset, (data.indexV2 == null) ? (string)data.indexV2Language : ((string)data.indexV2.language ?? "EnUs"), "Azure Media Indexer 2 Preview", "IndexerV2.json", "EnUs", ref taskindex, specifiedStorageAccountName: JobHelpers.OutputStorageFromParam(data.indexV2));
-                OutputOCR = JobHelpers.AddTask(execContext, _context, job, subclipasset, (data.ocr == null) ? (string)data.ocrLanguage : ((string)data.ocr.language ?? "AutoDetect"), "Azure Media OCR", "OCR.json", "AutoDetect", ref taskindex, specifiedStorageAccountName: JobHelpers.OutputStorageFromParam(data.ocr));
-                OutputFaceDetection = JobHelpers.AddTask(execContext, _context, job, subclipasset, (data.faceDetection == null) ? (string)data.faceDetectionMode : ((string)data.faceDetection.mode ?? "PerFaceEmotion"), "Azure Media Face Detector", "FaceDetection.json", "PerFaceEmotion", ref taskindex, specifiedStorageAccountName: JobHelpers.OutputStorageFromParam(data.faceDetection));
-                OutputFaceRedaction = JobHelpers.AddTask(execContext, _context, job, subclipasset, (data.faceRedaction == null) ? (string)data.faceRedactionMode : ((string)data.faceRedaction.mode ?? "comined"), "Azure Media Redactor", "FaceRedaction.json", "combined", ref taskindex, priority - 1, specifiedStorageAccountName: JobHelpers.OutputStorageFromParam(data.faceRedaction));
-                OutputMotion = JobHelpers.AddTask(execContext, _context, job, subclipasset, (data.motionDetection == null) ? (string)data.motionDetectionLevel : ((string)data.motionDetection.level ?? "medium"), "Azure Media Motion Detector", "MotionDetection.json", "medium", ref taskindex, priority - 1, specifiedStorageAccountName: JobHelpers.OutputStorageFromParam(data.motionDetection));
-                OutputSummarization = JobHelpers.AddTask(execContext, _context, job, subclipasset, (data.summarization == null) ? (string)data.summarizationDuration : ((string)data.summarization.duration ?? "0.0"), "Azure Media Video Thumbnails", "Summarization.json", "0.0", ref taskindex, specifiedStorageAccountName: JobHelpers.OutputStorageFromParam(data.summarization));
-                OutputVideoAnnotation = JobHelpers.AddTask(execContext, _context, job, subclipasset, (data.videoAnnotation != null) ? "1.0" : null, "Azure Media Video Annotator", "VideoAnnotation.json", "1.0", ref taskindex, specifiedStorageAccountName: JobHelpers.OutputStorageFromParam(data.videoAnnotation));
-                OutputContentModeration = JobHelpers.AddTask(execContext, _context, job, subclipasset, (data.contentModeration != null) ? "2.0" : null, "Azure Media Content Moderator", "ContentModeration.json", "2.0", ref taskindex, specifiedStorageAccountName: JobHelpers.OutputStorageFromParam(data.contentModeration));
 
                 // MES Thumbnails
                 OutputMesThumbnails = JobHelpers.AddTask(execContext, _context, job, subclipasset, (data.mesThumbnails != null) ? ((string)data.mesThumbnails.Start ?? "{Best}") : null, "Media Encoder Standard", "MesThumbnails.json", "{Best}", ref taskindex, specifiedStorageAccountName: JobHelpers.OutputStorageFromParam(data.mesThumbnails));
@@ -427,15 +321,6 @@ namespace media_functions_for_logic_app
                     log.Info($"index1assetrefreshed ID {index1assetrefreshed.Id}");
                     index1assetrefreshed.AlternateId = JsonConvert.SerializeObject(new ManifestHelpers.SubclipInfo() { programId = programid, subclipStart = starttime, subclipDuration = duration });
                     index1assetrefreshed.Update();
-                }
-
-                var index2sid = JobHelpers.ReturnId(job, OutputIndex2);
-                if (index2sid != null)
-                {
-                    var index2assetrefreshed = _context.Assets.Where(a => a.Id == index2sid).FirstOrDefault();
-                    log.Info($"index2assetrefreshed ID {index2assetrefreshed.Id}");
-                    index2assetrefreshed.AlternateId = JsonConvert.SerializeObject(new ManifestHelpers.SubclipInfo() { programId = programid, subclipStart = starttime, subclipDuration = duration });
-                    index2assetrefreshed.Update();
                 }
 
                 // Get program URL
@@ -481,48 +366,6 @@ namespace media_functions_for_logic_app
                     taskId = JobHelpers.ReturnTaskId(job, OutputIndex1),
                     language = (string)data.indexV1Language
                 },
-                indexV2 = new
-                {
-                    assetId = JobHelpers.ReturnId(job, OutputIndex2),
-                    taskId = JobHelpers.ReturnTaskId(job, OutputIndex2),
-                    language = (string)data.indexV2Language,
-                },
-                ocr = new
-                {
-                    assetId = JobHelpers.ReturnId(job, OutputOCR),
-                    taskId = JobHelpers.ReturnTaskId(job, OutputOCR)
-                },
-                faceDetection = new
-                {
-                    assetId = JobHelpers.ReturnId(job, OutputFaceDetection),
-                    taskId = JobHelpers.ReturnTaskId(job, OutputFaceDetection)
-                },
-                faceRedaction = new
-                {
-                    assetId = JobHelpers.ReturnId(job, OutputFaceRedaction),
-                    taskId = JobHelpers.ReturnTaskId(job, OutputFaceRedaction)
-                },
-                motionDetection = new
-                {
-                    assetId = JobHelpers.ReturnId(job, OutputMotion),
-                    taskId = JobHelpers.ReturnTaskId(job, OutputMotion)
-                },
-                summarization = new
-                {
-                    assetId = JobHelpers.ReturnId(job, OutputSummarization),
-                    taskId = JobHelpers.ReturnTaskId(job, OutputSummarization)
-                },
-                videoAnnotation = new
-                {
-                    assetId = JobHelpers.ReturnId(job, OutputVideoAnnotation),
-                    taskId = JobHelpers.ReturnTaskId(job, OutputVideoAnnotation)
-                },
-                contentModeration = new
-                {
-                    assetId = JobHelpers.ReturnId(job, OutputContentModeration),
-                    taskId = JobHelpers.ReturnTaskId(job, OutputContentModeration)
-                },
-
                 channelName = channelName,
                 programName = programName,
                 programId = programid,

@@ -84,7 +84,7 @@ This template creates a Logic app which
 * monitors a container in Azure Storage (blob trigger),
 * copies new file to an Azure Media Services asset,
 * triggers an encoding job,
-* converts the English audio to text (using Media Indexer v2),
+* converts the English audio to text (using Media Indexer v1),
 * translates the English subtitles to French (using Bing translator),
 * copies back the French subtitles to the subtitles asset,
 * publishes the output assets,
@@ -99,32 +99,8 @@ This template creates a Logic app which
 ![Screen capture](images/logicapp3-advancedvod-2.png?raw=true)
 ![Screen capture](images/logicapp3-advancedvod-3.png?raw=true)
 
-## Fourth Logic App : Live analytics processing
 
-This template creates a Logic app which processes a live program (from a live channel in Azure Media Services) for media analytics. What it does :
-
-* subclips the last minute
-* sends this subclip asset to Azure Media Indexer, Motion Detection and Face Redaction processors (3 tasks in one job)
-* gets the text, faces and motion detection information and sends this data to a Cosmos database,
-* optionnaly copy the faces to a dedicated Azure storage container.
-
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp4-liveanalytics-deploy.json" target="_blank">
-    <img src="http://azuredeploy.net/deploybutton.png"/>
-</a>
-
-Then fix the errors.
-
-You need to customize the channel name, program name and language of the audio. To do so, change the parameters in the live-subclip-analytics function call.
-
-![Screen capture](images/logicapp4-live-1.png?raw=true)
-
-Notes
-
-* you need to create a Cosmos database prior to the deployment of the logic app. Partition key should be named "processor"
-* you should allocate sufficient reserved units in the Media Services account otherwise the job queue will grow over time. Start with 4 S2 reserved units and monitor the queue. 
-
-
-## Fifth Logic App : Importing pre-encoded assets to Azure Media Services
+## Fourth Logic App : Importing pre-encoded assets to Azure Media Services
 
 This template creates a Logic app which
 
@@ -136,13 +112,13 @@ This template creates a Logic app which
 * publishes the asset with dynamic packaging for adaptive streaming.
 
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp5-preencoded-asset-deploy.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp4-preencoded-asset-deploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
-![Screen capture](images/logicapp5-1.png?raw=true)
-![Screen capture](images/logicapp5-2.png?raw=true)
-![Screen capture](images/logicapp5-3.png?raw=true)
+![Screen capture](images/logicapp4-1.png?raw=true)
+![Screen capture](images/logicapp4-2.png?raw=true)
+![Screen capture](images/logicapp4-3.png?raw=true)
 
 
 Example of [semaphore file](encodedasset0.json) that must be created and uploaded along with the video files.
@@ -161,7 +137,7 @@ Example of [semaphore file](encodedasset0.json) that must be created and uploade
 ]
 ```
 
-## Sixth Logic App : Live stream analysis using Video Indexer
+## Fifth Logic App : Live stream analysis using Video Indexer
 
 This [page](LiveStreamAnalysis.md) presents a near real time video analytics solution which relies on Video Indexer to process a live stream.
 

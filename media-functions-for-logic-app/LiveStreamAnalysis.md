@@ -13,7 +13,7 @@ The Logic apps workflow does the following :
 * subclips the last minute
 * sends this subclip asset to Video Indexer, which runs in a Media Services Account (recommended)
 
-![Screen capture](images/logicapp6-live1.png?raw=true)
+![Screen capture](images/logicapp5-live1.png?raw=true)
 
 **Step 2 Logic app**
 
@@ -22,7 +22,7 @@ The Logic apps workflow does the following :
 * sends this data to a Cosmos database
 * deletes the Video Indexer video and the subclip asset
 
-![Screen capture](images/logicapp6-live2.png?raw=true)
+![Screen capture](images/logicapp5-live2.png?raw=true)
 
 ## Step by step configuration
 
@@ -70,7 +70,7 @@ Important : setup 10 S3 media reserved units in the Media Services account if yo
 Deploy the two logic apps using this template:
 
 Click the button to deploy the template in your subscription:
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp6-livevideoindexer-deploy.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure-Samples%2Fmedia-services-dotnet-functions-integration%2Fmaster%2Fmedia-functions-for-logic-app%2Flogicapp5-livevideoindexer-deploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
@@ -94,9 +94,9 @@ Make sure that you add * to the CORS configuration of the Azure function deploym
 * to increase the performance, it is recommended to limit the resolution of the live stream. This will speed up the processing of Video Indexer. For example, start testing by sending a SD resolution stream (example: 854x480)
 * monitor the job queue(s) and allocate the right number of S3 media reserved units  
 
-![Screen capture](images/logicapp6-live-param1.png?raw=true)
+![Screen capture](images/logicapp5-live-param1.png?raw=true)
 
-![Screen capture](images/logicapp6-live-param2.png?raw=true)
+![Screen capture](images/logicapp5-live-param2.png?raw=true)
 
 ## Functions documentation
 This [page](Functions-documentation.md) lists the functions available and describes the input and output parameters.
