@@ -10,9 +10,10 @@ azureDeploy: https://raw.githubusercontent.com/Azure-Samples/media-services-dotn
 ---
 
 # Integrating Azure Media Services v2 with Azure Functions and Logic Apps
-This project contains examples of using Azure Functions with Azure Media Services.
+This project contains examples of using Azure Functions with Azure Media Services v2 API.
+For functions and logic apps for Azure Media Services v3 API, please go [here](https://aka.ms/ams3functions).
 
-The project includes several folders of sample Azure Functions for use with Azure Media Services that show workflows related
+The project includes several folders of sample Azure Functions for use with Azure Media Services v2 that show workflows related
 to ingesting content directly from blob storage, encoding, and writing content back to blob storage. It also includes examples of
 how to monitor job notifications via WebHooks and Azure Queues.
 
@@ -76,6 +77,12 @@ To edit the code, you have a few options:
         * Make sure you include the Azure development workload in your Visual Studio 2017 installation.
 
     You can develop pre-compiled functions in this platform. See [this article](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs) for more detailed information.
+
+
+* Visual Studio 2019
+
+    Azure functions are natively integrated.
+
 
 ## How to run the sample
 
