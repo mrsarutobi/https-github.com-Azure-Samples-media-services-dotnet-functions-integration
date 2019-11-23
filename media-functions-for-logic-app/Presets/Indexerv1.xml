@@ -6,10 +6,10 @@
     <feature name="ASR">
       <settings>
         <add key="Language" value="English" />
-        <add key="GenerateAIB" value="True" />
-        <add key="GenerateKeywords" value="True" />
+        <add key="GenerateAIB" value="False" />
+        <add key="GenerateKeywords" value="False" />
         <add key="ForceFullCaption" value="False" />
-        <add key="CaptionFormats" value="ttml;sami;webvtt" />
+        <add key="CaptionFormats" value="ttml;webvtt" />
       </settings>
     </feature>
   </features>
