@@ -270,12 +270,7 @@
                                         "body": {
                                             "AssetId": "@{body('WF-1-CreateAsset-ImportAssetFromIngestAssetConfig')['AssetId']}",
                                             "IngestAssetConfigJson": "@{triggerBody()}",
-                                            "faceDetectionMode": "PerFaceEmotion",
-                                            "faceRedactionMode": "analyze",
-                                            "indexV2Language": "EnUs",
-                                            "motionDetectionLevel": "medium",
-                                            "ocrLanguage": "AutoDetect",
-                                            "summarizationDuration": "0.0"
+                                            "indexV1Language": "English"
                                         },
                                         "function": {
                                             "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsDeploymentName'), '/functions/WF-2-ProcessAsset-SubmitEncodingJob')]"
