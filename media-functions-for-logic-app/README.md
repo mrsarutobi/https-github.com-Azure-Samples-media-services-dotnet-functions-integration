@@ -2,7 +2,7 @@
 
 ## Video presentation about serverless video workflows
 
-[![Watch the presentation](images/player-serverless.png?raw=true)](https://aka.ms/ampembed?url=https%3A%2F%2Fxpouyatdemo.streaming.mediaservices.windows.net%2F1e504b53-e1b3-45c3-89ea-9bc01975c3c6%2Fconnect2017-v3.ism%2Fmanifest)
+[![Watch the presentation](images/player-serverless.png?raw=true)](https://aka.ms/ampembed?url=https%3A%2F%2Fxpouyatdemo-euwe.streaming.media.azure.net%2F87ccfa30-7fa8-496f-a3f4-ea2bf8dea25e%2Fconnect2017-v3.ism%2Fmanifest)
 
 ## Prerequisites for all Logic Apps deployments
 
