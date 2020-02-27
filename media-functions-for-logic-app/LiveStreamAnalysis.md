@@ -34,7 +34,8 @@ Go to the [Video Indexer Developer Portal](https://api-portal.videoindexer.ai/pr
 
 ### 2. Create a Service Principal
 
-In the Azure portal or AZ CLI, create a Service Principal attached to the AMS account previously created. Save the password too. It will be needed in step #3. To do it within the portal, go to the API tab in the account ([follow this article](https://docs.microsoft.com/en-us/azure/media-services/media-services-portal-get-started-with-aad#service-principal-authentication))
+In the Azure portal or AZ CLI, create a Service Principal attached to the AMS account previously created. Save the password too. It will be needed in step #3. To do it within the portal, go to the API tab in the account ([follow this article](https://docs.microsoft.com/en-us/azure/media-services/media-services-portal-get-started-with-aad#service-principal-authentication)).
+
 Please note that it may take some time for the Service Principal to be active.
 
 ### 3. Deploy the Azure functions
