@@ -144,7 +144,7 @@ namespace media_functions_for_logic_app
         static public ManifestTimingData GetManifestTimingData(CloudMediaContext context, IAsset asset, TraceWriter log)
         // Parse the manifest and get data from it
         {
-            ManifestTimingData response = new ManifestTimingData() { IsLive = false, Error = false, TimestampOffset = 0, TimestampList = new List<ulong>() };
+            ManifestTimingData response = new ManifestTimingData() { IsLive = false, Error = false, TimestampOffset = 0, TimestampList = new List<ulong>(), DiscontinuityDetected = false };
 
             try
             {
@@ -195,18 +195,23 @@ namespace media_functions_for_logic_app
 
                         repeatchunk = chunk.Attribute("r") != null ? int.Parse(chunk.Attribute("r").Value) : 1;
                         log.Info($"repeat r {repeatchunk}");
-                        totalduration += durationchunk * (ulong)repeatchunk;
 
                         if (chunk.Attribute("t") != null)
                         {
-                            //totalduration = ulong.Parse(chunk.Attribute("t").Value) - response.TimestampOffset; // new timestamp, perhaps gap in live stream....
-                            response.TimestampList.Add(ulong.Parse(chunk.Attribute("t").Value));
-                            log.Info($"t value {ulong.Parse(chunk.Attribute("t").Value)}");
+                            ulong tvalue = ulong.Parse(chunk.Attribute("t").Value);
+                            response.TimestampList.Add(tvalue);
+                            if (tvalue != response.TimestampOffset)
+                            {
+                                totalduration = tvalue - response.TimestampOffset; // Discountinuity ? We calculate the duration from the offset
+                                response.DiscontinuityDetected = true; // let's flag it
+                            }
                         }
                         else
                         {
                             response.TimestampList.Add(response.TimestampList[response.TimestampList.Count() - 1] + durationpreviouschunk);
                         }
+
+                        totalduration += durationchunk * (ulong)repeatchunk;
 
                         for (int i = 1; i < repeatchunk; i++)
                         {
@@ -304,9 +309,6 @@ namespace media_functions_for_logic_app
 
 
 
-
-
-
         public class ManifestTimingData
         {
             public TimeSpan AssetDuration { get; set; }
@@ -316,6 +318,7 @@ namespace media_functions_for_logic_app
             public bool Error { get; set; }
             public List<ulong> TimestampList { get; set; }
             public ulong TimestampEndLastChunk { get; set; }
+            public bool DiscontinuityDetected { get; set; }
         }
 
         public class SubclipInfo

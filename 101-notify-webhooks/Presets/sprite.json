@@ -1,0 +1,28 @@
+{
+  "Codecs": [
+    {
+      "JpgLayers": [
+        {
+          "Quality": 90,
+          "Type": "JpgLayer",
+          "Width": "10%",
+          "Height": "10%"
+        }
+      ],
+      "SpriteColumn": 10,
+      "Start": "00:00:01",
+      "Step": "1%",
+      "Range": "100%",
+      "Type": "JpgImage"
+    }
+  ],
+  "Outputs": [
+    {
+      "FileName": "{Basename}_{Index}_Sprite{Extension}",
+      "Format": {
+        "Type": "JpgFormat"
+      }
+    }
+  ],
+  "Version": 1.0
+}
